@@ -22,6 +22,8 @@ function onOpen() {
   ui.createMenu('☀️ Social Solar')
     .addSubMenu(ui.createMenu('🧾 Ordenes de compra')
       .addItem('Ver el link del portal', 'ocMostrarLink'))
+    .addSubMenu(ui.createMenu('🏧 Extracto del banco')
+      .addItem('Actualizar y revisar pagos', 'menuActualizarRevisar'))
     .addSubMenu(ui.createMenu('📄 Validar Documentos (RUT)')
       .addItem('Validar fila(s) seleccionada(s)', 'menuValidarSeleccion')
       .addItem('Validar pendientes', 'menuValidarPendientes')

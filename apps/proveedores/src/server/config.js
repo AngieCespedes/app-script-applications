@@ -32,6 +32,8 @@ var OC_H_ORD     = '10 ORDENES DE COMPRA';
 
 var OC_H_PAG     = '11 PAGOS Y SOPORTES';
 
+var OC_H_EXT     = '13 EXTRACTO BANCOS';
+
 var OC_H_PROV    = '02 MAESTRO PROVEEDORES 2026';
 
 var OC_RAIZ      = Config_.id('OC_RAIZ');
