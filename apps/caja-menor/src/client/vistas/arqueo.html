@@ -1,0 +1,61 @@
+<script>
+/* ---------------- ARQUEO ---------------- */
+VISTAS.arqueo = {
+  t: 'Arqueo de caja',
+  s: 'Contar la plata y cuadrarla contra el sistema.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>Conteo</h3>'+
+      '<p class="d">Cuántos billetes y monedas hay de cada denominación.</p>'+
+      '<div id="a_den"></div></div>'+
+      '<div class="card"><h3>Resultado</h3>'+
+      '<div class="kpis" style="grid-template-columns:1fr;gap:10px">'+
+        '<div class="kpi am"><span>Total contado</span><b id="a_total">$ 0</b></div>'+
+        '<div class="kpi"><span>Saldo según el sistema</span><b id="a_sistema">'+esc(D.saldoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Diferencia</span><b id="a_dif">—</b></div>'+
+      '</div>'+
+      '<label style="margin-top:12px">Observaciones</label>'+
+      '<textarea id="a_obs" rows="3" placeholder="Si no cuadra, explique por qué"></textarea>'+
+      '<button class="btn dark" onclick="guardarArqueo()" style="margin-top:12px">Guardar el arqueo</button>'+
+      '<div id="a_res" style="margin-top:12px"></div></div></div>';
+  },
+  after: function(){
+    $('a_den').innerHTML = DEN.map(function(d,i){
+      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px">'+
+        '<span style="width:76px;text-align:right;font-weight:700;font-size:12.5px">'+cop(d)+'</span>'+
+        '<input type="number" min="0" id="d'+i+'" oninput="calcArqueo()" style="width:72px;text-align:center">'+
+        '<b id="s'+i+'" style="flex:1;text-align:right;font-size:12.5px">—</b></div>';
+    }).join('');
+    calcArqueo();
+  }
+};
+function calcArqueo(){
+  var t = 0;
+  DEN.forEach(function(d,i){
+    var q = Number($('d'+i).value)||0, v = q*d; t += v;
+    $('s'+i).textContent = v ? cop(v) : '—';
+  });
+  $('a_total').textContent = cop(t);
+  var dif = t - D.saldo;
+  $('a_dif').textContent = (dif>0?'+ ':dif<0?'− ':'')+cop(Math.abs(dif));
+  $('a_dif').style.color = dif===0 ? '#1E7B34' : '#B3261E';
+}
+function guardarArqueo(){
+  var c = {};
+  DEN.forEach(function(d,i){ c[String(d)] = Number($('d'+i).value)||0; });
+  toast('Guardando el arqueo…');
+  servidor('guardarArqueo', c, $('a_obs').value).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    var cl = r.estado === 'Cuadra' ? 'al-ok' : 'al-mal';
+    $('a_res').innerHTML = '<div class="al '+cl+'"><b>'+esc(r.estado)+'</b>'+
+      'Contado '+esc(r.totalTxt)+' contra '+esc(r.sistemaTxt)+' del sistema.</div>'+
+      '<div class="tw"><table><thead><tr><th>Antes de cerrar</th><th>Estado</th></tr></thead><tbody>'+
+      r.checklist.map(function(x){
+        return '<tr><td>'+esc(x.texto)+'</td><td><span class="badge '+
+          (x.estado==='OK'?'b-ok':'b-mal')+'">'+esc(x.estado)+'</span></td></tr>';
+      }).join('')+'</tbody></table></div>';
+    toast('Arqueo guardado.','ok');
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+</script>

@@ -1,0 +1,65 @@
+<script>
+/* ---------------- APROBAR ---------------- */
+VISTAS.aprobar = {
+  t: 'Revisión de relaciones',
+  s: 'Las relaciones cerradas que esperan visto bueno.',
+  render: function(){ return '<div id="ap_cont">Consultando el historial…</div>'; },
+  after: function(){
+    servidor('relacionesParaAprobar').then(function(l){
+      if(!l.length){ $('ap_cont').innerHTML =
+        '<div class="al al-inf"><b>Todavía no hay relaciones cerradas</b>'+
+        'Aparecerán aquí cuando se entregue la primera.</div>'; return; }
+      var pend = l.filter(function(r){ return r.pendiente; });
+      var list = l.filter(function(r){ return !r.pendiente; });
+      var tarjeta = function(r){
+        return '<div class="card"><h3>Relación N.° '+esc(r.numero)+' · '+esc(r.responsable)+'</h3>'+
+          '<p class="d">Periodo '+esc(r.desde)+' a '+esc(r.hasta)+' · cerrada el '+esc(r.fecha)+'</p>'+
+          '<div class="tw"><table><tbody>'+
+          [['Saldo anterior',r.saldoAnterior],['Ingresos',r.ingresos],['Egresos',r.egresos],
+           ['Saldo final',r.saldoFinal],['Efectivo contado',r.contado||'Sin arqueo'],
+           ['Diferencia del arqueo',r.diferencia],['Movimientos',r.movimientos],
+           ['Sin soporte',r.sinSoporte],['Forma de entrega',r.entrega]]
+          .filter(function(x){ return x[1]; }).map(function(x){
+            return '<tr><td style="width:40%">'+esc(x[0])+'</td><td class="num"><b>'+esc(x[1])+'</b></td></tr>';
+          }).join('')+'</tbody></table></div>'+
+          (r.pdf ? '<p style="margin-top:10px"><a href="'+esc(r.pdf)+'" target="_blank" rel="noopener">'+
+            '<b>Abrir el PDF de la relación →</b></a></p>' : '')+
+          (r.carpeta ? '<p><a href="'+esc(r.carpeta)+'" target="_blank" rel="noopener">'+
+            'Ver los soportes del mes →</a></p>' : '')+
+          (r.observaciones ? '<div class="al al-av" style="margin-top:10px"><b>Observaciones</b>'+
+            esc(r.observaciones)+'</div>' : '')+
+          (r.pendiente
+            ? '<div class="grid g2" style="margin-top:12px">'+
+              '<div><label>Decisión</label><select id="ap_dec'+r.numero+'">'+
+                '<option>Aprobada</option>'+
+                '<option>Aprobada con observaciones</option>'+
+                '<option>Devuelta para corrección</option></select></div>'+
+              '<div><label>Observación</label><input id="ap_obs'+r.numero+'"></div></div>'+
+              '<button class="btn dark" onclick="aprobar(\''+esc(r.numero)+'\')" '+
+              'style="margin-top:12px;max-width:220px">Guardar la decisión</button>'
+            : '<div class="al al-ok" style="margin-top:10px"><b>'+esc(r.aprobadaPor)+'</b>'+
+              esc(r.fechaAprobacion)+'</div>')+
+          '</div>';
+      };
+      $('ap_cont').innerHTML =
+        (pend.length
+          ? '<div class="al al-av"><b>'+pend.length+' relación(es) esperando su visto bueno</b></div>'+
+            pend.map(tarjeta).join('')
+          : '<div class="al al-ok"><b>No hay relaciones pendientes de aprobar</b></div>')+
+        (list.length
+          ? '<div class="card" style="margin-top:8px"><h3>Ya revisadas</h3></div>'+
+            list.map(tarjeta).join('')
+          : '');
+    }).catch(function(e){ $('ap_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+function aprobar(numero){
+  servidor('aprobarRelacion', numero,
+    $('ap_dec'+numero).value, $('ap_obs'+numero).value)
+    .then(function(m){ toast(m,'ok'); recargar().then(function(){ ir('aprobar'); }); })
+    .catch(function(e){ toast(e.message,'mal'); });
+}
+
+
+</script>

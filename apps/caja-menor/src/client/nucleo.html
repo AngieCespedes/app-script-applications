@@ -1,0 +1,179 @@
+<script>
+/* =========================================================
+   CAJA MENOR — SOCIAL SOLAR S.A.S.
+   Página web conectada al libro real. Todo lo que se ve
+   sale de las hojas; todo lo que se guarda cae en ellas.
+   ========================================================= */
+
+var D = null;          /* datos de arranque */
+var QUIEN = '';        /* quién está registrando en esta sesión */
+try { QUIEN = window.localStorage.getItem('cm_quien') || ''; } catch(e){}
+var PANT = 'inicio';
+var ROL = 'auxiliar';
+var DEN = [100000,50000,20000,10000,5000,2000,1000,500,200,100];
+
+function $(i){ return document.getElementById(i); }
+function esc(s){ return String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function cop(n){ return '$ ' + Math.round(Number(n)||0).toLocaleString('es-CO'); }
+function num(v){ return Number(String(v==null?'':v).replace(/[^0-9]/g,''))||0; }
+
+function toast(t, c){
+  var e = $('toast');
+  e.textContent = t;
+  e.className = 'on ' + (c||'');
+  e.style.background = c==='mal' ? '#B3261E' : c==='ok' ? '#1E7B34' : '#1A1A1A';
+  clearTimeout(window._tt);
+  window._tt = setTimeout(function(){ e.className=''; }, 4200);
+}
+
+
+function leerArchivo(id){
+  var el = $(id), f = el && el.files && el.files[0];
+  if(!f) return Promise.resolve(null);
+  return new Promise(function(ok,mal){
+    var r = new FileReader();
+    r.onload = function(){ ok({ nombre:f.name, tipo:f.type,
+      base64:String(r.result).split(',')[1] }); };
+    r.onerror = function(){ mal(new Error('No se pudo leer el archivo.')); };
+    r.readAsDataURL(f);
+  });
+}
+
+function hoyISO(){
+  var d=new Date();
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+
+/* ===================== ARRANQUE ===================== */
+
+/* el arranque lo hace arrancar(), más abajo */
+
+/* ===================== MENÚ ===================== */
+
+var MENU = {
+  auxiliar: [
+    ['OPERACIÓN DIARIA'],
+    ['inicio','🏠','Inicio'], ['pago','💸','Registrar pago'],
+    ['ingreso','💵','Registrar ingreso'], ['entrega','📤','Entregar efectivo'],
+    ['soportes','📷','Leer fotos / PDF'],
+    ['ANTES DE PAGAR'],
+    ['banca','🔎','¿Puedo pagar en efectivo?'], ['politicas','📘','Políticas'],
+    ['banco','🏦','Banco y tope'],
+    ['LEGALIZACIÓN'],
+    ['links','🔗','Pedir documentos', function(){ return D ? D.pendientes : 0; }],
+    ['CIERRE'],
+    ['arqueo','🧮','Arqueo'], ['cierre','📨','Entregar la relación'],
+    ['informes','📄','Relaciones cerradas'],
+    ['confirmar','🤝','Entregas de efectivo'],
+    ['empalme','🔁','Entrega del cargo'],
+    ['datos','🔗','Enlaces y carpetas']
+  ],
+  contadora: [
+    ['CONTROL'],
+    ['tablero','📊','Tablero'], ['gestion','📈','Gestión de la caja'],
+    ['casos','🙋','Casos por definir', function(){ return D ? D.casos : 0; }],
+    ['revisar','🔍','Revisar la relación'],
+    ['auditoria','⚠️','Hallazgos'],
+    ['banca','🔎','Bancarización'], ['banco','🏦','Banco y tope'],
+    ['REGISTRO'],
+    ['inicio','🏠','Relación en curso'], ['pago','💸','Registrar pago'],
+    ['ingreso','💵','Registrar ingreso'], ['entrega','📤','Entregar efectivo'],
+    ['soportes','📷','Leer fotos / PDF'],
+    ['arqueo','🧮','Arqueo'], ['cierre','📨','Entregar la relación'],
+    ['CONFIGURACIÓN'],
+    ['usuarios','👥','Usuarios y claves'],
+    ['politicas','📘','Políticas'], ['links','🔗','Links a proveedores'],
+    ['accesos','🧹','Limpiar accesos al libro'],
+    ['params','⚙️','Responsables y topes'],
+    ['informes','📄','Relaciones cerradas'],
+    ['confirmar','🤝','Entregas de efectivo'],
+    ['empalme','🔁','Entrega del cargo'],
+    ['datos','🔗','Enlaces y carpetas']
+  ],
+  gerencia: [
+    ['REVISIÓN'],
+    ['aprobar','✅','Relaciones para aprobar', function(){ return D ? D.porAprobar : 0; }],
+    ['informes','📄','Historial de relaciones'],
+    ['confirmar','🤝','Efectivo que recibí', function(){ return D ? D.porConfirmar : 0; }],
+    ['tablero','📊','Tablero'], ['banco','🏦','Banco y tope'],
+    ['auditoria','⚠️','Hallazgos'], ['politicas','📘','Políticas'],
+    ['datos','🔗','Enlaces y carpetas']
+  ]
+};
+
+function pintarNav(){
+  var items = MENU[ROL] || MENU.auxiliar;
+  $('nav').innerHTML = items.map(function(it){
+    if(it.length === 1) return '<div class="gr">'+esc(it[0])+'</div>';
+    var n = it[3] ? it[3]() : 0;
+    var pill = n ? ' <span class="pill">'+n+'</span>' : '';
+    return '<a onclick="ir(\''+it[0]+'\')" data-p="'+it[0]+'">'+
+           '<span class="ic">'+it[1]+'</span>'+esc(it[2])+pill+'</a>';
+  }).join('');
+}
+
+function ir(p){
+  try { document.querySelector('aside').classList.remove('abierto');
+        document.getElementById('velo').classList.remove('abierto'); } catch(e){}
+  PANT = p;
+  var V = VISTAS[p];
+  if(!V){ toast('Esa pantalla todavía no está.','mal'); return; }
+  document.querySelectorAll('#nav a').forEach(function(a){
+    a.classList.toggle('on', a.dataset.p === p);
+  });
+  $('tit').textContent = V.t;
+  $('sub').innerHTML = V.s || '';
+  $('hright').innerHTML = V.h ? V.h() : '';
+  $('view').innerHTML = V.render();
+  window.scrollTo(0,0);
+  if(V.after) V.after();
+}
+
+function recargar(){
+  return servidor('datosWeb').then(function(d){
+    D = d; pintarNav();
+    if($('hright') && VISTAS[PANT] && VISTAS[PANT].h) $('hright').innerHTML = VISTAS[PANT].h();
+    return d;
+  });
+}
+
+function cargando(destino){
+  $(destino).innerHTML = '<div class="card" style="text-align:center;color:#6B6761">Consultando el libro…</div>';
+}
+
+/* ===================== SEMÁFORO ===================== */
+
+function semaforo(){
+  if(!D) return '';
+  if(D.excedente > 0) return '<div class="al al-mal"><b>⬆ La caja está '+cop(D.excedente)+
+    ' por encima del objetivo de '+cop(D.objetivo)+'</b>'+
+    'Hay que consignar el excedente al banco hoy. El efectivo de más en caja es riesgo.'+
+    '<div style="margin-top:8px"><button class="btn xs dark" onclick="ir(\'entrega\')">'+
+    'Registrar la consignación →</button></div></div>';
+  if(D.reembolso > 0) return '<div class="al al-mal"><b>⬇ La caja quedó por debajo del mínimo de '+
+    cop(D.minimo)+'</b>Hay que pedirle al gerente un reembolso de '+cop(D.reembolso)+'.</div>';
+  return '<div class="al al-ok"><b>✓ Saldo dentro del rango</b>'+D.saldoTxt+
+    ' en caja, contra un objetivo de '+cop(D.objetivo)+'.</div>';
+}
+
+function kpis(){
+  if(!D) return '';
+  return '<div class="kpis">'+
+    '<div class="kpi"><span>Saldo en caja</span><b>'+D.saldoTxt+'</b></div>'+
+    '<div class="kpi"><span>Objetivo</span><b>'+cop(D.objetivo)+'</b></div>'+
+    '<div class="kpi"><span>Filas libres</span><b>'+D.libres+'</b></div>'+
+    '<div class="kpi"><span>Responsable</span><b style="font-size:14px">'+esc(D.responsable)+'</b></div>'+
+    '</div>';
+}
+
+function opciones(lista, sel){
+  return (lista||[]).map(function(x){
+    return '<option'+(x===sel?' selected':'')+'>'+esc(x)+'</option>';
+  }).join('');
+}
+
+
+var VISTAS = {};
+</script>

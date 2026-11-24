@@ -1,0 +1,28 @@
+<script>
+/* ---------------- TABLERO ---------------- */
+VISTAS.tablero = {
+  t: 'Tablero de control',
+  s: 'Todo sale de las otras hojas. Aquí no se escribe nada.',
+  render: function(){ return '<div id="t_cont">Consultando el libro…</div>'; },
+  after: function(){
+    servidor('datosTablero').then(function(t){
+      var tabla = function(titulo, pares){
+        return '<div class="card"><h3>'+titulo+'</h3><div class="tw"><table><tbody>'+
+          pares.map(function(p){
+            return '<tr><td>'+esc(p.etiqueta)+'</td><td class="num"><b>'+esc(p.valor)+'</b></td></tr>';
+          }).join('')+'</tbody></table></div></div>';
+      };
+      $('t_cont').innerHTML = kpis() + semaforo() +
+        '<div class="grid g2">'+ tabla('Situación de la caja', t.situacion) +
+        tabla('Alerta de saldo', t.alerta) + '</div>'+
+        '<div class="card"><h3>Semáforo de cumplimiento</h3><ul style="margin:0;padding-left:18px">'+
+        t.semaforo.map(function(l){ return '<li style="margin-bottom:4px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>'+
+        '<div class="card"><h3>Próximos pasos</h3><ul style="margin:0;padding-left:18px">'+
+        t.pasos.map(function(l){ return '<li style="margin-bottom:4px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>';
+    }).catch(function(e){ $('t_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>

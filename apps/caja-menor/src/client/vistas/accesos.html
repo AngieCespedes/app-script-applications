@@ -1,0 +1,118 @@
+<script>
+/* ---------------- ACCESOS ---------------- */
+VISTAS.accesos = {
+  t: 'Limpiar accesos al libro',
+  s: 'Quién puede abrir el libro por fuera de la plataforma. Para crear usuarios, vaya a Usuarios y claves.',
+  render: function(){ return '<div id="ac_cont">Consultando quién tiene acceso…</div>'; },
+  after: function(){ cargarAccesos(); }
+};
+
+function cargarAccesos(){
+  servidor('datosAccesos').then(function(a){
+    var selRol = function(correo, rol){
+      if(!a.puedeEditar || !correo) return esc(rol);
+      return '<select onchange="ponerRol(this.value, \''+esc(correo)+'\')" '+
+        'style="padding:4px 6px;font-size:12px">'+
+        ['—','Auxiliar','Contadora','Gerencia'].map(function(x){
+          return '<option'+(x===rol?' selected':'')+'>'+x+'</option>'; }).join('')+
+        '</select>';
+    };
+
+    var filas = a.gente.map(function(g){
+      var btn = '';
+      if(a.puedeEditar && !g.esDueno && g.correo && g.correo !== a.yo){
+        btn = g.tieneAcceso
+          ? '<button class="btn xs ghost" style="width:auto;padding:5px 10px" '+
+            'onclick="quitarAcc(\''+esc(g.correo)+'\',\''+esc(g.nombre)+'\')">Desactivar</button>'
+          : '<button class="btn xs dark" style="width:auto;padding:5px 10px" '+
+            'onclick="darAcc(\''+esc(g.correo)+'\',\''+esc(g.nombre)+'\')">Activar</button>';
+      } else if(g.esDueno) btn = '<span class="badge b-gr">Dueña</span>';
+      else if(g.correo === a.yo) btn = '<span class="badge b-gr">Usted</span>';
+      else if(!g.correo) btn = '<span class="badge b-av">Sin correo</span>';
+
+      return '<tr><td><b>'+esc(g.nombre)+'</b></td>'+
+        '<td>'+esc(g.correo||'—')+'</td>'+
+        '<td>'+selRol(g.correo, g.rol)+'</td>'+
+        '<td><span class="badge '+(g.tieneAcceso?'b-ok':'b-mal')+'">'+
+          (g.tieneAcceso?'Con acceso':'Sin acceso')+'</span></td>'+
+        '<td>'+esc(g.estado||'')+'</td>'+
+        '<td>'+btn+'</td></tr>';
+    }).join('');
+
+    $('ac_cont').innerHTML =
+      (a.enlacePublico
+        ? '<div class="al al-mal"><b>⚠ El libro está abierto por enlace</b>'+
+          'Cualquiera que tenga el link entra, así usted desactive personas aquí. '+
+          'Ciérrelo en Compartir → Cualquier persona con el enlace → Restringido.</div>'
+        : '<div class="al al-ok"><b>El libro no está abierto por enlace</b>'+
+          'Solo entra quien aparezca en esta lista.</div>')+
+
+      (a.puedeEditar ? '' :
+        '<div class="al al-av"><b>Solo lectura</b>Entró como '+esc(a.yo)+
+        '. Para dar o quitar accesos hay que entrar con el correo de la contadora.</div>')+
+
+      '<div class="card"><h3>Quién tiene acceso</h3>'+
+      '<p class="d">Desactivar le quita el acceso al libro y a la carpeta, y le pone fecha de retiro. '+
+      'No borra nada de lo que esa persona registró.</p>'+
+      '<div class="tw"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th>'+
+      '<th>Acceso</th><th>Estado</th><th></th></tr></thead><tbody>'+
+      (filas || '<tr><td colspan="6">Todavía no hay nadie en Responsables.</td></tr>')+
+      '</tbody></table></div></div>'+
+
+      (a.sueltos.length
+        ? '<div class="card"><h3>Tienen acceso pero no están en Responsables</h3>'+
+          '<p class="d">Entraron por un compartido anterior. Si no deben estar, quíteles el acceso.</p>'+
+          '<div class="tw"><table><thead><tr><th>Correo</th><th>Rol</th><th></th></tr></thead><tbody>'+
+          a.sueltos.map(function(s){
+            return '<tr><td>'+esc(s.correo)+'</td><td>'+esc(s.rol)+'</td><td>'+
+              (a.puedeEditar && s.correo !== a.yo && s.correo !== a.dueno
+                ? '<button class="btn xs ghost" style="width:auto;padding:5px 10px" '+
+                  'onclick="quitarAcc(\''+esc(s.correo)+'\',\''+esc(s.correo)+'\')">Quitar acceso</button>'
+                : '<span class="badge b-gr">—</span>')+'</td></tr>';
+          }).join('')+'</tbody></table></div></div>'
+        : '')+
+
+
+      '<div class="al al-av"><b>Esta pantalla ya no da acceso: solo lo quita</b>'+
+      'Quién entra a la plataforma se decide ahora en Usuarios y claves, con usuario y '+
+      'contraseña. Lo que queda aquí es la limpieza: estos correos pueden abrir el libro '+
+      'por fuera de la plataforma, sin pasar por ningún login. Quíteselo a todo el que no lo necesite.</div>';
+  }).catch(function(e){ $('ac_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+function quitarAcc(correo, nombre){
+  if(!window.confirm('¿Quitarle el acceso a ' + nombre + '?\n\n' +
+     'Deja de poder abrir el libro y la carpeta. Lo que ya registró se queda.')) return;
+  toast('Quitando el acceso…');
+  servidor('quitarAcceso', correo).then(function(){
+    toast('Acceso retirado a ' + nombre + '.','ok'); cargarAccesos();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function darAcc(correo, nombre){
+  toast('Dando acceso…');
+  servidor('darAcceso', { correo: correo, nombre: nombre }).then(function(){
+    toast('Acceso devuelto a ' + nombre + '.','ok'); cargarAccesos();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function nuevoAcceso(){
+  var n = ($('ac_nom').value||'').trim(), c = ($('ac_cor').value||'').trim();
+  if(!n || !c){ toast('Escriba el nombre y el correo.','mal'); return; }
+  toast('Dando acceso…');
+  servidor('darAcceso', {
+    nombre:n, correo:c, rol:$('ac_rol').value, cedula:$('ac_ced').value,
+    celular:$('ac_cel').value, desde:$('ac_desde').value
+  }).then(function(){
+    toast(n + ' ya tiene acceso.','ok');
+    recargar().then(function(){ ir('accesos'); });
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function ponerRol(rol, correo){
+  servidor('asignarRol', rol === '—' ? '' : rol, correo).then(function(){
+    toast('Rol actualizado.','ok'); recargar().then(cargarAccesos);
+  }).catch(function(e){ toast(e.message,'mal'); cargarAccesos(); });
+}
+
+</script>

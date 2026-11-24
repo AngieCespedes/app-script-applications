@@ -1,0 +1,47 @@
+<script>
+/* ---------------- LINKS / WHATSAPP ---------------- */
+VISTAS.links = {
+  t: 'Pedir documentos a los proveedores',
+  s: 'Los pagos que quedaron sin soporte válido y a quién hay que perseguir.',
+  render: function(){
+    return '<div class="al al-av"><b>El DSE se genera el mismo día o acumulado semanal</b>'+
+      'Fuera de plazo pierde el efecto fiscal. Circular 004 num. 3 · Concepto DIAN 006942 de 2025.</div>'+
+      '<div class="card"><h3>Link del formulario</h3>'+
+      '<p class="d">El que se le manda al proveedor para que deje sus datos.</p>'+
+      '<input id="l_link" value="https://forms.gle/ss-dse-proveedor"></div>'+
+      '<div id="l_lista">Buscando pendientes…</div>';
+  },
+  after: function(){
+    servidor('listaPendientes').then(function(l){
+      if(!l.length){
+        $('l_lista').innerHTML = '<div class="al al-ok"><b>No hay pendientes</b>'+
+          'Todos los pagos de la relación tienen su soporte.</div>'; return;
+      }
+      $('l_lista').innerHTML = l.map(function(p){
+        var venc = p.plazo === 'VENCIDO';
+        return '<div class="card"><h3>'+esc(p.proveedor||'Sin nombre')+'</h3>'+
+          '<p class="d">'+esc(p.fecha)+' · '+esc(p.valorTxt)+' · '+esc(p.estado)+'</p>'+
+          '<div class="al '+(venc?'al-mal':'al-av')+'"><b>'+
+            (venc?'DSE VENCIDO':'Vence en '+esc(p.plazo))+'</b>'+
+            (venc?'Ya no tiene efecto fiscal: márquelo como no deducible.':'')+'</div>'+
+          '<div class="grid g2"><div><label>Celular</label>'+
+          '<input id="cel'+p.fila+'" inputmode="numeric" placeholder="3001234567"></div>'+
+          '<div style="display:flex;align-items:flex-end">'+
+          '<button class="btn dark" onclick="wa('+p.fila+',\''+esc(p.proveedor).replace(/'/g,"\\'")+
+            '\',\''+esc(p.valorTxt)+'\',\''+esc(p.fecha)+'\')">📲 Armar el WhatsApp</button></div></div>'+
+          '<div id="wa'+p.fila+'"></div></div>';
+      }).join('');
+    }).catch(function(e){ $('l_lista').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function wa(fila, nombre, valor, fecha){
+  var cel = ($('cel'+fila).value||'').replace(/\D/g,'');
+  servidor('linkWhatsApp', cel, nombre, valor, fecha, $('l_link').value)
+    .then(function(url){
+      $('wa'+fila).innerHTML = '<div class="al al-ok" style="margin-top:10px">'+
+        '<b>Mensaje listo</b><a href="'+url+'" target="_blank" rel="noopener">'+
+        'Abrir el chat de '+esc(nombre)+' →</a></div>';
+    }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+</script>

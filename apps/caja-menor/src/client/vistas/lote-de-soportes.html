@@ -1,0 +1,120 @@
+<script>
+/* ---------------- LOTE DE SOPORTES ---------------- */
+VISTAS.soportes = {
+  t: 'Leer fotos o PDF de soportes',
+  s: 'Varios recibos de una sola vez. Se suben, se completan y se registran juntos.',
+  render: function(){
+    return '<div class="card"><h3>1. Suba los archivos</h3>'+
+      '<p class="d">Fotos o PDF, hasta 20 por tanda. Quedan en la carpeta 00 POR CLASIFICAR del mes '+
+      'hasta que los registre; al registrarlos se mueven solos a la carpeta que les toca.</p>'+
+      '<input type="file" id="lt_files" accept="image/*,application/pdf" multiple>'+
+      '<button class="btn dark" onclick="subirLote()" id="lt_btn" style="margin-top:12px;max-width:240px">'+
+      'Subir los archivos</button>'+
+      '<div id="lt_sub" style="margin-top:12px"></div></div>'+
+      '<div id="lt_fichas"></div>';
+  }
+};
+
+function subirLote(){
+  var el = $('lt_files');
+  if(!el.files || !el.files.length){ toast('Elija al menos un archivo.','mal'); return; }
+  if(el.files.length > 20){ toast('Máximo 20 archivos por tanda.','mal'); return; }
+  $('lt_btn').disabled = true;
+  $('lt_sub').innerHTML = '<div class="al al-inf">Subiendo '+el.files.length+' archivo(s)…</div>';
+  var lecturas = [];
+  for(var i=0;i<el.files.length;i++) lecturas.push(leerUno(el.files[i]));
+  Promise.all(lecturas).then(function(archivos){
+    return servidor('subirLote', archivos);
+  }).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    var ok = r.archivos.filter(function(a){ return a.ok; });
+    var mal = r.archivos.filter(function(a){ return !a.ok; });
+    $('lt_sub').innerHTML =
+      '<div class="al al-ok"><b>'+ok.length+' archivo(s) en Drive</b>'+
+      '<a href="'+r.carpeta+'" target="_blank" rel="noopener">Ver la carpeta 00 POR CLASIFICAR →</a></div>'+
+      (mal.length ? '<div class="al al-mal"><b>'+mal.length+' no se pudieron subir</b>'+
+        mal.map(function(a){ return esc(a.nombre)+': '+esc(a.error); }).join('<br>')+'</div>' : '');
+    pintarFichas(ok);
+    $('lt_btn').disabled = false;
+    $('lt_files').value = '';
+  }).catch(function(e){
+    $('lt_sub').innerHTML = '<div class="al al-mal">'+esc(e.message)+'</div>';
+    $('lt_btn').disabled = false;
+  });
+}
+
+function leerUno(f){
+  return new Promise(function(ok,mal){
+    var r = new FileReader();
+    r.onload = function(){ ok({ nombre:f.name, tipo:f.type, base64:String(r.result).split(',')[1] }); };
+    r.onerror = function(){ mal(new Error('No se pudo leer '+f.name)); };
+    r.readAsDataURL(f);
+  });
+}
+
+function pintarFichas(lista){
+  if(!lista.length){ $('lt_fichas').innerHTML=''; return; }
+  $('lt_fichas').innerHTML =
+    '<div class="card"><h3>2. Complete cada uno</h3>'+
+    '<p class="d">Un recuadro por archivo. Los que deje sin valor no se registran.</p></div>'+
+    lista.map(function(a,i){
+      return '<div class="card" id="fc'+i+'" data-id="'+a.id+'">'+
+        '<h3><a href="'+a.url+'" target="_blank" rel="noopener">'+esc(a.nombre)+'</a></h3>'+
+        '<div class="grid g4">'+
+          '<div><label>Fecha del documento</label><input type="date" id="f_fecha'+i+'" value="'+hoyISO()+'"></div>'+
+          '<div><label>Valor</label><input id="f_valor'+i+'" inputmode="numeric"></div>'+
+          '<div><label>N.° documento</label><input id="f_sop'+i+'"></div>'+
+          '<div><label>Tipo de soporte</label><select id="f_tipo'+i+'">'+opciones(D.soportes)+'</select></div>'+
+        '</div>'+
+        '<div class="grid g4" style="margin-top:10px">'+
+          '<div><label>Tercero del documento</label><input id="f_prov'+i+'"></div>'+
+          '<div><label>NIT o cédula</label><input id="f_nit'+i+'"></div>'+
+          '<div><label>Categoría</label><select id="f_cat'+i+'">'+opciones(D.categorias)+'</select></div>'+
+          '<div><label>Centro de costo</label><select id="f_centro'+i+'">'+opciones(D.centros)+'</select></div>'+
+        '</div>'+
+        '<div class="grid g4" style="margin-top:10px">'+
+          '<div><label>Recibió el efectivo</label><select id="f_benef'+i+'">'+opciones(D.benef)+'</select></div>'+
+          '<div><label>Medio de pago</label><select id="f_medio'+i+'">'+opciones(D.medios)+'</select></div>'+
+          '<div><label>Estado del soporte</label><select id="f_estado'+i+'">'+opciones(D.estados)+'</select></div>'+
+          '<div><label>Descripción</label><input id="f_desc'+i+'"></div>'+
+        '</div></div>';
+    }).join('')+
+    '<button class="btn dark" onclick="registrarLote('+lista.length+')" id="lt_reg" '+
+    'style="max-width:280px">Registrar los pagos</button>'+
+    '<div id="lt_res" style="margin-top:12px"></div>';
+}
+
+function registrarLote(n){
+  var fichas = [];
+  for(var i=0;i<n;i++){
+    var v = num($('f_valor'+i).value);
+    if(!v) continue;
+    fichas.push({
+      idArchivo: $('fc'+i).dataset.id,
+      nombreArchivo: $('fc'+i).querySelector('a').textContent,
+      fecha:$('f_fecha'+i).value, valor:$('f_valor'+i).value,
+      soporte:$('f_sop'+i).value, tipoSoporte:$('f_tipo'+i).value,
+      proveedor:$('f_prov'+i).value, nit:$('f_nit'+i).value,
+      categoria:$('f_cat'+i).value, centro:$('f_centro'+i).value,
+      beneficiario:$('f_benef'+i).value, medio:$('f_medio'+i).value,
+      estadoSoporte:$('f_estado'+i).value, descripcion:$('f_desc'+i).value, quien:QUIEN
+    });
+  }
+  if(!fichas.length){ toast('Ninguna ficha tiene valor.','mal'); return; }
+  $('lt_reg').disabled = true;
+  toast('Registrando '+fichas.length+' pago(s)…');
+  servidor('registrarLote', fichas).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    var ok = r.resultados.filter(function(x){ return x.ok; });
+    var mal = r.resultados.filter(function(x){ return !x.ok; });
+    $('lt_res').innerHTML =
+      (ok.length ? '<div class="al al-ok"><b>'+ok.length+' pago(s) registrados</b>'+
+        ok.map(function(x){ return 'Fila '+x.n+' — '+esc(x.nombre)+' — '+esc(x.revision); }).join('<br>')+'</div>' : '')+
+      (mal.length ? '<div class="al al-mal"><b>'+mal.length+' no se registraron</b>'+
+        mal.map(function(x){ return esc(x.nombre)+': '+esc(x.error); }).join('<br>')+'</div>' : '');
+    toast(ok.length+' registrados, '+mal.length+' con problema.', mal.length?'mal':'ok');
+    $('lt_reg').disabled = false;
+  }).catch(function(e){ toast(e.message,'mal'); $('lt_reg').disabled=false; });
+}
+
+</script>

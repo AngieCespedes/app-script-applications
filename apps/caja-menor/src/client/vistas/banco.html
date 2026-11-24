@@ -1,0 +1,36 @@
+<script>
+/* ---------------- BANCO ---------------- */
+VISTAS.banco = {
+  t: 'Banco y tope de la caja',
+  s: 'Todo lo que sale de la caja hacia el banco y todo lo que entra del banco.',
+  render: function(){ return '<div id="bk_cont">Consultando…</div>'; },
+  after: function(){
+    servidor('datosBanco').then(function(b){
+      var h = '<div class="kpis">'+
+        '<div class="kpi am"><span>Saldo en caja</span><b>'+esc(b.saldoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Objetivo</span><b>'+esc(b.objetivoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Mínimo</span><b>'+esc(b.minimoTxt)+'</b></div>'+
+        '<div class="kpi '+(b.excedente||b.reembolso?'rojo':'')+'"><span>Estado</span>'+
+        '<b style="font-size:14px">'+esc(b.estado)+'</b></div></div>';
+      if(b.excedente>0) h += '<div class="al al-mal"><b>Consignar '+cop(b.excedente)+'</b>'+
+        'La caja está por encima del objetivo.</div>';
+      if(b.reembolso>0) h += '<div class="al al-mal"><b>Pedir reembolso de '+cop(b.reembolso)+'</b>'+
+        'La caja está por debajo del mínimo.</div>';
+      h += '<div class="card"><h3>Movimientos entre la caja y el banco</h3>';
+      if(!b.filas.length) h += '<div class="al al-inf"><b>Todavía no hay movimientos</b>'+
+        'Aquí caen las consignaciones del excedente y los retiros para reponer la caja.</div>';
+      else h += '<div class="tw"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Comprobante</th>'+
+        '<th class="num">Valor</th><th>Quién</th><th>Relación</th><th>Soporte</th>'+
+        '<th>Verificado</th></tr></thead><tbody>'+
+        b.filas.map(function(f){
+          return '<tr><td>'+esc(f.fecha)+'</td><td>'+esc(f.tipo)+'</td><td>'+esc(f.comprobante)+'</td>'+
+            '<td class="num">'+esc(f.valor)+'</td><td>'+esc(f.quien)+'</td><td>'+esc(f.relacion)+'</td>'+
+            '<td>'+esc(f.soporte)+'</td><td><span class="badge '+
+            (f.verificado==='Sí'?'b-ok':'b-av')+'">'+esc(f.verificado)+'</span></td></tr>';
+        }).join('')+'</tbody></table></div>';
+      $('bk_cont').innerHTML = h + '</div>';
+    }).catch(function(e){ $('bk_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>

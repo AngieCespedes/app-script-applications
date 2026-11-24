@@ -1,0 +1,32 @@
+<script>
+/* ---------------- CONFIRMAR ENTREGAS ---------------- */
+VISTAS.confirmar = {
+  t: 'Entregas de efectivo',
+  s: 'Quien recibió la plata confirma aquí. Sin confirmar, la relación no cierra.',
+  render: function(){ return '<div id="e_cont">Consultando…</div>'; },
+  after: function(){
+    servidor('datosEntregas').then(function(l){
+      if(!l.length){ $('e_cont').innerHTML='<div class="al al-inf"><b>No hay entregas registradas</b></div>'; return; }
+      $('e_cont').innerHTML = '<div class="card"><div class="tw"><table><thead><tr>'+
+        '<th>N.°</th><th>Fecha</th><th>Entrega</th><th>Recibe</th><th class="num">Valor</th>'+
+        '<th>Concepto</th><th>Soporte</th><th>Estado</th><th></th></tr></thead><tbody>'+
+        l.map(function(e){
+          var pend = e.confirmado === 'Por confirmar';
+          return '<tr><td><b>'+esc(e.consecutivo)+'</b></td><td>'+esc(e.fecha)+'</td>'+
+            '<td>'+esc(e.entrega)+'</td><td>'+esc(e.recibe)+'</td>'+
+            '<td class="num">'+esc(e.valor)+'</td><td>'+esc(e.concepto)+'</td>'+
+            '<td>'+esc(e.soporte)+'</td>'+
+            '<td><span class="badge '+(pend?'b-av':'b-ok')+'">'+esc(e.confirmado)+'</span></td>'+
+            '<td>'+(pend?'<button class="btn xs dark" style="width:auto;padding:5px 10px" onclick="confEnt(\''+
+              esc(e.consecutivo)+'\')">Confirmar</button>':'')+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+    }).catch(function(e){ $('e_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function confEnt(c){
+  servidor('confirmarEntrega', c).then(function(m){
+    toast(m,'ok'); recargar().then(function(){ ir('confirmar'); });
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+</script>

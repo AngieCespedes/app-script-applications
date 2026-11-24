@@ -1,0 +1,145 @@
+<script>
+/* ============================================================
+ *  PANTALLA DE USUARIOS — solo la contadora
+ * ============================================================ */
+
+VISTAS.usuarios = {
+  t: 'Usuarios',
+  s: 'Quién entra a la plataforma, con qué clave y con qué rol.',
+  render: function(){ return '<div id="us_cont">Consultando…</div>'; },
+  after: function(){ cargarUsuarios(); }
+};
+
+function cargarUsuarios(){
+  servidor('listarUsuarios').then(function(l){
+    var filas = l.map(function(u){
+      var yo = u.usuario === D.usuario;
+      return '<tr>'+
+        '<td><b>'+esc(u.nombre)+'</b>'+(yo?' <span class="badge b-gr">usted</span>':'')+'</td>'+
+        '<td class="mono">'+esc(u.usuario)+'</td>'+
+        '<td><select onchange="rolUsuario(\''+esc(u.usuario)+'\', this.value)" '+
+          'style="padding:4px 6px;font-size:12px"'+(yo?' disabled':'')+'>'+
+          ['Auxiliar','Contadora','Gerencia'].map(function(x){
+            return '<option'+(x===u.rol?' selected':'')+'>'+x+'</option>'; }).join('')+
+          '</select></td>'+
+        '<td><span class="badge '+(u.activo?'b-ok':'b-mal')+'">'+
+          (u.activo?'Activo':'Desactivado')+'</span>'+
+          (u.debeCambiar?' <span class="badge b-av">clave temporal</span>':'')+'</td>'+
+        '<td>'+esc(u.ultimo)+'</td>'+
+        '<td>'+(yo ? '' :
+          '<button class="btn xs ghost" style="width:auto;padding:5px 9px" '+
+          'onclick="pedirClave(\''+esc(u.usuario)+'\',\''+esc(u.nombre)+'\')">Nueva clave</button> '+
+          (u.activo
+            ? '<button class="btn xs ghost" style="width:auto;padding:5px 9px" '+
+              'onclick="activar(\''+esc(u.usuario)+'\',false,\''+esc(u.nombre)+'\')">Desactivar</button>'
+            : '<button class="btn xs dark" style="width:auto;padding:5px 9px" '+
+              'onclick="activar(\''+esc(u.usuario)+'\',true,\''+esc(u.nombre)+'\')">Activar</button>'))+
+        '</td></tr>';
+    }).join('');
+
+    $('us_cont').innerHTML =
+      '<div class="card"><h3>Quién entra</h3>'+
+      '<p class="d">Desactivar corta la sesión al instante, aunque la persona la tenga abierta.</p>'+
+      '<div class="tw"><table><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th>'+
+      '<th>Estado</th><th>Último ingreso</th><th></th></tr></thead><tbody>'+
+      filas+'</tbody></table></div></div>'+
+      '<div id="rc_zona"></div>'+
+
+      '<div class="card"><h3>Crear un usuario</h3>'+
+      '<p class="d">Usted pone la contraseña y la entrega. La casilla de abajo decide si la persona debe cambiarla.</p>'+
+      '<div class="grid g2">'+
+      '<div><label>Nombre completo</label><input id="nu_nom" placeholder="María Pérez"></div>'+
+      '<div><label>Usuario</label><input id="nu_usr" placeholder="maria">'+
+      '<div class="hint">Sin espacios ni tildes. Letras, números, punto o guion.</div></div>'+
+      '</div><div class="grid g2" style="margin-top:10px">'+
+      '<div><label>Contraseña</label><input id="nu_cla" placeholder="mínimo 8 caracteres"></div>'+
+      '<div><label>Rol</label><select id="nu_rol">'+
+        '<option>Auxiliar</option><option>Gerencia</option><option>Contadora</option>'+
+        '</select></div></div>'+
+      '<label class="ck" style="margin-top:12px">'+
+      '<input type="checkbox" id="nu_cambiar" checked> Pedirle que cambie la contraseña al entrar'+
+      '<span class="hint" style="margin:0 0 0 4px">— si la deja sin marcar, se queda la que usted puso y usted la conoce</span>'+
+      '</label>'+
+      '<button class="btn dark" onclick="nuevoUsuario()" style="margin-top:12px;max-width:220px">Crear</button>'+
+      '<div id="nu_msg"></div></div>'+
+
+      '<div class="al al-inf"><b>Las contraseñas no se pueden ver</b>'+
+      'Se guardan cifradas. Si alguien la olvida, usted le pone una nueva con el botón '+
+      '«Nueva clave» — no hay forma de leer la anterior, y eso también la protege a usted.</div>'+
+
+      '<div class="al al-av"><b>Esto reemplaza lo de compartir el libro</b>'+
+      'La plataforma ahora corre con su cuenta de Google, así que quien entra lo decide esta tabla. '+
+      'Revise que el libro NO siga abierto por enlace: si lo está, se puede llegar a los datos sin pasar por aquí.</div>';
+  }).catch(function(e){ $('us_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+function nuevoUsuario(){
+  var d = { nombre:$('nu_nom').value, usuario:$('nu_usr').value,
+            clave:$('nu_cla').value, rol:$('nu_rol').value,
+            debeCambiar: $('nu_cambiar').checked };
+  servidor('crearUsuario', d).then(function(){
+    $('nu_msg').innerHTML = '<div class="al al-ok" style="margin-top:12px">'+
+      '<b>'+esc(d.usuario)+' creado</b>Entréguele el usuario y la contraseña. '+
+      (d.debeCambiar ? 'Al entrar le vamos a pedir que la cambie.'
+                     : 'Se queda con esa contraseña hasta que usted la cambie.')+'</div>';
+    toast('Usuario creado.','ok');
+    ['nu_nom','nu_usr','nu_cla'].forEach(function(i){ $(i).value=''; });
+    cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function rolUsuario(usuario, rol){
+  servidor('cambiarRolUsuario', usuario, rol).then(function(){
+    toast('Rol actualizado.','ok'); cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); cargarUsuarios(); });
+}
+
+function activar(usuario, activo, nombre){
+  if(!activo && !window.confirm('¿Desactivar a ' + nombre + '?\n\n' +
+     'No va a poder entrar, y si tiene la sesión abierta se le cierra. ' +
+     'Lo que ya registró se queda.')) return;
+  servidor('activarUsuario', usuario, activo).then(function(){
+    toast(nombre + (activo ? ' activado.' : ' desactivado.'),'ok'); cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function pedirClave(usuario, nombre){
+  $('rc_zona').innerHTML =
+    '<div class="card" style="border-color:#FFB41D">'+
+    '<h3>Contraseña nueva para '+esc(nombre)+'</h3>'+
+    '<p class="d">Usted la pone y usted se la entrega. Mínimo 8 caracteres.</p>'+
+    '<div class="grid g2">'+
+    '<div><label>Contraseña nueva</label>'+
+    '<input id="rc_cla" placeholder="mínimo 8 caracteres" '+
+    'onkeydown="if(event.key===\'Enter\')guardarClave(\''+esc(usuario)+'\',\''+esc(nombre)+'\')"></div>'+
+    '<div style="display:flex;align-items:flex-end;padding-bottom:4px">'+
+    '<label class="ck"><input type="checkbox" id="rc_cambiar" checked> '+
+    'Pedirle que la cambie al entrar</label></div>'+
+    '</div>'+
+    '<div class="row" style="margin-top:12px">'+
+    '<button class="btn dark sm" onclick="guardarClave(\''+esc(usuario)+'\',\''+esc(nombre)+'\')">Guardar</button>'+
+    '<button class="btn ghost sm" onclick="cargarUsuarios()">Cancelar</button>'+
+    '</div></div>';
+  try { $('rc_cla').focus(); } catch(e){}
+}
+
+function guardarClave(usuario, nombre){
+  var c = $('rc_cla').value || '';
+  var pide = $('rc_cambiar').checked;
+  servidor('restablecerClave', usuario, c, pide).then(function(){
+    toast('Clave cambiada. Entréguesela a ' + nombre + '.','ok');
+    cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+
+
+/* el cajón del menú en el celular */
+function menu(){
+  var a = document.querySelector('aside'), v = document.getElementById('velo');
+  if(!a || !v) return;
+  var abierto = a.classList.toggle('abierto');
+  v.classList.toggle('abierto', abierto);
+}
+
+</script>

@@ -1,0 +1,71 @@
+<script>
+/* ---------------- CIERRE ---------------- */
+VISTAS.cierre = {
+  t: 'Entregar la relación',
+  s: 'Indique el periodo. Se arma el PDF con los movimientos de esas fechas.',
+  render: function(){ return '<div id="c_todo">Revisando la relación…</div>'; },
+  after: function(){
+    servidor('datosCierre').then(function(d){
+      $('c_todo').innerHTML =
+        '<div class="grid g2">'+
+        '<div class="card"><h3>Periodo y resumen</h3>'+
+          '<div class="grid g2">'+
+          '<div><label>Fecha inicial</label><input type="date" id="c_d1" value="'+aISO(d.desde)+'"></div>'+
+          '<div><label>Fecha final</label><input type="date" id="c_d2" value="'+
+            (d.hasta?aISO(d.hasta):hoyISO())+'"></div></div>'+
+          '<label style="margin-top:10px">Se entrega a</label>'+
+          '<select id="c_para"><option>'+esc(d.correoGer)+'</option><option>'+esc(d.correoCtd)+'</option></select>'+
+          '<div class="tw" style="margin-top:14px"><table><tbody>'+
+          [['Relación','N.° '+d.numero],['Responsable',d.responsable],
+           ['Saldo anterior',d.saldoAnterior],['Ingresos',d.ingresos],['Egresos',d.egresos],
+           ['Saldo final',d.saldoFinal],['Efectivo contado',d.contado||'Sin arqueo'],
+           ['Arqueo',d.estadoArqueo],['Movimientos',d.movimientos]].map(function(p){
+            return '<tr><td>'+esc(p[0])+'</td><td class="num"><b>'+esc(p[1])+'</b></td></tr>';
+          }).join('')+'</tbody></table></div></div>'+
+        '<div class="card"><h3>Cómo se entrega</h3><div id="c_estado"></div>'+
+          '<div class="al al-inf"><b>📄 Entrega física</b>'+
+          'Se genera el PDF, se imprime, se anexan los soportes y el gerente firma a mano.</div>'+
+          '<button class="btn ghost" id="c_fis" onclick="cerrar(\'fisica\')">Generar el PDF</button>'+
+          '<div class="al al-inf" style="margin-top:14px"><b>💻 Entrega digital</b>'+
+          'Además del PDF, le llega por correo a quien aprueba, con el resumen y el adjunto.</div>'+
+          '<button class="btn dark" id="c_dig" onclick="cerrar(\'digital\')">Generar y enviar</button>'+
+        '</div></div><div id="c_final"></div>';
+      var h = '';
+      if(d.errores.length){
+        h = '<div class="al al-mal"><b>No se puede cerrar todavía</b><ul style="margin:4px 0 0;padding-left:18px">'+
+          d.errores.map(function(e){ return '<li>'+esc(e)+'</li>'; }).join('')+'</ul></div>';
+        $('c_fis').disabled = true; $('c_dig').disabled = true;
+      } else {
+        h = '<div class="al al-ok"><b>La relación está lista para entregar</b>'+
+          esc(d.movimientos)+' movimientos, saldo final '+esc(d.saldoFinal)+'.</div>';
+      }
+      if(d.avisos.length)
+        h += '<div class="al al-av"><b>Para tener en cuenta</b><ul style="margin:4px 0 0;padding-left:18px">'+
+          d.avisos.map(function(a){ return '<li>'+esc(a)+'</li>'; }).join('')+'</ul></div>';
+      $('c_estado').innerHTML = h;
+    }).catch(function(e){ $('c_todo').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function aISO(txt){
+  var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(txt||'').trim());
+  return m ? m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2) : hoyISO();
+}
+function cerrar(modo){
+  var d1 = $('c_d1').value, d2 = $('c_d2').value;
+  if(!d1 || !d2){ toast('Indique las dos fechas.','mal'); return; }
+  if(d2 < d1){ toast('La fecha final es anterior a la inicial.','mal'); return; }
+  $('c_fis').disabled = true; $('c_dig').disabled = true;
+  toast(modo==='digital' ? 'Generando el PDF y enviando…' : 'Generando el PDF…');
+  servidor('cerrarRelacion', d1, d2, modo, $('c_para').value).then(function(r){
+    $('c_final').innerHTML = '<div class="al al-ok"><b>Relación N.° '+esc(r.numero)+' cerrada</b>'+
+      esc(r.movimientos)+' movimientos pasaron a Movimientos e Historial. Saldo final '+esc(r.saldo)+'.<br><br>'+
+      '<a href="'+r.url+'" target="_blank" rel="noopener"><b>Abrir el PDF en Drive →</b></a>'+
+      (r.enviado ? '<br>Enviado a '+esc(r.enviado) : '')+
+      '<br><br>Quedó abierta la relación N.° '+esc(r.siguiente)+' con el saldo final como saldo anterior.</div>';
+    recargar();
+  }).catch(function(e){
+    toast(e.message,'mal'); $('c_fis').disabled=false; $('c_dig').disabled=false;
+  });
+}
+
+</script>

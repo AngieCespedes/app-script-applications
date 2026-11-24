@@ -1,0 +1,50 @@
+<script>
+/* ---------- agregar valores a las listas sin salir de la pantalla ---------- */
+
+var CAMPOS = {
+  benef:  { sel:'g_benef',  caja:'nv_benef',  lista:'benef',   servidor:'beneficiario',
+            titulo:'Agregar a quien recibe el efectivo', ph:'Nombre completo' },
+  centro: { sel:'g_centro', caja:'nv_centro', lista:'centros', servidor:'centro',
+            titulo:'Agregar un centro de costo',        ph:'Nombre del centro de costo' }
+};
+
+function nuevoEn(cual){
+  var c = CAMPOS[cual];
+  var abrir = $(c.sel).value === '__nuevo__';
+  $(c.caja).classList.toggle('hide', !abrir);
+  if(abrir){
+    $(c.caja).innerHTML =
+      '<div class="al al-inf"><b>'+c.titulo+'</b>'+
+      '<input id="nv_txt_'+cual+'" placeholder="'+c.ph+'" style="margin:6px 0">'+
+      '<button class="btn xs dark" style="width:auto;padding:6px 12px" '+
+      'onclick="crearEn(\'' + cual + '\')">Guardar en la lista</button> '+
+      '<button class="btn xs ghost" style="width:auto;padding:6px 12px" '+
+      'onclick="cancelarEn(\'' + cual + '\')">Cancelar</button></div>';
+  }
+  if(typeof valPago === 'function') valPago();
+}
+
+function cancelarEn(cual){
+  var c = CAMPOS[cual];
+  $(c.sel).selectedIndex = 0;
+  $(c.caja).classList.add('hide');
+  if(typeof valPago === 'function') valPago();
+}
+
+function crearEn(cual){
+  var c = CAMPOS[cual];
+  var v = ($('nv_txt_'+cual).value||'').trim();
+  if(!v){ toast('Escriba el nombre.','mal'); return; }
+  toast('Guardando en la lista…');
+  servidor('agregarALista', c.servidor, v).then(function(r){
+    D[c.lista] = r.lista;
+    $(c.sel).innerHTML = opciones(r.lista) +
+      '<option value="__nuevo__">+ Agregar…</option>';
+    $(c.sel).value = r.valor;
+    $(c.caja).classList.add('hide');
+    toast(r.ya ? r.valor + ' ya estaba en la lista.' : r.valor + ' quedó en la lista.', 'ok');
+    if(typeof valPago === 'function') valPago();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+</script>

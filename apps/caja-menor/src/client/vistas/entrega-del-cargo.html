@@ -1,0 +1,102 @@
+<script>
+/* ---------------- ENTREGA DEL CARGO ---------------- */
+VISTAS.empalme = {
+  t: 'Entrega del cargo',
+  s: 'El acta de empalme entre quien entrega la caja y quien la recibe.',
+  render: function(){ return '<div id="em_cont">Revisando el estado de la caja…</div>'; },
+  after: function(){
+    servidor('datosEmpalme').then(function(e){
+      var pend = []
+        .concat(e.pendientes.alertas)
+        .concat(e.pendientes.avisos)
+        .concat(e.pendientes.dse      ? [e.pendientes.dse+' documento(s) soporte por conseguir'] : [])
+        .concat(e.pendientes.casos    ? [e.pendientes.casos+' caso(s) esperando decisión de la contadora'] : [])
+        .concat(e.pendientes.entregas ? [e.pendientes.entregas+' entrega(s) de efectivo sin confirmar'] : []);
+      $('em_cont').innerHTML =
+        '<div class="kpis">'+
+        '<div class="kpi am"><span>Saldo según el sistema</span><b>'+esc(e.saldoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Último arqueo</span><b>'+esc(e.contadoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Relación</span><b>N.° '+esc(e.numero)+'</b></div>'+
+        '<div class="kpi"><span>Movimientos</span><b>'+e.movimientos+'</b></div></div>'+
+        (pend.length
+          ? '<div class="al al-av"><b>Se entrega con '+pend.length+' pendiente(s)</b>'+
+            'Quedan escritos en el acta para que quien recibe sepa qué hereda.'+
+            '<ul style="margin:6px 0 0;padding-left:18px">'+
+            pend.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul></div>'
+          : '<div class="al al-ok"><b>La caja se entrega al día</b>Sin pendientes.</div>')+
+        '<div class="grid g2">'+
+        '<div class="card"><h3>Quién entrega y quién recibe</h3>'+
+          '<label>Entrega la caja</label><input id="em_ent" value="'+esc(e.entrega)+'">'+
+          '<label style="margin-top:10px">Recibe la caja</label>'+
+          '<input id="em_rec" placeholder="Nombre completo">'+
+          '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>Cédula de quien recibe</label><input id="em_ced"></div>'+
+          '<div><label>Correo de quien recibe</label><input id="em_cor"></div></div>'+
+          '<label style="margin-top:10px">Fecha de la entrega</label>'+
+          '<input type="date" id="em_fecha" value="'+hoyISO()+'">'+
+        '</div>'+
+        '<div class="card"><h3>El conteo</h3>'+
+          '<p class="d">Cuente el efectivo delante de quien recibe y escriba el total.</p>'+
+          '<label>Efectivo contado y entregado</label>'+
+          '<input id="em_contado" inputmode="numeric" oninput="difEmpalme('+e.saldo+')" '+
+          'value="'+(e.contado||'')+'">'+
+          '<div id="em_dif" style="margin-top:10px"></div>'+
+          '<label style="margin-top:10px">Observaciones para el acta</label>'+
+          '<textarea id="em_obs" rows="3" placeholder="Lo que quien recibe debe saber"></textarea>'+
+        '</div></div>'+
+        '<div class="al al-inf"><b>Qué hace el botón</b>'+
+        'Genera el acta en PDF con las dos firmas, la guarda en 05 RELACIONES CERRADAS del mes, '+
+        'le pone fecha de retiro a quien entrega y abre la fila de quien recibe en la hoja Responsables.</div>'+
+        '<button class="btn dark" id="em_btn" onclick="generarEmpalme('+e.saldo+')" '+
+        'style="max-width:300px">Generar el acta de entrega</button>'+
+        '<div id="em_res" style="margin-top:12px"></div>'+
+        '<div class="card" style="margin-top:16px"><h3>Quién ha tenido la caja</h3>'+
+        '<div class="tw"><table><thead><tr><th>Nombre</th><th>Desde</th><th>Hasta</th>'+
+        '<th>Estado</th></tr></thead><tbody>'+
+        e.responsables.map(function(r){
+          var act = (r.estado||'').indexOf('ACTIVO') === 0;
+          return '<tr><td><b>'+esc(r.nombre)+'</b></td><td>'+esc(r.desde)+'</td>'+
+            '<td>'+esc(r.hasta)+'</td><td><span class="badge '+(act?'b-ok':'b-gr')+'">'+
+            esc(r.estado)+'</span></td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+      difEmpalme(e.saldo);
+    }).catch(function(e){ $('em_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+function difEmpalme(saldo){
+  if(!$('em_dif')) return;
+  var c = num($('em_contado').value);
+  if(!c){ $('em_dif').innerHTML = '<div class="al al-av"><b>Falta el conteo</b>'+
+    'Sin el efectivo contado no se puede generar el acta.</div>'; return; }
+  var d = c - saldo;
+  $('em_dif').innerHTML = d === 0
+    ? '<div class="al al-ok"><b>✓ La caja cuadra</b>'+cop(c)+' contados contra '+cop(saldo)+' del sistema.</div>'
+    : '<div class="al al-mal"><b>'+(d>0?'Sobrante':'Faltante')+' de '+cop(Math.abs(d))+'</b>'+
+      'Contados '+cop(c)+' contra '+cop(saldo)+' del sistema. Explíquelo en las observaciones: '+
+      'queda escrito en el acta.</div>';
+}
+
+function generarEmpalme(saldo){
+  if(!($('em_rec').value||'').trim()){ toast('Escriba quién recibe la caja.','mal'); return; }
+  if(!num($('em_contado').value)){ toast('Escriba el efectivo contado.','mal'); return; }
+  $('em_btn').disabled = true;
+  toast('Generando el acta…');
+  servidor('generarEmpalme', {
+    entrega:$('em_ent').value, recibe:$('em_rec').value,
+    cedulaRecibe:$('em_ced').value, correoRecibe:$('em_cor').value,
+    fecha:$('em_fecha').value, contado:$('em_contado').value,
+    observaciones:$('em_obs').value
+  }).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    $('em_res').innerHTML = '<div class="al al-ok"><b>Acta generada</b>'+
+      esc(r.entrega)+' entrega a '+esc(r.recibe)+'.'+
+      (r.diferencia ? ' Quedó registrada una diferencia de '+cop(Math.abs(r.diferencia))+'.' : ' La caja cuadró.')+
+      '<br><br><a href="'+r.url+'" target="_blank" rel="noopener"><b>Abrir el acta en PDF →</b></a>'+
+      '<br><br>Imprímala, fírmenla los dos y anéxela a la relación.</div>';
+    toast('Acta generada.','ok');
+    $('em_btn').disabled = false;
+  }).catch(function(e){ toast(e.message,'mal'); $('em_btn').disabled=false; });
+}
+
+</script>

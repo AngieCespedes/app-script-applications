@@ -1,0 +1,36 @@
+<script>
+/* ---------------- CASOS ---------------- */
+VISTAS.casos = {
+  t: 'Casos por definir',
+  s: 'Lo que quien maneja la caja no pudo decidir solo. El pago ya se hizo: aquí se define el tratamiento fiscal.',
+  render: function(){ return '<div id="c_lista">Buscando…</div>'; },
+  after: function(){
+    servidor('listaCasos').then(function(l){
+      var abiertos = l.filter(function(c){ return c.resuelto !== 'Resuelto'; });
+      if(!abiertos.length){
+        $('c_lista').innerHTML = '<div class="al al-ok"><b>No hay casos abiertos</b></div>'; return;
+      }
+      $('c_lista').innerHTML = abiertos.map(function(c){
+        return '<div class="card"><h3>Caso '+c.n+' · '+esc(c.fecha)+' · '+esc(c.valor)+'</h3>'+
+          '<p class="d">Recibió el efectivo: '+esc(c.beneficiario)+'<br>'+
+          'Vendedor: '+esc(c.vendedor)+' ('+esc(c.id)+')<br>'+esc(c.estado)+'</p>'+
+          '<div class="al al-av"><b>Nota de quien pagó</b>'+esc(c.nota)+'</div>'+
+          '<div class="grid g2"><div><label>Decisión</label><select id="dec'+c.n+'">'+
+            '<option>Generar DSE con la cédula — deducible</option>'+
+            '<option>Marcar NO DEDUCIBLE e informar en el mensual</option>'+
+            '<option>Exigir factura electrónica al establecimiento</option>'+
+            '<option>Devolver: falta información para decidir</option></select></div>'+
+          '<div><label>Instrucción para la causación</label><input id="ins'+c.n+'"></div></div>'+
+          '<button class="btn dark" onclick="decidir('+c.n+')" style="margin-top:12px;max-width:220px">'+
+          'Guardar decisión</button></div>';
+      }).join('');
+    }).catch(function(e){ $('c_lista').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function decidir(n){
+  servidor('guardarDecision', n, $('dec'+n).value, $('ins'+n).value)
+    .then(function(){ toast('Decisión guardada.','ok'); recargar().then(function(){ ir('casos'); }); })
+    .catch(function(e){ toast(e.message,'mal'); });
+}
+
+</script>
