@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<?!= Vista.incluir('client/estilos') ?>
+</head>
+<body>
+
+<div id="cargando" style="min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,#1A1A1A 0%,#2d2d2d 60%,#3a3122 100%);color:#fff;
+  flex-direction:column;gap:14px;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+  <div class="logo" style="margin:0">SS</div>
+  <b style="font-size:17px">Caja Menor</b>
+  <span style="font-size:13px;opacity:.75">Social Solar S.A.S. · abriendo…</span>
+  <div id="cargaErr" style="max-width:460px;text-align:center;font-size:13px;color:#FFB41D"></div>
+</div>
+
+<div id="login" class="hide"></div>
+
+<div id="app" class="hide">
+  <aside>
+    <div class="brand">
+      <div class="logo">SS</div>
+      <div><b>Caja Menor</b><span>Social Solar S.A.S.</span></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="who">
+      <b id="whoN"></b><span id="whoR"></span>
+    </div>
+  </aside>
+
+  <main>
+<div id="velo" onclick="menu()"></div>
+    <header>
+      <button id="btnMenu" onclick="menu()" aria-label="Menú">☰</button>
+      <div><h2 id="tit"></h2><div class="sub" id="sub"></div></div>
+      <div class="right" id="hright"></div>
+    </header>
+    <div class="wrap" id="view"></div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<?!= Vista.incluir('client/nucleo') ?>
+<?!= Vista.incluir('client/vistas/inicio') ?>
+<?!= Vista.incluir('client/vistas/pago') ?>
+<?!= Vista.incluir('client/vistas/ingreso') ?>
+<?!= Vista.incluir('client/vistas/entrega') ?>
+<?!= Vista.incluir('client/vistas/bancarizacion') ?>
+<?!= Vista.incluir('client/vistas/links-whatsapp') ?>
+<?!= Vista.incluir('client/vistas/arqueo') ?>
+<?!= Vista.incluir('client/vistas/cierre') ?>
+<?!= Vista.incluir('client/vistas/casos') ?>
+<?!= Vista.incluir('client/vistas/tablero') ?>
+<?!= Vista.incluir('client/vistas/gestion') ?>
+<?!= Vista.incluir('client/vistas/banco') ?>
+<?!= Vista.incluir('client/vistas/politicas') ?>
+<?!= Vista.incluir('client/vistas/informes') ?>
+<?!= Vista.incluir('client/vistas/confirmar-entregas') ?>
+<?!= Vista.incluir('client/vistas/auditoria') ?>
+<?!= Vista.incluir('client/vistas/parametros') ?>
+<?!= Vista.incluir('client/vistas/enlaces') ?>
+<?!= Vista.incluir('client/vistas/lote-de-soportes') ?>
+<?!= Vista.incluir('client/vistas/entrega-del-cargo') ?>
+<?!= Vista.incluir('client/vistas/revisar') ?>
+<?!= Vista.incluir('client/vistas/aprobar') ?>
+<?!= Vista.incluir('client/vistas/listas-rapidas') ?>
+<?!= Vista.incluir('client/vistas/accesos') ?>
+<?!= Vista.incluir('client/sesion') ?>
+<?!= Vista.incluir('client/vistas/usuarios') ?>
+<script>arrancar();</script>
+</body>
+</html>

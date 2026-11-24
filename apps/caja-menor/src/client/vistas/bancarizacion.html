@@ -1,0 +1,44 @@
+<script>
+/* ---------------- BANCARIZACIÓN ---------------- */
+VISTAS.banca = {
+  t: '¿Puedo pagarle en efectivo?',
+  s: 'Cuánto efectivo lleva ese tercero en el año y si todavía se le puede pagar así.',
+  render: function(){
+    return '<div class="card" style="max-width:620px">'+
+      '<h3>Consultar un tercero</h3>'+
+      '<p class="d">Se calcula sobre la hoja Bancarización del libro, con los pagos ya registrados.</p>'+
+      '<label>Tercero</label>'+
+      '<input id="b_nombre" list="b_lista" placeholder="Escriba o elija de la lista">'+
+      '<datalist id="b_lista"></datalist>'+
+      '<button class="btn dark" onclick="consultar()" style="margin-top:12px;max-width:200px">Consultar</button>'+
+      '<div id="b_res" style="margin-top:14px"></div></div>'+
+      '<div class="card"><h3>La regla, en corto</h3>'+
+      '<div class="al al-inf"><b>Tope por pago individual: 100 UVT</b>'+
+      'Hoy son '+cop(D.topeEfectivo)+'. Un pago en efectivo por encima de eso no se acepta como costo ni deducción. '+
+      'Art. 771-5 par. 2 E.T.</div>'+
+      '<div class="al al-inf"><b>Nequi y Daviplata cuentan como bancarizado</b>'+
+      'No suman contra el tope de efectivo. Oficio DIAN 100202208-0176/2023.</div>'+
+      '<div class="al al-inf"><b>El tope aplica por transacción, no acumulado por tercero</b>'+
+      'Consejo de Estado, sentencia 26676 de 2023. Aun así conviene vigilar el acumulado.</div></div>';
+  },
+  after: function(){
+    servidor('listaTercerosBanca').then(function(l){
+      $('b_lista').innerHTML = l.map(function(x){ return '<option value="'+esc(x)+'">'; }).join('');
+    }).catch(function(){});
+  }
+};
+function consultar(){
+  var n = ($('b_nombre').value||'').trim();
+  if(!n){ toast('Escriba el nombre del tercero.','mal'); return; }
+  $('b_res').innerHTML = 'Consultando…';
+  servidor('consultaTercero', n).then(function(r){
+    if(!r){ $('b_res').innerHTML=''; return; }
+    var cl = r.veredicto.indexOf('SÍ')===0 ? 'al-ok' : 'al-mal';
+    $('b_res').innerHTML = '<div class="al '+cl+'"><b>'+esc(r.tercero)+'</b>'+
+      'Efectivo en el año: '+esc(r.efectivo)+' · por banco: '+esc(r.banco)+' · '+
+      esc(r.porcentaje)+' de las 100 UVT'+
+      '<div style="font-size:15px;font-weight:700;margin-top:8px">'+esc(r.veredicto)+'</div></div>';
+  }).catch(function(e){ $('b_res').innerHTML = '<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+</script>

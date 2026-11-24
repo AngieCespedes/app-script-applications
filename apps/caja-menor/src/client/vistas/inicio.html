@@ -1,0 +1,52 @@
+<script>
+/* ---------------- INICIO ---------------- */
+VISTAS.inicio = {
+  t: 'Caja menor — relación en curso',
+  s: 'Todo lo que entra y sale de la caja, con su soporte.',
+  h: function(){ return D ? '<span class="chip">Relación N.° '+esc(D.numero)+'</span>'+
+       '<span class="chip '+(D.excedente||D.reembolso?'r':'v')+'">'+esc(D.saldoTxt)+'</span>' : ''; },
+  render: function(){
+    return kpis() + semaforo() +
+      '<div class="acts" style="margin-bottom:16px">'+
+      '<button class="act pri" onclick="ir(\'pago\')"><span class="e">💸</span>'+
+        '<b>Registrar un pago</b><span>Salida de efectivo con su soporte</span></button>'+
+      '<button class="act" onclick="ir(\'ingreso\')"><span class="e">💵</span>'+
+        '<b>Registrar un ingreso</b><span>Recaudo o reposición del banco</span></button>'+
+      '<button class="act" onclick="ir(\'entrega\')"><span class="e">📤</span>'+
+        '<b>Entregar efectivo</b><span>Consignación o entrega a una persona</span></button>'+
+      '<button class="act" onclick="ir(\'arqueo\')"><span class="e">🧮</span>'+
+        '<b>Arqueo</b><span>Contar la plata y cuadrar</span></button>'+
+      '</div>'+
+      '<div class="card"><h3>Movimientos de la relación</h3>'+
+      '<p class="d">Sale directo de la hoja Relación del libro.</p>'+
+      '<div id="tablaRel">Cargando…</div></div>';
+  },
+  after: function(){
+    servidor('datosRelacion').then(function(r){
+      if(!r.filas.length){
+        $('tablaRel').innerHTML = '<div class="al al-inf"><b>La relación está vacía</b>'+
+          'Todavía no hay movimientos registrados en la relación N.° '+esc(r.numero)+'.</div>';
+        return;
+      }
+      $('tablaRel').innerHTML =
+        '<div class="al al-inf"><b>Periodo '+esc(r.desde)+(r.hasta?' a '+esc(r.hasta):' — abierta')+
+        '</b>Saldo anterior '+esc(r.saldoAnterior)+' · ingresos '+esc(r.ingresos)+
+        ' · egresos '+esc(r.egresos)+' · saldo final '+esc(r.saldoFinal)+'</div>'+
+        '<div class="tw"><table><thead><tr>'+
+        '<th>N.°</th><th>Fecha</th><th>Documento</th><th>Tercero</th><th>Descripción</th>'+
+        '<th class="num">Ingreso</th><th class="num">Egreso</th><th>Revisión</th><th>Deducible</th>'+
+        '</tr></thead><tbody>'+
+        r.filas.map(function(f){
+          var ok = f.revision && f.revision.indexOf('OK') === 0;
+          return '<tr><td>'+f.n+'</td><td>'+esc(f.fecha)+'</td><td>'+esc(f.soporte)+'</td>'+
+            '<td>'+esc(f.tercero)+'</td><td>'+esc(f.descripcion)+'</td>'+
+            '<td class="num">'+esc(f.ingreso)+'</td><td class="num">'+esc(f.egreso)+'</td>'+
+            '<td><span class="badge '+(ok?'b-ok':'b-mal')+'">'+esc(f.revision||'—')+'</span></td>'+
+            '<td><span class="badge '+(f.deducible==='SÍ'?'b-ok':f.deducible==='NO'?'b-mal':'b-av')+'">'+
+              esc(f.deducible||'—')+'</span></td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }).catch(function(e){ $('tablaRel').innerHTML = '<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>

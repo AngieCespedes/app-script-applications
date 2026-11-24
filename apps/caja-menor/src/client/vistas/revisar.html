@@ -1,0 +1,68 @@
+<script>
+/* ---------------- REVISAR ---------------- */
+var FILTRO = 'todos';
+VISTAS.revisar = {
+  t: 'Revisar la relación',
+  s: 'Fila por fila, con el detalle contable y fiscal de cada movimiento.',
+  render: function(){ return '<div id="rv_cont">Leyendo la relación…</div>'; },
+  after: function(){ cargarRevision(FILTRO); }
+};
+
+function cargarRevision(f){
+  FILTRO = f || 'todos';
+  if($('rv_tabla')) $('rv_tabla').innerHTML = 'Filtrando…';
+  servidor('datosRevision', FILTRO).then(function(r){
+    var c = r.conteos;
+    var bot = function(k, etiqueta, n){
+      return '<button class="'+(FILTRO===k?'on':'')+'" onclick="cargarRevision(\''+k+'\')">'+
+        etiqueta+' ('+n+')</button>';
+    };
+    $('rv_cont').innerHTML =
+      '<div class="al al-inf"><b>Relación N.° '+esc(r.cabecera.numero)+' · periodo '+
+      esc(r.cabecera.desde)+(r.cabecera.hasta?' a '+esc(r.cabecera.hasta):' — abierta')+'</b>'+
+      'Egresos '+esc(r.totalEgresos)+' · saldo final '+esc(r.cabecera.saldoFinal)+'</div>'+
+      '<div class="tabs">'+
+        bot('todos','Todos',c.todos)+ bot('alerta','Con alerta',c.alerta)+
+        bot('nodeducible','No deducibles',c.nodeducible)+ bot('pordefinir','Por definir',c.pordefinir)+
+        bot('sinsoporte','Sin soporte',c.sinsoporte)+ bot('efectivo','En efectivo',c.efectivo)+
+      '</div><div id="rv_tabla"></div>';
+    if(!r.filas.length){
+      $('rv_tabla').innerHTML = '<div class="al al-ok"><b>Ninguna fila en este filtro</b></div>'; return;
+    }
+    $('rv_tabla').innerHTML = r.filas.map(function(f){
+      var ok = f.revision && f.revision.indexOf('OK') === 0;
+      var ded = f.deducible === 'SÍ' ? 'b-ok' : f.deducible === 'NO' ? 'b-mal' : 'b-av';
+      return '<div class="card"><h3>Fila '+f.n+' · '+esc(f.fecha)+' · '+esc(f.egreso||f.ingreso)+
+        ' · '+esc(f.tercero||'sin tercero')+'</h3>'+
+        '<div class="row" style="margin-bottom:10px">'+
+          '<span class="badge '+(ok?'b-ok':'b-mal')+'">'+esc(f.revision||'—')+'</span>'+
+          '<span class="badge '+ded+'">Deducible: '+esc(f.deducible||'—')+'</span>'+
+          (f.plazo ? '<span class="badge '+(f.plazo==='VENCIDO'?'b-mal':'b-av')+'">DSE: '+esc(f.plazo)+'</span>' : '')+
+        '</div>'+
+        '<div class="tw"><table><tbody>'+
+        [['Descripción',f.descripcion],['Documento',f.soporte+' — '+f.tipoSoporte],
+         ['NIT o cédula',f.nit],['Medio de pago',f.medio],
+         ['Recibió el efectivo',f.recibio],['Estado del soporte',f.estadoSoporte],
+         ['Cuenta World Office',f.cuenta],['Retención',f.retencion],
+         ['Categoría',f.categoria],['Centro de costo',f.centro],
+         ['Nota',f.nota]].filter(function(x){ return x[1]; }).map(function(x){
+          return '<tr><td style="width:30%">'+esc(x[0])+'</td><td><b>'+esc(x[1])+'</b></td></tr>';
+        }).join('')+'</tbody></table></div>'+
+        '<div class="grid g2" style="margin-top:10px">'+
+        '<div><label>Dejar una nota en esta fila</label><input id="nt'+f.n+'"></div>'+
+        '<div style="display:flex;align-items:flex-end">'+
+        '<button class="btn ghost" onclick="anotar('+f.n+')">Guardar la nota</button></div></div>'+
+        '</div>';
+    }).join('');
+  }).catch(function(e){ $('rv_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+function anotar(n){
+  var v = ($('nt'+n).value||'').trim();
+  if(!v){ toast('Escriba la nota.','mal'); return; }
+  servidor('anotarFila', n, v).then(function(m){
+    toast(m,'ok'); $('nt'+n).value='';
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+</script>

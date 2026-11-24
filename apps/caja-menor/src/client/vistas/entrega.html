@@ -1,0 +1,88 @@
+<script>
+/* ---------------- ENTREGA ---------------- */
+VISTAS.entrega = {
+  t: 'Entregar efectivo',
+  s: 'Cada salida de plata que no es un gasto deja su comprobante.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>La entrega</h3>'+
+        '<label>¿A dónde va el efectivo?</label>'+
+        '<select id="e_destino" onchange="destEnt()">'+opciones(D.destinos)+
+          '<option value="__nueva__">+ Agregar una persona…</option></select>'+
+        '<div id="e_nueva" class="al al-inf hide" style="margin-top:10px">'+
+          '<b>Agregar una persona</b>'+
+          '<input id="e_pnombre" placeholder="Nombre completo" style="margin:6px 0">'+
+          '<button class="btn xs dark" onclick="addPersona()" style="width:auto;padding:6px 12px">'+
+          'Guardar en la lista</button></div>'+
+        '<label style="margin-top:10px">Valor entregado</label>'+
+        '<input id="e_valor" inputmode="numeric" oninput="valEnt()">'+
+        '<label style="margin-top:10px">Concepto</label>'+
+        '<input id="e_concepto" placeholder="Ej.: consignación del excedente">'+
+        '<label style="margin-top:10px">Centro de costo</label>'+
+        '<select id="e_centro">'+opciones(D.centros)+'</select>'+
+        '<label style="margin-top:10px">Soporte de la entrega</label>'+
+        '<input type="file" id="e_file" accept="image/*,application/pdf">'+
+      '</div>'+
+      '<div class="card"><h3>Qué pasa al guardar</h3>'+
+        '<p class="d">Para que quede claro el rastro que deja.</p>'+
+        '<div class="al al-inf"><b>Se genera un comprobante numerado</b>'+
+        'EE-0001, EE-0002… Queda en la hoja Entregas y también como egreso en la relación.</div>'+
+        '<div class="al al-inf"><b>Si va al banco, queda en la hoja Banco</b>'+
+        'Para cruzarlo después contra el extracto.</div>'+
+        '<div class="al al-av"><b>Si va a una persona, queda «Por confirmar»</b>'+
+        'Hasta que quien recibe lo confirme, la relación no se puede cerrar.</div>'+
+        '<div id="e_val"></div>'+
+      '</div></div>'+
+      '<div style="display:flex;gap:10px;margin-top:4px">'+
+        '<button class="btn dark" id="e_btn" onclick="guardarEntrega()" style="max-width:260px">Generar el comprobante</button>'+
+        '<button class="btn ghost" onclick="ir(\'inicio\')" style="max-width:140px">Volver</button>'+
+      '</div>';
+  },
+  after: function(){ destEnt(); }
+};
+
+function destEnt(){
+  if(!$('e_destino')) return;
+  $('e_nueva').classList.toggle('hide', $('e_destino').value !== '__nueva__');
+  valEnt();
+}
+function addPersona(){
+  var n = ($('e_pnombre').value||'').trim();
+  if(!n){ toast('Escriba el nombre.','mal'); return; }
+  D.destinos.push(n);
+  var sel = $('e_destino');
+  sel.innerHTML = opciones(D.destinos) + '<option value="__nueva__">+ Agregar una persona…</option>';
+  sel.value = n;
+  $('e_pnombre').value = '';
+  destEnt();
+  toast(n + ' quedó en la lista de destinos.','ok');
+}
+function valEnt(){
+  if(!D || !$('e_val')) return;
+  var v = num($('e_valor').value), d = $('e_destino').value||'';
+  var h='', bloquea=false;
+  if(d === '__nueva__'){ bloquea = true;
+    h += '<div class="al al-av"><b>Elija o agregue una persona</b></div>'; }
+  if(v > D.saldo){ bloquea = true;
+    h += '<div class="al al-mal"><b>No alcanza</b>En caja hay '+cop(D.saldo)+'.</div>'; }
+  if(v && D.excedente > 0 && /banco|consignaci/i.test(d) && v < D.excedente)
+    h += '<div class="al al-av"><b>El excedente es '+cop(D.excedente)+'</b>'+
+         'Está consignando '+cop(v)+'. La caja quedaría todavía por encima del objetivo.</div>';
+  $('e_val').innerHTML = h;
+  $('e_btn').disabled = bloquea;
+}
+function guardarEntrega(){
+  $('e_btn').disabled = true; toast('Generando el comprobante…');
+  leerArchivo('e_file').then(function(a){
+    return servidor('guardarEntrega', {
+      destino:$('e_destino').value, valor:$('e_valor').value,
+      concepto:$('e_concepto').value, centro:$('e_centro').value, archivo:a, quien:QUIEN
+    });
+  }).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    toast('Comprobante '+r.consecutivo+' generado.','ok');
+    $('e_valor').value=''; $('e_concepto').value=''; $('e_file').value=''; valEnt();
+  }).catch(function(e){ toast(e.message,'mal'); $('e_btn').disabled=false; });
+}
+
+</script>

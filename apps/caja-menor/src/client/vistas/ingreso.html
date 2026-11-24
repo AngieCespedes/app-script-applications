@@ -1,0 +1,88 @@
+<script>
+/* ---------------- INGRESO ---------------- */
+VISTAS.ingreso = {
+  t: 'Registrar un ingreso de efectivo',
+  s: 'Recaudo de un cliente o reposición del banco.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>El ingreso</h3>'+
+        '<label>Origen del dinero</label>'+
+        '<select id="i_origen" onchange="valIng()">'+opciones(D.origenes)+'</select>'+
+        '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>Fecha</label><input type="date" id="i_fecha" value="'+hoyISO()+'"></div>'+
+          '<div><label>Valor recibido</label><input id="i_valor" inputmode="numeric" oninput="valIng()"></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">N.° de soporte</label>'+
+        '<input id="i_sop" placeholder="RC-0042 o N.° del retiro">'+
+        '<label style="margin-top:10px">Concepto</label><input id="i_desc">'+
+        '<label style="margin-top:10px">Centro de costo</label>'+
+        '<select id="i_centro">'+opciones(D.centros)+'</select>'+
+        '<label style="margin-top:10px">Soporte</label>'+
+        '<input type="file" id="i_file" accept="image/*,application/pdf">'+
+      '</div>'+
+      '<div class="card" id="i_cruce"><h3>Para poder cruzarlo después</h3>'+
+        '<p class="d">Un recaudo sin recibo de caja ni factura no se puede aplicar en World Office.</p>'+
+        '<label>Cliente o pagador</label><input id="i_cliente" oninput="valIng()">'+
+        '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>N.° recibo de caja</label><input id="i_rc" oninput="valIng()"></div>'+
+          '<div><label>Factura que cruza</label><input id="i_fv" oninput="valIng()"></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">¿Cruce aplicado en World Office?</label>'+
+        '<select id="i_cruceap"><option>Pendiente</option><option>Sí</option><option>No aplica</option></select>'+
+      '</div></div>'+
+      '<div id="i_val"></div>'+
+      '<div style="display:flex;gap:10px;margin-top:4px">'+
+        '<button class="btn dark" id="i_btn" onclick="guardarIngreso()" style="max-width:260px">Guardar el ingreso</button>'+
+        '<button class="btn ghost" onclick="ir(\'inicio\')" style="max-width:140px">Volver</button>'+
+      '</div>';
+  },
+  after: function(){ valIng(); }
+};
+
+function valIng(){
+  if(!D || !$('i_val')) return;
+  var o = $('i_origen').value||'', v = num($('i_valor').value);
+  var esCliente = /cliente/i.test(o), esBanco = /banco/i.test(o);
+  $('i_cruce').style.display = esCliente ? '' : 'none';
+
+  var h='', falta=false;
+  if(esCliente){
+    var p=[];
+    if(!($('i_cliente').value||'').trim()) p.push('el nombre del cliente');
+    if(!($('i_rc').value||'').trim())      p.push('el N.° de recibo de caja');
+    if(!($('i_fv').value||'').trim())      p.push('la factura que cruza');
+    if(p.length){ falta=true;
+      h += '<div class="al al-mal"><b>Falta '+p.join(', ')+'</b>'+
+           'Sin eso el recaudo no se puede cruzar después.</div>'; }
+    else h += '<div class="al al-ok"><b>Recaudo completo</b>Queda listo para cruzar en World Office.</div>';
+  }
+  if(esBanco) h += '<div class="al al-inf"><b>Reposición de caja</b>'+
+    'Adjunte el comprobante del retiro. La fila también queda en la hoja Banco.</div>';
+  if(v && !esBanco && (D.saldo + v) > D.objetivo)
+    h += '<div class="al al-mal"><b>La caja quedaría en '+cop(D.saldo+v)+'</b>'+
+         'Por encima del objetivo de '+cop(D.objetivo)+'. Hay que consignar el excedente hoy.</div>';
+  if(!h) h = '<div class="al al-inf"><b>Trazabilidad</b>Todo ingreso queda con su origen y su soporte.</div>';
+  $('i_val').innerHTML = h;
+  $('i_btn').disabled = falta;
+}
+
+function guardarIngreso(){
+  $('i_btn').disabled = true; toast('Guardando el ingreso…');
+  leerArchivo('i_file').then(function(a){
+    return servidor('guardarIngreso', {
+      fecha:$('i_fecha').value, valor:$('i_valor').value, origen:$('i_origen').value,
+      cliente:$('i_cliente').value, reciboCaja:$('i_rc').value,
+      facturaCruza:$('i_fv').value, cruceAplicado:$('i_cruceap').value,
+      soporte:$('i_sop').value, descripcion:$('i_desc').value,
+      centro:$('i_centro').value, categoria:'Venta de contado (ingreso)',
+      tipoSoporte:'Factura electrónica', medio:'Efectivo (billetes y monedas)', archivo:a, quien:QUIEN
+    });
+  }).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    toast('Ingreso guardado en la fila '+r.n+'. '+r.revision, 'ok');
+    ['i_valor','i_cliente','i_rc','i_fv','i_sop','i_desc'].forEach(function(i){ $(i).value=''; });
+    $('i_file').value=''; valIng();
+  }).catch(function(e){ toast(e.message,'mal'); $('i_btn').disabled=false; });
+}
+
+</script>

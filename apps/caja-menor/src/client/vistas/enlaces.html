@@ -1,0 +1,63 @@
+<script>
+/* ---------------- ENLACES ---------------- */
+VISTAS.datos = {
+  t: 'Enlaces y carpetas',
+  s: 'Todo lo de la caja menor, en un solo sitio. Cada quien ve lo que le corresponde.',
+  render: function(){ return '<div id="u_cont">Consultando Drive…</div>'; },
+  after: function(){
+    servidor('datosUbicacion').then(function(u){
+      var fila = function(x){
+        return '<tr><td style="width:26%"><b>'+esc(x.titulo)+'</b>'+
+          '<div style="color:#6B6761;font-size:11.5px;margin-top:2px">'+esc(x.nota)+'</div></td>'+
+          '<td>'+(x.url
+            ? '<a href="'+esc(x.url)+'" target="_blank" rel="noopener"><b>'+esc(x.nombre)+' →</b></a>'+
+              '<div style="color:#6B6761;font-size:10.5px;margin-top:3px;word-break:break-all">'+
+              esc(x.url)+'</div>'
+            : '<span style="color:#B3261E">No disponible</span>')+'</td></tr>';
+      };
+      $('u_cont').innerHTML =
+        '<div class="card"><h3>Enlaces</h3>'+
+        '<p class="d">Cada uno abre en una pestaña nueva. Son los mismos del manual.</p>'+
+        '<div class="tw"><table><thead><tr><th>Qué es</th><th>Enlace</th></tr></thead><tbody>'+
+        u.fijos.map(fila).join('')+'</tbody></table></div></div>'+
+
+      (ROL !== 'contadora'
+        ? '<div class="al al-inf"><b>Por qué no aparecen todos los enlaces</b>'+
+          'El libro y las carpetas de archivo los administra la contadora. '+
+          (ROL === 'auxiliar'
+            ? 'Usted registra todo por esta plataforma: los soportes se archivan solos en la carpeta del mes, '+
+              'sin que le toque abrir el libro.'
+            : 'Usted entra al libro en modo lectura, para consultar sin riesgo de mover una fórmula.')+
+          '</div>'
+        : '')+
+
+        (u.documentos.length
+          ? '<div class="card"><h3>Documentos y políticas</h3>'+
+            '<p class="d">Lo que haya hoy en la carpeta 00 PLANTILLAS Y POLÍTICAS. '+
+            'Si agrega un archivo allá, aparece aquí solo.</p>'+
+            '<div class="tw"><table><thead><tr><th>Archivo</th><th>Abrir</th></tr></thead><tbody>'+
+            u.documentos.map(function(d){
+              return '<tr><td>'+esc(d.nombre)+'</td>'+
+                '<td><a href="'+esc(d.url)+'" target="_blank" rel="noopener">Abrir →</a></td></tr>';
+            }).join('')+'</tbody></table></div></div>'
+          : '')+
+
+        (u.carpetasDelMes.length
+          ? '<div class="card"><h3>Carpetas de '+esc(u.mes)+'</h3>'+
+            '<p class="d">Dónde cae cada soporte este mes.</p>'+
+            '<div class="tw"><table><thead><tr><th>Carpeta</th><th>Abrir</th></tr></thead><tbody>'+
+            u.carpetasDelMes.map(function(c){
+              return '<tr><td>'+esc(c.nombre)+'</td>'+
+                '<td><a href="'+esc(c.url)+'" target="_blank" rel="noopener">Abrir →</a></td></tr>';
+            }).join('')+'</tbody></table></div></div>'
+          : '')+
+
+        '<div class="al al-inf"><b>Cómo se nombra cada soporte</b>'+
+        'AAAAMMDD_TERCERO_NÚMERO — por ejemplo 20261117_FERRETERIA_LA_14_FE1234. '+
+        'La fecha es la <b>del documento</b>, no la del día en que se registró, '+
+        'para que el soporte caiga en el mes que le corresponde.</div>';
+    }).catch(function(e){ $('u_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>

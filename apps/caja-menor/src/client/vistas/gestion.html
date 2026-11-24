@@ -1,0 +1,27 @@
+<script>
+/* ---------------- GESTIÓN ---------------- */
+VISTAS.gestion = {
+  t: 'Gestión de la caja menor',
+  s: 'Cuánto queda deducible, cuánto se pierde y cómo se está llevando.',
+  render: function(){ return '<div id="g_cont">Calculando indicadores…</div>'; },
+  after: function(){
+    servidor('datosGestion').then(function(g){
+      $('g_cont').innerHTML =
+        '<div class="card"><h3>Indicadores · año '+esc(g.anio)+' · '+esc(g.responsable)+'</h3>'+
+        '<div class="tw"><table><thead><tr><th>Indicador</th><th class="num">Resultado</th>'+
+        '<th class="num">Meta</th><th>Estado</th></tr></thead><tbody>'+
+        g.indicadores.map(function(i){
+          var b = i.estado === 'OK' ? 'b-ok' : i.estado === 'Revisar' ? 'b-mal' : 'b-gr';
+          return '<tr><td>'+esc(i.indicador)+'</td><td class="num"><b>'+esc(i.resultado)+'</b></td>'+
+            '<td class="num">'+esc(i.meta)+'</td><td>'+
+            (i.estado ? '<span class="badge '+b+'">'+esc(i.estado)+'</span>' : '')+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>'+
+        '<div class="card"><h3>Cómo leer estos números</h3>'+
+        g.notas.map(function(n){
+          return '<div class="al al-inf"><b>'+esc(n.titulo)+'</b>'+esc(n.texto)+'</div>';
+        }).join('')+'</div>';
+    }).catch(function(e){ $('g_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>

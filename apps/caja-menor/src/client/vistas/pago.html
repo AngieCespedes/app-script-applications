@@ -1,0 +1,141 @@
+<script>
+/* ---------------- PAGO ---------------- */
+VISTAS.pago = {
+  t: 'Registrar un pago de caja menor',
+  s: 'Salida de efectivo. El sistema valida topes y soporte <b>antes</b> de guardar.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>El pago</h3><p class="d">Lo básico de la operación.</p>'+
+        '<div class="grid g2">'+
+          '<div><label>Fecha del documento</label><input type="date" id="g_fecha" value="'+hoyISO()+'"></div>'+
+          '<div><label>Valor pagado</label><input id="g_valor" inputmode="numeric" oninput="valPago()" placeholder="0"></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">¿A quién se le entregó el efectivo?</label>'+
+        '<select id="g_benef" onchange="nuevoEn(\'benef\')">'+opciones(D.benef)+'<option value="__nuevo__">+ Agregar un nombre…</option></select>'+'<div id="nv_benef" class="hide" style="margin-top:8px"></div>'+
+        '<p class="d" style="margin:5px 0 0">Quien recibió la plata. Casi nunca es el mismo del documento.</p>'+
+        '<label style="margin-top:10px">¿A nombre de quién viene el documento?</label>'+
+        '<input id="g_prov" oninput="valPago()" placeholder="Vendedor o prestador">'+
+        '<label style="margin-top:10px">NIT o cédula del vendedor</label>'+
+        '<input id="g_nit" oninput="valPago()" placeholder="901128826-6">'+
+        '<label style="margin-top:10px">Descripción</label>'+
+        '<input id="g_desc" placeholder="Qué se compró">'+
+        '<label style="margin-top:10px">Medio de pago</label>'+
+        '<select id="g_medio" onchange="valPago()">'+opciones(D.medios)+'</select>'+
+      '</div>'+
+      '<div class="card"><h3>El soporte y la contabilidad</h3>'+
+        '<p class="d">Esto es lo que decide si el gasto se puede deducir.</p>'+
+        '<label>Tipo de soporte que trajo</label>'+
+        '<select id="g_tipo" onchange="valPago()">'+opciones(D.soportes)+'</select>'+
+        '<label style="margin-top:10px">N.° de factura o documento</label>'+
+        '<input id="g_sop" placeholder="FE-1866531">'+
+        '<label style="margin-top:10px">Estado del soporte</label>'+
+        '<select id="g_estado" onchange="valPago()">'+opciones(D.estados)+'</select>'+
+        '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>Categoría</label><select id="g_cat" onchange="valPago()">'+opciones(D.categorias)+'</select></div>'+
+          '<div><label>Centro de costo</label><select id="g_centro" onchange="nuevoEn(\'centro\')">'+opciones(D.centros)+'<option value="__nuevo__">+ Agregar un centro…</option></select>'+'<div id="nv_centro" class="hide" style="margin-top:8px"></div></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">Cuenta contable (World Office)</label>'+
+        '<select id="g_cuenta">'+opciones(D.cuentas)+'</select>'+
+        '<label style="margin-top:10px">Concepto de retención</label>'+
+        '<select id="g_ret" onchange="valPago()">'+opciones(D.retenciones)+'</select>'+
+        '<label style="margin-top:10px">Nota para la contadora</label>'+
+        '<textarea id="g_nota" rows="2" placeholder="Lo que ella necesita saber para decidir"></textarea>'+
+        '<label style="margin-top:10px">Foto del soporte</label>'+
+        '<input type="file" id="g_file" accept="image/*,application/pdf">'+
+      '</div></div>'+
+      '<div id="g_val"></div>'+
+      '<div style="display:flex;gap:10px;margin-top:4px">'+
+        '<button class="btn dark" id="g_btn" onclick="guardarPago()" style="max-width:260px">Guardar el pago</button>'+
+        '<button class="btn ghost" onclick="ir(\'inicio\')" style="max-width:140px">Volver</button>'+
+      '</div>';
+  },
+  after: function(){ valPago(); }
+};
+
+function valPago(){
+  if(!D || !$('g_val')) return;
+  var v = num($('g_valor').value);
+  var tipo = $('g_tipo').value||'', nit = ($('g_nit').value||'').replace(/\D/g,'');
+  var medio = $('g_medio').value||'', estado = $('g_estado').value||'';
+  var benef = $('g_benef').value||'', prov = ($('g_prov').value||'').trim();
+  var ret = $('g_ret').value||'';
+  var esEfectivo = medio.indexOf('Efectivo') === 0;
+  var h = '', bloquea = false;
+
+  if(benef === '__nuevo__' || ($('g_centro') && $('g_centro').value === '__nuevo__')){ bloquea = true;
+    h += '<div class="al al-av"><b>Termine de agregar el nombre</b>'+
+         'Escríbalo y oprima «Guardar en la lista», o cancele.</div>'; }
+  if(!v) h += '<div class="al al-av"><b>Escriba el valor</b>Sin valor no se puede validar nada.</div>';
+  if(esEfectivo && v > D.saldo){ bloquea = true;
+    h += '<div class="al al-mal"><b>No alcanza el efectivo</b>En caja hay '+cop(D.saldo)+
+         ' y está registrando '+cop(v)+'.</div>'; }
+  if(v > D.topeGasto){ bloquea = true;
+    h += '<div class="al al-mal"><b>Supera el tope por gasto ('+cop(D.topeGasto)+')</b>'+
+         'Requiere autorización de gerencia antes de pagarse por caja menor.</div>'; }
+  if(esEfectivo && v > D.topeEfectivo){ bloquea = true;
+    h += '<div class="al al-mal"><b>'+cop(v)+' en efectivo supera las 100 UVT</b>'+
+         'Va obligatoriamente por canal bancario. Art. 771-5 par. 2 E.T.</div>'; }
+  else if(!esEfectivo && v)
+    h += '<div class="al al-ok"><b>Pago bancarizado</b>'+esc(medio)+
+         ' no cuenta contra el tope de efectivo. Oficio DIAN 100202208-0176/2023.</div>';
+
+  if(nit && /^2{9,12}$/.test(nit)){ bloquea = true;
+    h += '<div class="al al-mal"><b>NIT genérico de consumidor final</b>'+
+         'No soporta nada: exija factura a nombre de Social Solar S.A.S.</div>'; }
+
+  if(tipo.indexOf('papel') > -1){
+    if(v > D.topePOS){ bloquea = true;
+      h += '<div class="al al-mal"><b>Tiquete POS en papel por '+cop(v)+'</b>'+
+           'Supera las 5 UVT ('+cop(D.topePOS)+'). Exija factura electrónica. Art. 616-1 par. 2 E.T.</div>'; }
+    else h += '<div class="al al-mal"><b>El POS en papel no es deducible</b>'+
+         'Pida documento equivalente electrónico con los datos de Social Solar.</div>';
+  }
+
+  if(benef && benef.indexOf('directo') === -1 && prov)
+    h += '<div class="al al-inf"><b>Doble trazabilidad</b>El efectivo lo recibió '+esc(benef)+
+         ' y el soporte queda a nombre de '+esc(prov)+'. Circular 004 num. 4.E.</div>';
+  if(benef && benef.indexOf('directo') === -1 && !prov)
+    h += '<div class="al al-av"><b>Falta el vendedor del documento</b>'+
+         'El DSE se le hace al vendedor, no a quien hizo la compra.</div>';
+
+  if(/no quiso|no se pudo/i.test(estado))
+    h += '<div class="al al-mal"><b>Queda NO DEDUCIBLE</b>'+
+         'El caso pasa a la contadora con su nota y entra al informe mensual. Circular 004 num. 4.G.</div>';
+  if(/falta el dse/i.test(estado))
+    h += '<div class="al al-av"><b>Queda con reloj de plazo</b>'+D.plazoDSE+
+         ' días desde la operación. Después pierde el efecto fiscal.</div>';
+
+  if(ret.indexOf('No aplica') === 0 && v > 500000)
+    h += '<div class="al al-av"><b>¿Seguro que no hay retención?</b>Por '+cop(v)+
+         ' vale la pena revisar el concepto.</div>';
+
+  if(!h) h = '<div class="al al-ok"><b>Todo en orden</b>Cumple topes, medio de pago y soporte.</div>';
+  if(bloquea) h = '<div class="al al-mal"><b>⛔ No se puede guardar así</b>'+
+                  'Corrija lo que está en rojo.</div>' + h;
+  $('g_val').innerHTML = h;
+  $('g_btn').disabled = bloquea;
+}
+
+function guardarPago(){
+  $('g_btn').disabled = true; toast('Guardando el pago…');
+  leerArchivo('g_file').then(function(a){
+    return servidor('guardarPago', {
+      fecha:$('g_fecha').value, valor:$('g_valor').value,
+      beneficiario:$('g_benef').value, proveedor:$('g_prov').value, nit:$('g_nit').value,
+      descripcion:$('g_desc').value, medio:$('g_medio').value,
+      categoria:$('g_cat').value, centro:$('g_centro').value,
+      cuenta:$('g_cuenta').value, retencion:$('g_ret').value,
+      tipoSoporte:$('g_tipo').value, soporte:$('g_sop').value,
+      estadoSoporte:$('g_estado').value, nota:$('g_nota').value, archivo:a, quien:QUIEN
+    });
+  }).then(function(r){
+    D = Object.assign({}, D, r.panel); pintarNav();
+    toast('Fila '+r.n+' guardada · '+r.revision+' · Deducible: '+r.deducible,
+          r.revision.indexOf('OK')===0 ? 'ok' : 'mal');
+    ['g_valor','g_prov','g_nit','g_desc','g_sop','g_nota'].forEach(function(i){ $(i).value=''; });
+    $('g_file').value = '';
+    valPago();
+  }).catch(function(e){ toast(e.message,'mal'); $('g_btn').disabled=false; });
+}
+
+</script>

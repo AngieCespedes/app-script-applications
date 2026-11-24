@@ -1,0 +1,35 @@
+<script>
+/* ---------------- POLÍTICAS ---------------- */
+VISTAS.politicas = {
+  t: 'Políticas de caja menor y documento soporte',
+  s: 'Circulares internas 004 y 005 del 26 de junio de 2026.',
+  render: function(){ return '<div id="p_cont">Leyendo las políticas…</div>'; },
+  after: function(){
+    servidor('datosPoliticas').then(function(p){
+      $('p_cont').innerHTML =
+        '<div class="card"><h3>Topes vigentes</h3><div class="tw"><table><thead><tr>'+
+        '<th>Concepto</th><th class="num">Valor</th><th>Nota</th></tr></thead><tbody>'+
+        p.topes.map(function(t){
+          return '<tr><td>'+esc(t.concepto)+'</td><td class="num"><b>'+esc(t.valor)+'</b></td>'+
+            '<td>'+esc(t.nota)+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>'+
+        '<div class="card"><h3>¿A quién se le hace documento soporte?</h3>'+
+        '<div class="tw"><table><thead><tr><th>Operación o proveedor</th><th>¿DSE?</th>'+
+        '<th>Soporte correcto</th></tr></thead><tbody>'+
+        p.tabla.map(function(f){
+          return '<tr><td>'+esc(f.caso)+'</td><td><span class="badge '+
+            (f.dse==='SÍ'?'b-av':'b-gr')+'">'+esc(f.dse)+'</span></td>'+
+            '<td>'+esc(f.soporte)+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>'+
+        '<div class="grid g2">'+
+        '<div class="card"><h3>Antes de cada pago</h3><ul style="margin:0;padding-left:18px">'+
+        p.antes.map(function(l){ return '<li style="margin-bottom:5px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>'+
+        '<div class="card"><h3>Errores que más cuestan</h3><ul style="margin:0;padding-left:18px">'+
+        p.errores.map(function(l){ return '<li style="margin-bottom:5px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div></div>';
+    }).catch(function(e){ $('p_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>

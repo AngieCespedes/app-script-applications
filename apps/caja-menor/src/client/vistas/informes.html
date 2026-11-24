@@ -1,0 +1,27 @@
+<script>
+/* ---------------- INFORMES ---------------- */
+VISTAS.informes = {
+  t: 'Relaciones cerradas',
+  s: 'El histórico, con su PDF y la carpeta del mes.',
+  render: function(){ return '<div id="h_cont">Consultando el historial…</div>'; },
+  after: function(){
+    servidor('datosInformes').then(function(l){
+      if(!l.length){ $('h_cont').innerHTML='<div class="al al-inf"><b>Todavía no hay relaciones cerradas</b>'+
+        'Aparecerán aquí a medida que se vayan entregando.</div>'; return; }
+      $('h_cont').innerHTML = '<div class="card"><div class="tw"><table><thead><tr>'+
+        '<th>N.°</th><th>Fecha</th><th>Periodo</th><th>Responsable</th>'+
+        '<th class="num">Ingresos</th><th class="num">Egresos</th><th class="num">Saldo final</th>'+
+        '<th class="num">Dif. arqueo</th><th>Entrega</th><th>PDF</th></tr></thead><tbody>'+
+        l.map(function(r){
+          return '<tr><td><b>'+esc(r.numero)+'</b></td><td>'+esc(r.fecha)+'</td>'+
+            '<td>'+esc(r.desde)+(r.hasta?' – '+esc(r.hasta):'')+'</td>'+
+            '<td>'+esc(r.responsable)+'</td><td class="num">'+esc(r.ingresos)+'</td>'+
+            '<td class="num">'+esc(r.egresos)+'</td><td class="num"><b>'+esc(r.saldoFinal)+'</b></td>'+
+            '<td class="num">'+esc(r.diferencia)+'</td><td>'+esc(r.aprobacion)+'</td>'+
+            '<td>'+(r.pdf?'<a href="'+esc(r.pdf)+'" target="_blank" rel="noopener">Abrir</a>':'—')+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+    }).catch(function(e){ $('h_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+</script>
