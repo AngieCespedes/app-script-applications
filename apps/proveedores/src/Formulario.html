@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Proveedores - Social Solar</title>
+<style>
+:root{--amb:#fbb03b;--osc:#1a1a1a;--fon:#f4f6f9;--ver:#2e6b2e;--verf:#eaf4e3}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--fon);margin:0;padding:20px;display:flex;justify-content:center}
+.contenedor{background:#fff;max-width:680px;width:100%;padding:30px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,.08);border-top:8px solid var(--amb);box-sizing:border-box}
+.cab{text-align:center;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid #eee}
+.cab h2{margin:5px 0;font-size:26px;letter-spacing:1px}
+.cab p{margin:0;color:var(--amb);font-weight:700;font-size:12px;letter-spacing:.5px}
+.aviso{background:#f9fafb;border-left:4px solid var(--amb);padding:14px 18px;border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.55;color:#333}
+.aviso p{margin:0 0 10px}
+.seccion{margin-top:26px}
+.seccion h3{font-size:12.5px;letter-spacing:1px;color:#555;border-bottom:1px solid #e5e8ec;padding-bottom:6px;margin:0 0 14px}
+.verde h3{color:var(--ver);border-bottom-color:#cfe3c4}
+.grupo{margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:600;color:#333;margin-bottom:5px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d6dbe0;border-radius:7px;font-size:14px;box-sizing:border-box;font-family:inherit;background:#fff}
+.verde input,.verde select,.verde textarea{background:var(--verf);border-color:#cfe3c4}
+textarea{min-height:68px;resize:vertical}
+.fila{display:flex;gap:12px}
+.fila>div{flex:1;min-width:0}
+button{width:100%;padding:15px;background:var(--osc);color:#fff;border:0;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.5px;margin-top:8px}
+button:hover{background:#000}
+.pie{margin-top:28px;padding-top:16px;border-top:1px solid #eee;font-size:12.5px;color:#555;line-height:1.75}
+.pie b{color:#1a1a1a}
+.chip{display:inline-block;background:#fff6e6;border:1px solid var(--amb);color:#8a5a00;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;margin-bottom:6px}
+.chip.ok{background:#eaf4e3;border-color:#cfe3c4;color:#2e6b2e}
+.oculto{display:none}
+#status{display:none;text-align:center;padding:12px;color:#555;font-size:13.5px}
+.nota{font-size:12px;color:#777;margin-top:4px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="contenedor">
+  <div class="cab">
+    <h2>SOCIAL SOLAR</h2>
+    <p>PORTAL OFICIAL DE REGISTRO DE PROVEEDORES E INFORMACION COMERCIAL</p>
+  </div>
+
+  <div id="paso1">
+    <div class="aviso">
+      <p><strong>Estimado Aliado Comercial:</strong></p>
+      <p>Bienvenido al sistema de inscripcion de proveedores de <strong>Social Solar S.A.S.</strong> Escriba su NIT o cedula para continuar: el sistema le pedira unicamente la informacion que nos haga falta.</p>
+      <p style="font-size:11.5px;color:#888;margin:0;font-style:italic">La informacion sera tratada bajo las politicas de confidencialidad de la Ley 1581 de 2012 (Habeas Data).</p>
+    </div>
+    <div class="grupo" style="margin-top:20px">
+      <label for="nit">NIT o cedula</label>
+      <input type="text" id="nit" placeholder="Ej: 901234567">
+      <div class="nota">Escriba solo los numeros, sin puntos, sin guiones y sin el digito de verificacion.</div>
+    </div>
+    <button type="button" onclick="consultar()">Continuar</button>
+  </div>
+
+  <form id="formProveedor" class="oculto">
+    <div id="chipEstado"></div>
+
+    <div class="seccion">
+      <h3>1 &middot; DATOS DE LA EMPRESA</h3>
+      <div class="grupo"><label for="nombre">Nombre o Razon Social</label><input type="text" id="nombre" required placeholder="Ej: Distribuidora Solar S.A.S."></div>
+      <div class="grupo"><label for="contacto">Persona de Contacto</label><input type="text" id="contacto" placeholder="Ej: Juan Perez"></div>
+      <div class="fila">
+        <div class="grupo"><label for="telefono">Telefono / Celular</label><input type="text" id="telefono" placeholder="Ej: 3204567890"></div>
+        <div class="grupo"><label for="ciudad">Ciudad de Operacion</label><input type="text" id="ciudad" placeholder="Ej: Paipa, Boyaca"></div>
+      </div>
+      <div class="grupo"><label for="regimen">R&eacute;gimen Tributario / Naturaleza Jur&iacute;dica</label>
+        <select id="regimen">
+          <option value="">Seleccione una opci&oacute;n...</option>
+          <option>R&eacute;gimen Ordinario (Responsable de IVA)</option>
+          <option>R&eacute;gimen Ordinario (No Responsable de IVA)</option>
+          <option>Gran Contribuyente</option>
+          <option>Gran Contribuyente Auto-retenedor</option>
+          <option>R&eacute;gimen Simple de Tributaci&oacute;n (RST)</option>
+          <option>Entidad Sin &Aacute;nimo de Lucro (ESAL - R&eacute;gimen Especial)</option>
+          <option>Persona Natural - Responsable de IVA</option>
+          <option>Persona Natural - No Responsable de IVA</option>
+          <option>Consorcio / Uni&oacute;n Temporal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="seccion" id="secDocs">
+      <h3>2 &middot; DOCUMENTOS (PDF)</h3>
+      <div class="nota" id="avisoRut" style="margin-bottom:12px"></div>
+      <div class="grupo"><label for="rut">RUT actualizado a <span id="anioRut"></span></label><input type="file" id="rut" accept="application/pdf"></div>
+      <div class="grupo"><label for="cert">Certificaci&oacute;n Bancaria (no mayor a 30 d&iacute;as)</label><input type="file" id="cert" accept="application/pdf"></div>
+    </div>
+
+    <div class="seccion verde">
+      <h3>3 &middot; INFORMACION COMERCIAL</h3>
+      <div class="fila">
+        <div class="grupo"><label for="credito">&iquest;Nos otorgan cupo de cr&eacute;dito?</label><select id="credito"><option value="">Seleccione...</option><option>SI</option><option>NO</option><option>EN TRAMITE</option></select></div>
+        <div class="grupo"><label for="cupo">Cupo aprobado (COP)</label><input type="text" id="cupo" placeholder="Ej: 20000000"></div>
+      </div>
+      <div class="fila">
+        <div class="grupo"><label for="plazo">Plazo en d&iacute;as</label><input type="text" id="plazo" placeholder="Ej: 30"></div>
+        <div class="grupo"><label for="prontoPago">&iquest;Descuento por pronto pago?</label><select id="prontoPago"><option value="">Seleccione...</option><option>SI</option><option>NO</option></select></div>
+      </div>
+      <div class="fila">
+        <div class="grupo"><label for="descuento">% de descuento</label><input type="text" id="descuento" placeholder="Ej: 2"></div>
+        <div class="grupo"><label for="diasDescuento">D&iacute;as para el descuento</label><input type="text" id="diasDescuento" placeholder="Ej: 10"></div>
+      </div>
+      <div class="grupo"><label for="correoCredito">Correo al que debemos escribir para solicitar cr&eacute;dito</label><input type="email" id="correoCredito" placeholder="cartera@suempresa.com"></div>
+      <div class="grupo"><label for="docsCredito">&iquest;Qu&eacute; documentos exigen para otorgar cr&eacute;dito?</label><textarea id="docsCredito" placeholder="Ej: C&aacute;mara de comercio, estados financieros, referencias comerciales..."></textarea></div>
+      <div class="grupo"><label for="asesor">Asesor comercial asignado a Social Solar</label><input type="text" id="asesor" placeholder="Nombre completo"></div>
+      <div class="fila">
+        <div class="grupo"><label for="asesorCel">Celular del asesor</label><input type="text" id="asesorCel" placeholder="Ej: 3001234567"></div>
+        <div class="grupo"><label for="asesorMail">Correo del asesor</label><input type="email" id="asesorMail" placeholder="asesor@suempresa.com"></div>
+      </div>
+      <div class="grupo"><label for="correoEstados">Correo para solicitarle estados de cuenta</label><input type="email" id="correoEstados" placeholder="cartera@suempresa.com"></div>
+      <div class="grupo"><label for="correoPagos">Correo al que debemos enviar los soportes de pago</label><input type="email" id="correoPagos" placeholder="tesoreria@suempresa.com"></div>
+      <div class="grupo"><label for="observaciones">Observaciones</label><textarea id="observaciones"></textarea></div>
+    </div>
+
+    <div id="status">Enviando informacion, por favor espere...</div>
+    <button type="button" onclick="enviarFormulario()">Enviar informaci&oacute;n</button>
+  </form>
+
+  <div class="pie">
+    <b>&iquest;Tiene alguna duda con el diligenciamiento?</b><br>
+    <b>Gestora de Compras</b> &mdash; Nelly Carolina Pinz&oacute;n Rodr&iacute;guez<br>
+    Tel. 316 810 4610 &nbsp;&middot;&nbsp; auxiliar.contable@socialsolar.com.co<br>
+    <b>Tesorer&iacute;a</b> &mdash; Tel. 320 427 4908<br>
+    <span style="color:#999">SOCIAL SOLAR S.A.S. &middot; NIT 901.128.826-6 &middot; Paipa, Boyac&aacute;</span>
+  </div>
+</div>
+
+<script>
+var EST = null;
+
+function consultar(){
+  var n = document.getElementById('nit').value || '';
+  if(!n.replace(/[^0-9]/g,'')){ alert('Por favor escriba su NIT o cedula.'); return; }
+  document.getElementById('status').style.display = 'block';
+  google.script.run
+    .withSuccessHandler(function(r){
+      document.getElementById('status').style.display = 'none';
+      if(!r || !r.ok){ alert((r && r.mensaje) || 'No fue posible consultar.'); return; }
+      EST = r;
+      document.getElementById('paso1').classList.add('oculto');
+      document.getElementById('formProveedor').classList.remove('oculto');
+      if(r.nombre) document.getElementById('nombre').value = r.nombre;
+      document.getElementById('anioRut').innerText = new Date().getFullYear();
+      var chip = document.getElementById('chipEstado');
+      if(r.pide === 'COMPLETO'){
+        chip.innerHTML = '<span class="chip">PROVEEDOR NUEVO &middot; necesitamos sus datos y sus documentos</span>';
+        document.getElementById('rut').required = true;
+        document.getElementById('cert').required = true;
+        document.getElementById('avisoRut').innerText = 'Adjunte el RUT del ano en curso y la certificacion bancaria.';
+      } else if(r.pide === 'RUT'){
+        chip.innerHTML = '<span class="chip">YA ESTA REGISTRADO &middot; su RUT esta desactualizado</span>';
+        document.getElementById('rut').required = true;
+        document.getElementById('avisoRut').innerText = 'El RUT que tenemos en archivo es del ' + (r.fechaRut || 'ano anterior') + '. Adjunte el actualizado. La certificacion bancaria solo si cambio.';
+      } else {
+        chip.innerHTML = '<span class="chip ok">YA ESTA REGISTRADO &middot; su RUT esta al dia, no necesitamos documentos</span>';
+        document.getElementById('secDocs').classList.add('oculto');
+      }
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('status').style.display = 'none';
+      alert('No fue posible consultar en este momento. Intente de nuevo.');
+    })
+    .api('consultarNit', n);
+}
+
+function transformarArchivo(idInput){
+  return new Promise(function(resolve){
+    var input = document.getElementById(idInput);
+    if(!input || input.classList.contains('nope') || input.files.length === 0){ resolve(null); return; }
+    var archivo = input.files[0];
+    var lector = new FileReader();
+    lector.onload = function(e){ resolve({ nombre: archivo.name, tipo: archivo.type, base64: e.target.result }); };
+    lector.readAsDataURL(archivo);
+  });
+}
+
+async function enviarFormulario(){
+  var form = document.getElementById('formProveedor');
+  if(!form.checkValidity()){ form.reportValidity(); return; }
+  document.getElementById('status').style.display = 'block';
+  var g = function(id){ var e = document.getElementById(id); return e ? e.value : ''; };
+  var datos = {
+    nit: g('nit'), nombre: g('nombre'), contacto: g('contacto'), telefono: g('telefono'),
+    ciudad: g('ciudad'), regimen: g('regimen'),
+    credito: g('credito'), cupo: g('cupo'), plazo: g('plazo'),
+    prontoPago: g('prontoPago'), descuento: g('descuento'), diasDescuento: g('diasDescuento'),
+    asesor: g('asesor'), asesorCel: g('asesorCel'), asesorMail: g('asesorMail'),
+    correoCredito: g('correoCredito'), docsCredito: g('docsCredito'),
+    correoEstados: g('correoEstados'), correoPagos: g('correoPagos'), observaciones: g('observaciones')
+  };
+  var fRut = await transformarArchivo('rut');
+  var fCert = await transformarArchivo('cert');
+  google.script.run
+    .withSuccessHandler(function(resp){
+      document.getElementById('status').style.display = 'none';
+      alert(resp.mensaje);
+      if(resp.exito) window.location.reload();
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('status').style.display = 'none';
+      alert('Error al enviar: ' + e.message);
+    })
+    .api('registrarProveedorCompleto', datos, fRut, fCert);
+}
+</script>
+</body>
+</html>

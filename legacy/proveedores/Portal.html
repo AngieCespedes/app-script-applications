@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F4F6F9;color:#1a1a1a}
+a{color:#0F3B5C}
+/* ---- entrada ---- */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#0F3B5C}
+.lbox{background:#fff;border-radius:14px;max-width:420px;width:100%;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.lhead{background:#0F3B5C;padding:24px;text-align:center;color:#fff}
+.lhead h1{margin:0;font-size:17px;font-weight:700;letter-spacing:.5px}
+.lhead p{margin:6px 0 0;font-size:12.5px;color:#BFD3E2}
+.lbody{padding:24px}
+/* ---- marco ---- */
+.top{background:#0F3B5C;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.top h1{margin:0;font-size:14.5px;font-weight:700;color:#fff;letter-spacing:.4px}
+.top .yo{font-size:11.5px;color:#BFD3E2;margin-top:2px}
+.top .der{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lnk{font-size:11.5px;color:#BFD3E2;cursor:pointer;text-decoration:underline}
+.rayita{height:3px;background:#F2A81D}
+.tabs{background:#fff;border-bottom:1px solid #DDE3E8;padding:0 14px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:12px 14px;font-size:13px;font-weight:600;color:#5A6670;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.on{color:#0F3B5C;border-bottom-color:#F2A81D}
+.tab .n{background:#FDE2E2;color:#B00020;border-radius:20px;padding:1px 7px;font-size:11px;margin-left:5px;font-weight:700}
+.wrap{padding:16px;max-width:1180px;margin:0 auto}
+/* ---- piezas ---- */
+.card{background:#fff;border:1px solid #DDE3E8;border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.sec{font-size:11px;font-weight:700;letter-spacing:1.1px;color:#5A6670;border-bottom:1px solid #e5e8ec;padding-bottom:6px;margin:0 0 13px}
+label{display:block;font-size:12.5px;font-weight:600;color:#3D4A54;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d6dbe0;border-radius:7px;font-size:14px;font-family:inherit;background:#fff}
+textarea{height:70px;resize:vertical}
+.g{margin-bottom:12px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>div{flex:1;min-width:150px}
+.btn{padding:13px 18px;background:#1a1a1a;color:#fff;border:0;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn:disabled{opacity:.5;cursor:default}
+.btn2{padding:9px 14px;background:#fff;color:#0F3B5C;border:1px solid #9FC0DA;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+.btnok{background:#2E6B2E}
+.btnno{background:#fff;color:#B00020;border:1px solid #F3B5B5}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.ok{background:#E3F0DC;color:#2E6B2E}
+.wait{background:#FDF0D2;color:#8A6D1F}
+.bad{background:#FDE2E2;color:#B00020}
+.inf{background:#E6EEF6;color:#0F3B5C}
+.gris{background:#EEF0F3;color:#5A6670}
+.caja{border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.55;margin-top:10px}
+.cok{background:#F2F8EE;border:1px solid #B9D9A8;color:#2E6B2E}
+.cno{background:#FDE2E2;border:1px solid #F3B5B5;color:#8A1F2E}
+.cav{background:#FDF0D2;color:#6B5420}
+/* ---- guia ---- */
+.guia{background:#fff;border:1px solid #9FC0DA;border-left:4px solid #0F3B5C;border-radius:10px;padding:15px 18px;margin-bottom:14px}
+.guia h3{margin:0 0 8px;font-size:13.5px;color:#0F3B5C}
+.guia ol{margin:0;padding-left:19px;font-size:13px;color:#3D4A54;line-height:1.75}
+.guia p{margin:9px 0 0;font-size:12.3px;color:#5A6670;line-height:1.6}
+/* ---- indicadores ---- */
+.kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid #DDE3E8;border-radius:10px;padding:13px 15px;flex:1;min-width:118px}
+.kpi b{display:block;font-size:24px;color:#0F3B5C;line-height:1}
+.kpi span{font-size:11px;color:#5A6670;display:block;margin-top:4px;line-height:1.3}
+/* ---- ordenes ---- */
+.ord{background:#fff;border:1px solid #DDE3E8;border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.ord:hover{border-color:#9FC0DA}
+.ord .l1{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.ord .num{font-size:13.5px;font-weight:700;color:#0F3B5C}
+.ord .l2{font-size:12.5px;color:#3D4A54;margin-top:5px}
+.ord .l3{font-size:11.5px;color:#8A94A0;margin-top:3px}
+.det{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px;font-size:13px;color:#3D4A54;margin-bottom:12px}
+.det div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #f0f2f5;padding:6px 0}
+.det b{color:#1a1a1a;text-align:right}
+.cargando{text-align:center;padding:50px 20px;color:#8A94A0;font-size:14px}
+.vacio{text-align:center;padding:30px 20px;color:#8A94A0;font-size:13.5px}
+/* ---- tabla usuarios ---- */
+table{width:100%;border-collapse:collapse}
+th{font-size:10.5px;font-weight:700;letter-spacing:.7px;color:#5A6670;text-align:left;padding:0 8px 8px;border-bottom:1px solid #e5e8ec}
+td{font-size:12.5px;color:#3D4A54;padding:9px 8px;border-bottom:1px solid #f0f2f5;vertical-align:middle}
+/* ---- modal ---- */
+.fondo{position:fixed;inset:0;background:rgba(15,35,55,.45);display:flex;align-items:center;justify-content:center;padding:14px;z-index:50}
+.modal{background:#F4F6F9;border-radius:12px;max-width:640px;width:100%;max-height:92vh;overflow:auto}
+.modal .mt{background:#0F3B5C;color:#fff;padding:13px 18px;font-size:14px;font-weight:700;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;position:sticky;top:0}
+.x{cursor:pointer;font-size:20px;line-height:1;opacity:.8}
+.mb{padding:16px 18px}
+@media(max-width:620px){.det{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<script>
+var SES = '', CTX = null, LISTAS = null, TAB = '', CACHE = [], PROV = null, RES = null;
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function pesos(n){ n=Math.round(Number(n)||0); return '$ '+n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+function limpio(v){ return String(v||'').replace(/[^0-9]/g,''); }
+function fila(k,v){ return '<div><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>'; }
+/* ================= ENTRADA ================= */
+function pantallaLogin(msg){
+$('app').innerHTML =
+'<div class="login"><div class="lbox">'+
+'<div class="lhead"><h1>SOCIAL SOLAR S.A.S.</h1><p>Órdenes de compra</p></div>'+
+'<div class="lbody">'+
+(msg? '<div class="caja cno" style="margin-top:0;margin-bottom:14px">'+esc(msg)+'</div>':'')+
+'<div class="g"><label>Usuario</label><input id="lu" autocomplete="username" placeholder="su usuario"></div>'+
+'<div class="g"><label>Contraseña</label><input id="lp" type="password" autocomplete="current-password" placeholder="su contraseña"></div>'+
+'<button class="btn" style="width:100%" id="lb" onclick="entrar()">Entrar</button>'+
+'<div style="font-size:11.8px;color:#8A94A0;margin-top:14px;line-height:1.6">'+
+'Si no tiene usuario o se le olvidó la contraseña, pídaselo a <b>Angie Céspedes</b> (contabilidad). '+
+'Cada persona entra con el suyo: lo que usted registre queda a su nombre.'+
+'</div>'+
+'</div>'+
+'</div></div>';
+$('lp').onkeydown = function(e){ if(e.key==='Enter') entrar(); };
+$('lu').focus();
+}
+function entrar(){
+var u = $('lu').value.trim(), p = $('lp').value;
+if(!u || !p){ pantallaLogin('Escriba su usuario y su contraseña.'); return; }
+$('lb').disabled = true; $('lb').textContent = 'Entrando…';
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ pantallaLogin(r? r.mensaje : 'No pude conectarme. Intente otra vez.'); return; }
+SES = r.ses; CTX = r;
+google.script.run.withSuccessHandler(function(l){ LISTAS = l; marco(); }).ocListas(SES);
+}).withFailureHandler(function(err){
+pantallaLogin('No pude conectarme: ' + String(err));
+}).ocEntrar(u, p);
+}
+function salir(){ SES=''; CTX=null; pantallaLogin(''); }
+/* ================= MARCO ================= */
+function marco(){
+$('app').innerHTML =
+'<div class="top">'+
+'<div><h1>SOCIAL SOLAR S.A.S. — ÓRDENES DE COMPRA</h1>'+
+'<div class="yo">'+esc(CTX.nombre)+' · '+esc(CTX.area)+'</div></div>'+
+'<div class="der">'+
+'<span class="pill inf">'+esc(CTX.rol)+'</span>'+
+'<span class="lnk" onclick="verCambiarClave()">Cambiar mi contraseña</span>'+
+'<span class="lnk" onclick="salir()">Salir</span>'+
+'</div>'+
+'</div><div class="rayita"></div>'+
+'<div class="tabs" id="tabs"></div>'+
+'<div class="wrap" id="wrap"><div class="cargando">Un momento…</div></div>';
+pintarTabs();
+}
+function listaTabs(){
+var t = [];
+if(CTX.puede.solicitar) t.push(['nueva','Nueva orden']);
+if(CTX.puede.aprobar)   t.push(['aprobar','Por aprobar']);
+if(CTX.puede.pagar)     t.push(['pagar','Por pagar']);
+if(CTX.puede.facturar)  t.push(['facturar','Mercancía y factura']);
+if(CTX.puede.causar)    t.push(['causar','Por causar']);
+t.push(['legalizar','Sin legalizar']);
+if(CTX.puede.solicitar) t.push(['mias','Mis órdenes']);
+t.push(['todas', CTX.puede.vertodo ? 'Todas' : 'Las de mi área']);
+if(CTX.puede.usuarios)  t.push(['usuarios','Usuarios']);
+return t;
+}
+function pintarTabs(){
+var t = listaTabs();
+$('tabs').innerHTML = t.map(function(x){
+return '<div class="tab" id="tab_'+x[0]+'" onclick="irA(\''+x[0]+'\')">'+x[1]+'<span class="n" id="n_'+x[0]+'" style="display:none"></span></div>';
+}).join('');
+irA(t[0][0]);
+}
+function irA(id){
+TAB = id;
+var ts = document.querySelectorAll('.tab');
+for(var i=0;i<ts.length;i++) ts[i].className = 'tab';
+if($('tab_'+id)) $('tab_'+id).className = 'tab on';
+if(id === 'nueva')         pantallaNueva();
+else if(id === 'usuarios') pantallaUsuarios();
+else                       cargarLista(id);
+}
+/* ================= GUÍAS ================= */
+var GUIAS = {
+nueva: ['Cómo pedir una compra',
+['Escriba el <b>NIT del proveedor</b> y oprima Buscar. El sistema le dice ahí mismo si está al día.',
+'Diga <b>qué va a comprar</b> y escoja el <b>centro de costo</b>. Si es un proyecto nuevo, créelo con «+ Crear un centro de costo nuevo»: código de cotización y nombre del proyecto.',
+'Suba la <b>cotización</b> del proveedor.',
+'Escriba la <b>base</b> y el <b>IVA</b> tal como vienen en la cotización. El sistema calcula las retenciones solo.',
+'Oprima <b>Enviar a aprobación de gerencia</b>.'],
+'Mientras gerencia no apruebe, usted puede reemplazar la cotización si se equivocó de archivo. Después ya no.'],
+aprobar: ['Qué hace usted aquí',
+['Abra cada orden y revise <b>quién la pide</b>, el <b>centro de costo</b> y el <b>valor</b>.',
+'Oprima <b>Ver cotización</b> para mirar el soporte del proveedor.',
+'Si está de acuerdo: <b>Aprobar y pasar a tesorería</b>.',
+'Si no: <b>Rechazar</b> y escriba el motivo. Vuelve al área para que la corrijan.'],
+'Aprobar no es pagar. Después de usted, tesorería verifica los documentos del proveedor y hace el pago.'],
+pagar: ['Qué hace usted aquí',
+['Confirme que el proveedor diga <b>VIGENTE</b>. Si no, no pague todavía.',
+'Escoja el <b>tipo de pago</b>: total, abono, anticipo o contra cotización.',
+'Escriba el <b>valor pagado</b>, el banco y el número del comprobante de egreso.',
+'Suba el <b>soporte del pago</b> y guarde.'],
+'Si es un abono, la orden queda abierta con el saldo pendiente y se puede volver a pagar después.'],
+facturar: ['Qué hace usted aquí',
+['Confirme si <b>llegó la mercancía</b>, quién la recibió y en qué fecha.',
+'Diga si llegó <b>factura electrónica</b> o <b>documento soporte</b>, con número, fecha y valor.',
+'Suba el archivo de la factura.',
+'Si todavía no llega, use <b>Ver el mensaje para pedirle la factura</b> y mándelo por WhatsApp.'],
+'Si el valor facturado no cuadra con la orden, el sistema no deja cerrar. Revise antes.'],
+causar: ['Qué hace usted aquí',
+['Abra la orden y revise la factura adjunta.',
+'Cause la compra en World Office como siempre.',
+'Vuelva aquí y márquela como <b>causada</b>.'],
+'Una orden marcada como causada sale de todos los pendientes.'],
+legalizar: ['Plata que ya salió y todavía no se puede causar',
+['Aquí están las compras <b>ya pagadas</b> a las que les falta la factura o el documento soporte.',
+'Entre más días lleven, más riesgo: el IVA no se puede descontar hasta que llegue el soporte.',
+'Desde cada orden puede mandarle el mensaje al proveedor.'],
+'Esta lista debería estar vacía. Si crece, es plata de la empresa sin soportar.'],
+mias: ['Las órdenes que usted pidió',
+['Aquí ve solo lo que usted mismo solicitó, en el estado en que va.',
+'Cuando tesorería pague, le aparece el <b>soporte de pago</b> para ver o descargar.',
+'Usted no puede editar nada de aquí: es solo consulta.'],
+''],
+todas: ['', [], ''],
+usuarios: ['Usted administra quién entra',
+['Para agregar a alguien: nombre, usuario, contraseña, rol y área.',
+'El <b>rol</b> define qué puede hacer. El <b>área</b> define qué alcanza a ver.',
+'Para cambiarle la contraseña a alguien, escríbala encima y guarde.',
+'Para quitarle el acceso, póngalo en <b>INACTIVO</b>. Sus órdenes quedan con su nombre.'],
+'Ingeniería y Sistema de gestión solo ven las órdenes de su propia área. Administración, Compras, Gerencia, Tesorería y Contabilidad ven todas.']
+};
+function pintarGuia(id){
+var g = GUIAS[id];
+if(!g || !g[0]) return '';
+return '<div class="guia"><h3>'+g[0]+'</h3><ol>'+
+g[1].map(function(x){ return '<li>'+x+'</li>'; }).join('')+
+'</ol>'+(g[2]? '<p>'+g[2]+'</p>':'')+'</div>';
+}
+/* ================= NUEVA ORDEN ================= */
+function pantallaNueva(){
+var cen = '<option value="">— Escoja el centro de costo —</option>'+
+(LISTAS.centros||[]).map(function(c){
+return '<option value="'+esc(c.codigo)+'">'+esc(c.codigo)+' · '+esc(c.nombre)+'</option>';
+}).join('')+
+'<option value="__NUEVO__">+ Crear un centro de costo nuevo…</option>';
+var con = (LISTAS.conceptos||[]).map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('');
+var are = (LISTAS.areas||[]).map(function(a){
+return '<option'+(a===CTX.area?' selected':'')+'>'+esc(a)+'</option>';
+}).join('');
+$('wrap').innerHTML = pintarGuia('nueva')+
+'<div class="card">'+
+'<div class="sec">1 · EL PROVEEDOR</div>'+
+'<div class="row">'+
+'<div class="g"><label>NIT (sin dígito de verificación)</label><input id="nit" inputmode="numeric" placeholder="860531287" onblur="buscarProv()"></div>'+
+'<div style="flex:0 0 auto;display:flex;align-items:flex-end;padding-bottom:12px"><button class="btn2" onclick="buscarProv()">Buscar</button></div>'+
+'</div>'+
+'<div id="prov"></div>'+
+'</div>'+
+'<div class="card">'+
+'<div class="sec">2 · QUÉ SE VA A COMPRAR</div>'+
+'<div class="g"><label>Descripción</label><input id="desc" placeholder="Cable 250 MCM — 180 m — obra El Zipa"></div>'+
+'<div class="row">'+
+'<div class="g"><label>Centro de costo</label><select id="centro" onchange="cambioCentro()">'+cen+'</select></div>'+
+'<div class="g"><label>Área que solicita</label><select id="area">'+are+'</select></div>'+
+'</div>'+
+'<div id="centroNuevo" style="display:none;background:#F7F9FB;border:1px solid #d6dbe0;border-radius:8px;padding:14px 16px;margin-bottom:12px">'+
+'<div style="font-size:12.5px;font-weight:600;color:#3D4A54;margin-bottom:10px">Centro de costo nuevo</div>'+
+'<div class="row">'+
+'<div class="g"><label>Código de cotización</label><input id="ccCod" placeholder="CSS-01226"></div>'+
+'<div class="g"><label>Nombre del proyecto</label><input id="ccNom" placeholder="Ladrillos El Zipa"></div>'+
+'</div>'+
+'<button class="btn2" id="ccBtn" onclick="guardarCentro()">Crear y usarlo en esta orden</button>'+
+'<div style="font-size:11.5px;color:#8A94A0;margin-top:9px">Queda marcado como POR VALIDAR en la hoja de centros de costo, para que contabilidad lo confirme.</div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Concepto</label><select id="concepto" onchange="recalcular()">'+con+'</select></div>'+
+'<div class="g"><label>Fecha en que se necesita</label><input id="fnec" type="date"></div>'+
+'</div>'+
+'<div class="g"><label>Cotización del proveedor</label><input id="cot" type="file"></div>'+
+'<div class="row">'+
+'<div class="g"><label>Base</label><input id="base" inputmode="numeric" placeholder="28400000" oninput="recalcular()"></div>'+
+'<div class="g"><label>IVA</label><input id="iva" inputmode="numeric" placeholder="5396000" oninput="recalcular()"></div>'+
+'<div class="g"><label>Valor total</label><input id="total" readonly style="background:#F7F9FB;font-weight:700;color:#0F3B5C"></div>'+
+'</div>'+
+'<div class="g"><label><input type="checkbox" id="decl" checked onchange="recalcular()" style="width:auto;margin-right:7px">El proveedor es declarante de renta</label></div>'+
+'<div class="g"><label>Observaciones (opcional)</label><textarea id="obs"></textarea></div>'+
+'</div>'+
+'<div class="card">'+
+'<div class="sec" style="color:#0F3B5C">3 · LO QUE EL SISTEMA CALCULA</div>'+
+'<div id="calc"><div class="vacio">Escriba la base y escoja el concepto.</div></div>'+
+'</div>'+
+'<button class="btn" style="width:100%" id="enviar" onclick="enviarOrden()">Enviar a aprobación de gerencia</button>'+
+'<div style="height:24px"></div>';
+}
+function cambioCentro(){
+$('centroNuevo').style.display = ($('centro').value === '__NUEVO__') ? 'block' : 'none';
+}
+function guardarCentro(){
+var cod = $('ccCod').value, nom = $('ccNom').value;
+if(!cod.trim() || !nom.trim()){ alert('Escriba el código de cotización y el nombre del proyecto.'); return; }
+$('ccBtn').disabled = true;
+google.script.run.withSuccessHandler(function(r){
+$('ccBtn').disabled = false;
+if(!r.ok){ alert(r.mensaje); return; }
+var s = $('centro');
+var o = document.createElement('option');
+o.value = r.codigo; o.text = r.codigo + ' · ' + r.nombre;
+s.insertBefore(o, s.options[s.options.length-1]);
+s.value = r.codigo;
+cambioCentro();
+}).withFailureHandler(function(e){
+$('ccBtn').disabled = false; alert('No pude crear el centro de costo: '+String(e));
+}).ocCrearCentro(SES, cod, nom);
+}
+function buscarProv(){
+var n = limpio($('nit').value);
+if(!n){ $('prov').innerHTML=''; PROV=null; return; }
+$('prov').innerHTML = '<div class="caja cav">Buscando…</div>';
+google.script.run.withSuccessHandler(function(r){
+PROV = r;
+if(!r.encontrado){
+$('prov').innerHTML = '<div class="caja cno"><b>No está en la base de proveedores.</b><br>'+esc(r.mensaje)+'</div>';
+return;
+}
+if(r.vigente){
+$('prov').innerHTML = '<div class="caja cok"><span class="pill ok">PROVEEDOR VIGENTE</span> <b>'+esc(r.nombre)+'</b><br>'+
+esc(r.estadoRut)+' · '+esc(r.tipoDoc)+(r.pendiente&&r.pendiente!=='COMPLETO'?' · pendiente: '+esc(r.pendiente):'')+'</div>';
+} else {
+$('prov').innerHTML = '<div class="caja cno"><span class="pill bad">NO ESTÁ AL DÍA</span> <b>'+esc(r.nombre)+'</b><br>'+
+esc(r.estadoRut)+'. La orden se puede crear, pero <b>no se paga</b> hasta que actualice sus documentos.</div>';
+}
+recalcular();
+}).ocBuscarProveedor(SES, n);
+}
+var CALCSEQ = 0, CALCT = null;
+function recalcular(){
+var b = Number(limpio($('base').value))||0;
+var v = Number(limpio($('iva').value))||0;
+$('total').value = b||v ? pesos(b+v) : '';
+if(!b){ $('calc').innerHTML = '<div class="vacio">Escriba la base y escoja el concepto.</div>'; return; }
+if(CALCT) clearTimeout(CALCT);
+var seq = ++CALCSEQ;
+CALCT = setTimeout(function(){
+google.script.run.withSuccessHandler(function(r){
+if(seq !== CALCSEQ) return;
+if(!r || !r.ok) return;
+$('calc').innerHTML =
+'<div class="det">'+
+fila('Base', pesos(r.base))+ fila('IVA', pesos(r.iva))+
+fila('Retefuente', r.retefuente? '− '+pesos(r.retefuente) : 'no aplica')+
+fila('Reteiva', r.reteiva? '− '+pesos(r.reteiva) : 'no aplica')+
+fila('Reteica', r.reteica? '− '+pesos(r.reteica) : 'no aplica')+
+fila('Valor total', pesos(r.total))+
+'</div>'+
+'<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e5e8ec;padding-top:12px">'+
+'<b style="color:#0F3B5C;font-size:14px">Valor a pagar al proveedor</b>'+
+'<b style="color:#0F3B5C;font-size:20px">'+pesos(r.neto)+'</b>'+
+'</div>'+
+(r.nota? '<div class="caja cav">'+esc(r.nota)+'</div>' : '')+
+'<div class="caja cav">El cálculo es una <b>propuesta</b>. Tesorería y contabilidad lo pueden cambiar antes de pagar.</div>';
+}).ocRetenciones(SES, $('concepto').value, b, v, $('decl').checked, '');
+}, 400);
+}
+function leerArchivo(input, cb){
+var f = input && input.files ? input.files[0] : null;
+if(!f){ cb(null); return; }
+var fr = new FileReader();
+fr.onload = function(){ cb({ nombre: f.name, tipo: f.type, datos: fr.result.split(',')[1] }); };
+fr.readAsDataURL(f);
+}
+function enviarOrden(){
+if(!PROV || !PROV.encontrado){ alert('Primero busque el proveedor por el NIT.'); return; }
+if(!$('desc').value.trim()){ alert('Escriba qué se va a comprar.'); return; }
+if(!$('centro').value || $('centro').value === '__NUEVO__'){
+alert('Escoja el centro de costo. Si el proyecto no está en la lista, créelo con «+ Crear un centro de costo nuevo».');
+return;
+}
+if(!Number(limpio($('base').value))){ alert('Escriba la base.'); return; }
+$('enviar').disabled = true; $('enviar').textContent = 'Enviando…';
+leerArchivo($('cot'), function(arch){
+google.script.run.withSuccessHandler(function(r){
+$('enviar').disabled = false; $('enviar').textContent = 'Enviar a aprobación de gerencia';
+if(!r.ok){ alert(r.mensaje); return; }
+abrirModal('Orden creada',
+'<div class="caja cok"><b>'+esc(r.numero)+'</b><br>Quedó esperando la aprobación de gerencia.<br>Valor a pagar: <b>'+pesos(r.neto)+'</b></div>'+
+(r.aviso? '<div class="caja cno">'+esc(r.aviso)+'</div>':'')+
+'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();irA(\'nueva\')">Crear otra</button>');
+}).ocCrearOrden(SES, {
+nit: PROV.nit, descripcion: $('desc').value, centro: $('centro').value,
+area: $('area').value, concepto: $('concepto').value,
+base: Number(limpio($('base').value)), iva: Number(limpio($('iva').value)),
+declarante: $('decl').checked, fechaNecesidad: $('fnec').value,
+observaciones: $('obs').value
+}, arch);
+});
+}
+/* ================= LISTAS ================= */
+function cargarLista(filtro){
+$('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">No pude cargar. Vuelva a entrar.</div>'; return; }
+CACHE = r.filas; RES = r.resumen;
+var s = r.resumen, h = pintarGuia(filtro);
+if(filtro === 'todas'){
+h += '<div class="kpis">'+
+kpi(s.total, r.vertodo? 'órdenes en total' : 'órdenes de '+r.area)+
+kpi(s.esperando,'esperando gerencia','#8A6D1F')+
+kpi(s.porPagar,'aprobadas sin pagar','#8A6D1F')+
+kpi(s.pagadas,'pagadas','#2E6B2E')+
+kpi(s.listas,'listas y causadas','#2E6B2E')+
+'</div>'+
+'<div class="kpis">'+
+kpiTxt(pesos(s.valorTotal),'valor total de las órdenes')+
+kpiTxt(pesos(s.valorPagado),'ya pagado')+
+kpi(s.sinFactura,'sin factura electrónica','#B00020')+
+kpi(s.sinDocSoporte,'sin documento soporte','#8A6D1F')+
+kpi(s.porCausar,'falta causar en World Office','#8A6D1F')+
+'</div>';
+if(!r.vertodo) h += '<div class="caja cav" style="margin-bottom:14px">Usted ve las órdenes del área <b>'+esc(r.area)+'</b>. El resto de las compras de la empresa no le aparecen.</div>';
+}
+if(filtro === 'legalizar' && s.platapendiente>0){
+h += '<div class="card" style="border-color:#F3B5B5"><b style="color:#B00020;font-size:18px">'+pesos(s.platapendiente)+'</b><div style="font-size:12.5px;color:#5A6670;margin-top:4px">ya salieron de la empresa y todavía no se pueden causar.</div></div>';
+}
+if(!r.filas.length){
+h += '<div class="card"><div class="vacio">Nada pendiente por aquí. 👍</div></div>';
+} else {
+for(var i=0;i<r.filas.length;i++) h += tarjeta(r.filas[i]);
+}
+$('wrap').innerHTML = h + '<div style="height:24px"></div>';
+marcarPendientes(s);
+}).ocOrdenes(SES, filtro);
+}
+function marcarPendientes(s){
+var m = { aprobar:s.esperando, pagar:s.porPagar, causar:s.porCausar,
+facturar:(s.sinFactura+s.sinDocSoporte), legalizar:(s.sinFactura+s.sinDocSoporte) };
+for(var k in m){
+var el = $('n_'+k);
+if(el){ if(m[k]>0){ el.textContent = m[k]; el.style.display='inline-block'; } else el.style.display='none'; }
+}
+}
+function kpi(n,t,c){ return '<div class="kpi"><b'+(c?' style="color:'+c+'"':'')+'>'+n+'</b><span>'+t+'</span></div>'; }
+function kpiTxt(v,t){ return '<div class="kpi"><b style="font-size:17px">'+v+'</b><span>'+t+'</span></div>'; }
+function colorFalta(f){
+if(f==='LISTA') return 'ok';
+if(f==='FALTA PAGAR') return 'inf';
+if(f==='RECHAZADA') return 'gris';
+if(f && f.indexOf('FALTA FACTURA')===0) return 'bad';
+return 'wait';
+}
+function tarjeta(o){
+return '<div class="ord" onclick="verOrden(\''+o.numero+'\')">'+
+'<div class="l1"><span class="num">'+esc(o.numero)+'</span>'+
+'<span class="pill '+colorFalta(o.falta)+'">'+esc(o.falta||o.estado)+'</span></div>'+
+'<div class="l2"><b>'+esc(o.proveedor||o.nit)+'</b> · '+esc(o.descripcion)+'</div>'+
+'<div class="l3">'+esc(o.fecha)+' · '+esc(o.solicita)+' · '+esc(o.area)+' · '+esc(o.centro)+' · '+pesos(o.total)+
+(o.dias!==''&&o.dias>0 ? ' · <b style="color:#B00020">'+o.dias+' días sin legalizar</b>':'')+
+'</div></div>';
+}
+/* ================= DETALLE ================= */
+function verOrden(num){
+var o = null;
+for(var i=0;i<CACHE.length;i++) if(CACHE[i].numero===num) o = CACHE[i];
+if(!o) return;
+var h = '<div class="det">'+
+fila('Solicita', o.solicita+' · '+o.area)+ fila('Fecha', o.fecha)+
+fila('Centro de costo', o.centro)+ fila('Proveedor', o.proveedor)+
+fila('Concepto', o.concepto)+ fila('Estado del proveedor', o.estadoProv)+
+fila('Base', pesos(o.base))+ fila('IVA', pesos(o.iva))+
+fila('Retefuente', o.retefuente?'− '+pesos(o.retefuente):'—')+
+fila('Reteica', o.reteica?'− '+pesos(o.reteica):'—')+
+fila('Valor total', pesos(o.total))+ fila('Neto a pagar', pesos(o.neto))+
+'</div>'+
+'<div style="font-size:13px;color:#3D4A54;margin-bottom:12px"><b>'+esc(o.descripcion)+'</b></div>';
+if(o.cotizacion) h += '<a class="btn2" target="_blank" href="'+esc(o.cotizacion)+'">📎 Ver cotización</a> ';
+if(o.soporte)    h += '<a class="btn2" target="_blank" href="'+esc(o.soporte)+'">📄 Soporte de pago</a> ';
+if(o.linkFactura)h += '<a class="btn2" target="_blank" href="'+esc(o.linkFactura)+'">🧾 Factura</a> ';
+if(o.pagado>0){
+h += '<div class="caja cok"><b>Pagado '+pesos(o.pagado)+'</b> el '+esc(o.fechaPago)+
+(o.saldo>0? '<br><b style="color:#8A6D1F">Queda pendiente '+pesos(o.saldo)+'</b>':'')+'</div>';
+}
+if(o.comentario) h += '<div class="caja cav"><b>Gerencia:</b> '+esc(o.comentario)+'</div>';
+var e = String(o.estado).toUpperCase();
+if(CTX.puede.aprobar && e==='SOLICITADA'){
+h += '<div class="sec" style="margin-top:16px">SU DECISIÓN</div>'+
+'<div class="g"><label>Comentario (obligatorio si rechaza)</label><textarea id="com"></textarea></div>'+
+'<button class="btn btnok" style="width:100%" onclick="decidir(\''+o.numero+'\',\'APROBADA\')">Aprobar y pasar a tesorería</button>'+
+'<button class="btn btnno" style="width:100%;margin-top:8px" onclick="decidir(\''+o.numero+'\',\'RECHAZADA\')">Rechazar y devolver al área</button>';
+}
+if(CTX.puede.pagar && e!=='RECHAZADA' && e!=='SOLICITADA' && (o.saldo>0 || o.pagado===0)){
+h += '<div class="sec" style="margin-top:16px">REGISTRAR PAGO</div>'+
+(o.estadoProv!=='VIGENTE' ? '<div class="caja cno">Este proveedor tiene <b>'+esc(o.estadoProv)+'</b>. Revise antes de pagar.</div>' : '')+
+'<div class="row">'+
+'<div class="g"><label>Tipo de pago</label><select id="tp"><option>PAGO TOTAL</option><option>ABONO</option><option>ANTICIPO</option><option>PAGO SIN FACTURA - CONTRA COTIZACION</option></select></div>'+
+'<div class="g"><label>Valor pagado</label><input id="vp" inputmode="numeric" value="'+Math.round(o.saldo>0?o.saldo:o.neto)+'"></div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Banco / cuenta</label><input id="bk"></div>'+
+'<div class="g"><label>N° comprobante de egreso</label><input id="ce"></div>'+
+'</div>'+
+'<div class="g"><label>Soporte del pago</label><input id="sp" type="file"></div>'+
+'<div class="g"><label>Observaciones</label><textarea id="op" placeholder="Ej: abono parcial, queda saldo…"></textarea></div>'+
+'<button class="btn" style="width:100%" onclick="pagar(\''+o.numero+'\')">Guardar el pago</button>';
+}
+if(CTX.puede.facturar && o.pagado>0 && o.falta && o.falta.indexOf('FALTA')===0 && o.falta!=='FALTA PAGAR'){
+h += '<div class="sec" style="margin-top:16px">MERCANCÍA Y FACTURA</div>'+
+'<div class="row">'+
+'<div class="g"><label>¿Llegó la mercancía?</label><select id="mc"><option>SI - COMPLETA</option><option>INCOMPLETA</option><option>NO HA LLEGADO</option><option>NO APLICA - SERVICIO</option></select></div>'+
+'<div class="g"><label>Quién recibió</label><input id="rp"></div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Qué llegó</label><select id="td"><option>PENDIENTE</option><option>FACTURA ELECTRONICA</option><option>DOCUMENTO SOPORTE</option></select></div>'+
+'<div class="g"><label>N° de la factura</label><input id="nf"></div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Fecha de la factura</label><input id="ff" type="date"></div>'+
+'<div class="g"><label>Valor facturado</label><input id="vf" inputmode="numeric" value="'+Math.round(o.total)+'"></div>'+
+'</div>'+
+'<div class="g"><label>Adjuntar la factura</label><input id="af" type="file"></div>'+
+'<button class="btn" style="width:100%" onclick="facturar(\''+o.numero+'\')">Guardar</button>'+
+'<button class="btn2" style="width:100%;margin-top:8px" onclick="mensajeProv(\''+o.numero+'\')">Ver el mensaje para pedirle la factura</button>';
+}
+if(!CTX.puede.facturar && o.falta && o.falta.indexOf('FALTA')===0 && o.falta!=='FALTA PAGAR'){
+h += '<button class="btn2" style="width:100%;margin-top:14px" onclick="mensajeProv(\''+o.numero+'\')">Pedirle la factura al proveedor</button>';
+}
+if(CTX.puede.causar && o.falta==='FALTA CAUSAR EN WORLD OFFICE'){
+h += '<div class="sec" style="margin-top:16px">CONTABILIDAD</div>'+
+'<div class="g"><label>Observación</label><textarea id="cc"></textarea></div>'+
+'<button class="btn btnok" style="width:100%" onclick="causar(\''+o.numero+'\')">Marcar como causada en World Office</button>';
+}
+abrirModal(o.numero, h);
+}
+/* ================= ACCIONES ================= */
+function decidir(num, dec){
+var c = $('com') ? $('com').value : '';
+if(dec==='RECHAZADA' && !c.trim()){ alert('Para rechazar hay que escribir el motivo.'); return; }
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ alert(r.mensaje); return; }
+cerrarModal(); irA(TAB);
+}).ocDecidir(SES, num, dec, c);
+}
+function pagar(num){
+var v = Number(limpio($('vp').value));
+if(!v){ alert('Escriba el valor pagado.'); return; }
+leerArchivo($('sp'), function(arch){
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ alert(r.mensaje); return; }
+var m = '<div class="caja cok">Pago registrado.</div>';
+if(r.saldo>0) m += '<div class="caja cav">Queda un saldo pendiente de <b>'+pesos(r.saldo)+'</b> en esta orden.</div>';
+abrirModal('Listo', m+'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();irA(TAB)">Cerrar</button>');
+}).ocRegistrarPago(SES, num, {
+tipo:$('tp').value, valor:v, banco:$('bk').value,
+comprobante:$('ce').value, observaciones:$('op').value
+}, arch);
+});
+}
+function facturar(num){
+leerArchivo($('af'), function(arch){
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ alert(r.mensaje); return; }
+cerrarModal(); irA(TAB);
+}).ocRegistrarFactura(SES, num, {
+mercancia:$('mc').value, recibidoPor:$('rp').value, tipoDoc:$('td').value,
+numeroFactura:$('nf').value, fechaFactura:$('ff').value,
+valorFacturado:Number(limpio($('vf').value))
+}, arch);
+});
+}
+function causar(num){
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ alert(r.mensaje); return; }
+cerrarModal(); irA(TAB);
+}).ocCausar(SES, num, $('cc')?$('cc').value:'');
+}
+function mensajeProv(num){
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ alert(r.mensaje); return; }
+var wa = 'https://wa.me/?text=' + encodeURIComponent(r.texto);
+abrirModal('Mensaje para '+r.proveedor,
+(r.esFacturadorElectronico
+? '<div class="caja cav">Este proveedor <b>es facturador electrónico</b>: tiene que expedir factura.</div>'
+: '<div class="caja cok">Este proveedor <b>no está obligado a facturar</b>. No hay que pedirle nada: contabilidad elabora el documento soporte.</div>')+
+'<div class="card" style="margin-top:10px"><div style="font-size:13px;line-height:1.6" id="txtp">'+esc(r.texto)+'</div></div>'+
+(r.esFacturadorElectronico
+? '<a class="btn2" target="_blank" href="'+wa+'">💬 Enviar por WhatsApp</a> <button class="btn2" onclick="copiar()">Copiar</button>'
+: ''));
+}).ocMensajeProveedor(SES, num);
+}
+function copiar(){
+var t = $('txtp').textContent;
+if(navigator.clipboard) navigator.clipboard.writeText(t);
+alert('Copiado.');
+}
+/* ================= USUARIOS ================= */
+function pantallaUsuarios(){
+$('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ $('wrap').innerHTML = '<div class="card"><div class="caja cno">'+esc(r.mensaje)+'</div></div>'; return; }
+window.__USU = r;
+var fs = r.filas.map(function(u){
+return '<tr>'+
+'<td><b>'+esc(u.nombre)+'</b></td>'+
+'<td>'+esc(u.usuario)+'</td>'+
+'<td><code style="background:#F2F4F7;padding:2px 7px;border-radius:5px;font-size:12px">'+esc(u.contrasena)+'</code></td>'+
+'<td><span class="pill inf">'+esc(u.rol)+'</span></td>'+
+'<td>'+esc(u.area)+'</td>'+
+'<td>'+(u.estado==='ACTIVO'? '<span class="pill ok">ACTIVO</span>':'<span class="pill gris">INACTIVO</span>')+'</td>'+
+'<td style="text-align:center"><b>'+u.ordenes+'</b></td>'+
+'<td><span class="lnk" style="color:#0F3B5C" onclick="editarUsuario(\''+esc(u.usuario)+'\')">Editar</span></td>'+
+'</tr>';
+}).join('');
+$('wrap').innerHTML = pintarGuia('usuarios')+
+'<div class="card">'+
+'<div class="sec">QUIÉN ENTRA AL PORTAL</div>'+
+'<table><tr><th>PERSONA</th><th>USUARIO</th><th>CONTRASEÑA</th><th>ROL</th><th>ÁREA</th><th>ESTADO</th><th style="text-align:center">ÓRDENES</th><th></th></tr>'+fs+'</table>'+
+'<div style="margin-top:14px"><button class="btn" onclick="editarUsuario(\'\')">+ Agregar persona</button></div>'+
+'</div>'+
+'<div class="card">'+
+'<div class="sec">QUÉ VE Y QUÉ PUEDE HACER CADA ROL</div>'+
+'<table>'+
+'<tr><th>ROL</th><th>QUÉ PUEDE HACER</th><th>QUÉ VE</th></tr>'+
+'<tr><td><b>ADMINISTRADOR</b></td><td>Todo, y administra usuarios y contraseñas</td><td>Todas las órdenes</td></tr>'+
+'<tr><td><b>GERENCIA</b></td><td>Aprobar o rechazar</td><td>Todas las órdenes</td></tr>'+
+'<tr><td><b>TESORERIA</b></td><td>Registrar pagos y subir soportes</td><td>Todas las órdenes</td></tr>'+
+'<tr><td><b>COMPRAS</b></td><td>Pedir compras y registrar mercancía y facturas</td><td>Todas las órdenes</td></tr>'+
+'<tr><td><b>CONTABILIDAD</b></td><td>Marcar causadas en World Office</td><td>Todas las órdenes</td></tr>'+
+'<tr><td><b>SOLICITANTE</b></td><td>Pedir compras de su área</td><td><b>Solo las de su área</b></td></tr>'+
+'</table>'+
+'<div class="caja cav">Para un ingeniero o la persona del sistema de gestión use <b>SOLICITANTE</b> y márquele el área. Así ve todo lo de su área y nada del resto.</div>'+
+'</div>'+
+'<div style="height:24px"></div>';
+}).ocUsuarios(SES);
+}
+function editarUsuario(usuario){
+var r = window.__USU, u = null;
+for(var i=0;i<r.filas.length;i++) if(r.filas[i].usuario===usuario) u = r.filas[i];
+var nuevo = !u;
+USU_ORIG = nuevo ? '' : u.usuario;
+if(!u) u = { nombre:'', usuario:'', contrasena:'', rol:'SOLICITANTE', area:'Ingenieria', estado:'ACTIVO', celular:'' };
+var roles = r.roles.map(function(x){ return '<option'+(x===u.rol?' selected':'')+'>'+esc(x)+'</option>'; }).join('');
+var areas = r.areas.map(function(x){ return '<option'+(x===u.area?' selected':'')+'>'+esc(x)+'</option>'; }).join('');
+abrirModal(nuevo? 'Agregar persona' : 'Editar a '+u.nombre,
+'<div class="g"><label>Nombre completo</label><input id="uN" value="'+esc(u.nombre)+'"></div>'+
+'<div class="row">'+
+'<div class="g"><label>Usuario</label><input id="uU" value="'+esc(u.usuario)+'" placeholder="juan"></div>'+
+'<div class="g"><label>Contraseña</label><input id="uP" value="'+esc(u.contrasena)+'" placeholder="mínimo 6 caracteres"></div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Rol</label><select id="uR">'+roles+'</select></div>'+
+'<div class="g"><label>Área</label><select id="uA">'+areas+'</select></div>'+
+'<div class="g"><label>Estado</label><select id="uE"><option'+(u.estado==='ACTIVO'?' selected':'')+'>ACTIVO</option><option'+(u.estado==='INACTIVO'?' selected':'')+'>INACTIVO</option></select></div>'+
+'</div>'+
+'<div class="g"><label>Celular (opcional)</label><input id="uC" value="'+esc(u.celular)+'"></div>'+
+(nuevo? '' : '<div class="caja cav">Puede cambiarle el nombre, el usuario y la contraseña. Si le cambia el usuario, sus órdenes anteriores siguen siendo de ella. Avísele del cambio.</div>')+
+'<button class="btn" style="width:100%;margin-top:12px" id="uB" onclick="guardarUsuario()">Guardar</button>');
+}
+var USU_ORIG = '';
+function guardarUsuario(){
+$('uB').disabled = true;
+google.script.run.withSuccessHandler(function(r){
+$('uB').disabled = false;
+if(!r.ok){ alert(r.mensaje); return; }
+if(USU_ORIG && CTX && USU_ORIG.toLowerCase() === String(CTX.usuario||'').toLowerCase()){
+alert('Cambió sus propios datos de entrada. Vuelva a entrar con el usuario y la contraseña nuevos.');
+salir(); return;
+}
+cerrarModal(); pantallaUsuarios();
+}).withFailureHandler(function(e){
+$('uB').disabled = false; alert('No pude guardar: '+String(e));
+}).ocGuardarUsuario(SES, {
+nombre:$('uN').value, usuario:$('uU').value, contrasena:$('uP').value,
+rol:$('uR').value, area:$('uA').value, estado:$('uE').value,
+celular:$('uC').value, usuarioOriginal: USU_ORIG
+});
+}
+function verCambiarClave(){
+abrirModal('Cambiar mi contraseña',
+'<div class="g"><label>Contraseña actual</label><input id="pA" type="password"></div>'+
+'<div class="g"><label>Contraseña nueva (mínimo 6 caracteres)</label><input id="pN" type="password"></div>'+
+'<button class="btn" style="width:100%" id="pB" onclick="cambiarClave()">Cambiar</button>');
+}
+function cambiarClave(){
+$('pB').disabled = true;
+google.script.run.withSuccessHandler(function(r){
+$('pB').disabled = false;
+if(!r.ok){ alert(r.mensaje); return; }
+SES = r.ses;
+cerrarModal();
+abrirModal('Listo', '<div class="caja cok">Su contraseña quedó cambiada.</div>');
+}).ocCambiarMiContrasena(SES, $('pA').value, $('pN').value);
+}
+/* ================= MODAL ================= */
+function abrirModal(titulo, html){
+$('modal').innerHTML =
+'<div class="fondo" onclick="if(event.target===this)cerrarModal()">'+
+'<div class="modal"><div class="mt"><span>'+esc(titulo)+'</span><span class="x" onclick="cerrarModal()">×</span></div>'+
+'<div class="mb">'+html+'</div></div></div>';
+}
+function cerrarModal(){ $('modal').innerHTML = ''; }
+/* ================= ARRANQUE ================= */
+pantallaLogin('');
+</script>
+</body>
+</html>

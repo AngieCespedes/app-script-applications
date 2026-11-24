@@ -1,0 +1,10 @@
+[
+  "api",
+  "doGet",
+  "menuCifrarPins",
+  "menuInstalarApp",
+  "menuModoProduccion",
+  "menuModoPrueba",
+  "menuVerUsuarios",
+  "onOpen"
+]

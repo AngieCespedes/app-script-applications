@@ -4,12 +4,14 @@
   "description": "Apps de Google Apps Script de Angie Céspedes (caja menor Social Solar y otras).",
   "scripts": {
     "lint": "eslint apps/*/src/server apps/*/test scripts && node scripts/verificar-globales.js",
-    "test": "node --test apps/*/test/*.test.js",
+    "test": "node --test apps/*/test/*.test.js tests/*.test.js",
     "check": "npm run lint && npm test"
   },
   "devDependencies": {
+    "@google/clasp": "^3.4.1",
+    "acorn": "^8.19.0",
+    "acorn-walk": "^8.3.5",
     "eslint": "^9.15.0",
-    "globals": "^15.12.0",
-    "@google/clasp": "^3.4.1"
+    "globals": "^15.12.0"
   }
 }

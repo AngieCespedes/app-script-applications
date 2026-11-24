@@ -1,0 +1,22 @@
+{
+  "scriptId": "11sseipYrAxQfxj-BX41SOBskqwU3GMoxIOipEPzjPf-zDAmBB4f3kzfd",
+  "rootDir": "src",
+  "scriptExtensions": [
+    ".js"
+  ],
+  "htmlExtensions": [
+    ".html"
+  ],
+  "jsonExtensions": [
+    ".json"
+  ],
+  "filePushOrder": [
+    "src/server/00-nucleo-config.js",
+    "src/server/01-nucleo-guardas.js",
+    "src/server/02-nucleo-correo.js",
+    "src/server/03-nucleo-instalacion.js",
+    "src/server/04-nucleo-aislamiento.js",
+    "src/server/ids.js",
+    "src/server/config.js"
+  ]
+}

@@ -1,0 +1,15 @@
+[
+  "activarAutomatico",
+  "api",
+  "completarFilasExistentes",
+  "configurarCarpeta",
+  "desactivarAutomatico",
+  "diagnosticarFila",
+  "doGet",
+  "menuInstalarApp",
+  "menuModoProduccion",
+  "menuModoPrueba",
+  "onOpen",
+  "procesarTodo",
+  "releerFilaSeleccionada"
+]
