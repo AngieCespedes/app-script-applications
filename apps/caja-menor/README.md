@@ -9,7 +9,9 @@ Reescritura limpia de la caja menor v3 sobre una **copia** del libro, sin tocar 
 ## Puesta en marcha (una vez, la dueña)
 
 1. Abrir el libro V4 → menú **Caja menor › Instalar o actualizar (dueña)** → autorizar. Crea las carpetas «Soportes caja menor» y «99 RESPALDOS» junto al libro, guarda la configuración y migra el libro al esquema 1.
-2. Desde el repo: `scripts/publicar.sh caja-menor release "Primera versión v4"` → crea el despliegue web.
+2. El despliegue web ya está creado (versión 1, 24/11/2026):
+   https://script.google.com/macros/s/AKfycbwu0wPVIdzA7INS9mjC8G6O17ybURo_PW_QLz1V7T1DJKnXm5P_8Mzps7oaH98M6SEc/exec
+   Los siguientes cambios se publican con `scripts/publicar.sh caja-menor release "<nota>"` (la URL no cambia).
 3. Probar con los usuarios de siempre (vienen copiados de la v3; la app pedirá cambiar la clave).
 4. Cuando esté validado: **Caja menor › Pasar a producción**.
 
