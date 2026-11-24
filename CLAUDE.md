@@ -37,6 +37,20 @@ scripts/                 publicar.sh y verificaciones
 5. **Protecciones estrictas** (no solo aviso) en encabezados, fórmulas y `_meta`; las casillas de captura quedan libres. Agregar filas de datos siempre está permitido.
 6. Registros nuevos al final de la tabla. Para anular, marcar; no borrar filas.
 
+## Apps migradas (`.legado`)
+
+- Las apps viejas se traen con `node scripts/migrar-legado.js <origen> apps/<app> <config.json>`. La herramienta: pasa todas las
+  funciones a privadas (`_`), hace que la página llame `google.script.run.api('accion', …)` con la tabla `Rutas_`, deja globales solo
+  `doGet`/`api`/menús/activadores (con guarda) y los declara en `apps/<app>/globales.json`, saca los IDs a `Config_.id`, manda los
+  correos por `Correo_` y abre archivos por `Aislamiento_` (en PRUEBA solo dentro de la carpeta de la copia). El núcleo común está en
+  `packages/nucleo-legado/`.
+- Una app con archivo `.legado` tiene los límites de tamaño/complejidad como advertencia, no error. Al refactorizarla a módulos
+  (reglas de «Código»), se borra `.legado`.
+- **No volver a correr la herramienta sobre una app ya migrada:** sobrescribe los cambios hechos a mano (ver su `MIGRACION.md`).
+- `tests/apps-legado.test.js` verifica que cada acción que pide la página exista en `Rutas_` y que ninguna página llame funciones
+  del servidor por fuera de `api`.
+- Al agregar una app, agregar su fila a la tabla del README.
+
 ## Publicar
 
 - **Nunca se edita en el editor web de Apps Script.** El siguiente `push` lo borra.

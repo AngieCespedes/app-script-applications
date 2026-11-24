@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+:root{--v:#157347;--vs:#E7F3EC;--r:#B3261E;--rs:#FBEAE9;--az:#1A4C8B;--azs:#EAF0F8;
+--t:#15201A;--g:#6B726D;--bd:#E2E7E3;--bg:#F3F5F3;--am:#8A6D00;--ams:#FDF6E8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{margin:0;background:var(--bg);color:var(--t);font-size:15px;line-height:1.45}
+.wrap{max-width:560px;margin:0 auto;background:var(--bg);min-height:100vh;padding-bottom:40px}
+.top{background:#12201A;color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top .marca{font-size:10px;letter-spacing:1.3px;font-weight:700;color:#8FBFA4}
+.top .tit{font-size:17px;font-weight:700;margin-top:2px}
+.chip{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:20px;padding:6px 12px;
+font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.pad{padding:14px 16px}
+.seg{display:flex;background:#E5E9E6;border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:9px 0;font-size:12.5px;
+font-weight:700;color:var(--g);cursor:pointer;letter-spacing:.3px}
+.seg button.on{background:#fff;color:var(--t);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px}
+.nav button{border:1px solid var(--bd);background:#fff;border-radius:9px;width:40px;height:38px;
+font-size:17px;color:var(--g);cursor:pointer;flex:0 0 40px}
+.nav .lbl{flex:1;text-align:center;font-weight:700;font-size:14px}
+.nav .lbl small{display:block;font-weight:400;font-size:11px;color:var(--g);margin-top:1px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.st{background:#fff;border:1px solid var(--bd);border-radius:11px;padding:11px 12px}
+.st small{display:block;font-size:9.5px;font-weight:700;letter-spacing:.6px;color:var(--g)}
+.st b{display:block;font-size:17px;margin-top:3px;letter-spacing:-.3px}
+.acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:13px}
+.acts button{border:0;border-radius:11px;color:#fff;padding:13px 4px;font-size:11.5px;font-weight:700;cursor:pointer;line-height:1.25}
+.acts button span{display:block;font-size:17px;margin-bottom:3px}
+.bv{background:var(--v)}.br{background:var(--r)}.ba{background:var(--az)}
+.card{background:#fff;border:1px solid var(--bd);border-radius:12px;margin-top:13px;overflow:hidden}
+.card .ch{padding:10px 13px;font-size:10.5px;font-weight:700;letter-spacing:.8px;color:#fff;
+display:flex;justify-content:space-between;align-items:center}
+.card .ch b{font-size:13px;letter-spacing:0}
+table{width:100%;border-collapse:collapse}
+td{padding:8px 10px;font-size:11.5px;border-bottom:1px solid #EFF2F0;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;font-weight:700;white-space:nowrap}
+td .sub{display:block;color:var(--g);font-size:10.5px;margin-top:1px}
+.nada{padding:22px 14px;text-align:center;color:var(--g);font-size:12.5px}
+.cats{padding:10px 13px;border-top:1px solid #EFF2F0}
+.cats div{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0}
+.cats div span{color:var(--g)}
+.cats div b{white-space:nowrap}
+.pane{display:none}
+form .f{margin-top:13px}
+label{display:block;font-size:11.5px;font-weight:600;color:var(--g);margin-bottom:5px}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px;
+font-size:15.5px;background:#fff;color:var(--t);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--az);box-shadow:0 0 0 3px rgba(26,76,139,.1)}
+textarea{min-height:58px;resize:vertical}
+.r2{display:flex;gap:9px}.r2>*{flex:1}.r2 .sm{flex:0 0 92px}
+.bt{width:100%;margin-top:18px;padding:15px;border:0;border-radius:11px;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.bt:active{transform:translateY(1px)}.bt[disabled]{opacity:.5}
+.bt2{background:#fff;border:1px solid var(--bd);color:var(--g);font-weight:600;font-size:13px;padding:11px}
+.hint{font-size:11px;color:var(--g);text-align:center;margin-top:11px;line-height:1.5}
+.msg{display:none;margin-top:12px;border-radius:9px;padding:11px 13px;font-size:12.5px;font-weight:600}
+.msg.e{background:var(--rs);color:var(--r);border-left:4px solid var(--r)}
+.aviso{display:none;margin-top:12px;background:var(--rs);border:1px solid var(--r);border-radius:10px;padding:12px 13px}
+.aviso b{display:block;color:var(--r);font-size:13px;margin-bottom:4px}
+.aviso p{margin:0;font-size:12px;color:#6B1710;line-height:1.5}
+.den{background:var(--azs);border:1px solid #CBDAEC;border-radius:12px;padding:12px;margin-top:8px}
+.den h4{margin:0 0 8px;font-size:10px;letter-spacing:.9px;color:var(--az)}
+.gr{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.cl{background:#fff;border:1px solid #CBDAEC;border-radius:9px;padding:6px 4px;text-align:center}
+.cl span{display:block;font-size:10.5px;font-weight:700;color:var(--az);margin-bottom:2px}
+.cl input{border:0;padding:2px 0;text-align:center;font-size:17px;font-weight:700}
+.cl input:focus{box-shadow:none}
+.tt{margin-top:11px;background:var(--v);color:#fff;border-radius:10px;padding:12px 14px;
+display:flex;justify-content:space-between;align-items:center}
+.tt span{font-size:10px;font-weight:700;letter-spacing:.9px;opacity:.9}
+.tt b{font-size:20px}
+.sep{margin-top:18px;padding-top:14px;border-top:1px solid var(--bd);font-size:10px;
+font-weight:700;letter-spacing:.9px;color:var(--g)}
+.rad div{display:flex;gap:10px;align-items:flex-start;padding:9px 0}
+.rad input{width:19px;height:19px;flex:0 0 19px;margin:1px 0 0}
+.rad label{margin:0;font-size:13.5px;font-weight:400;color:var(--t)}
+.ok{display:none;text-align:center;padding:60px 26px}
+.ok .b{font-size:46px;color:var(--v)}
+.ok h3{font-size:19px;margin:12px 0 6px}
+.ok p{color:var(--g);font-size:13.5px;margin:0 0 24px}
+.login{padding:50px 24px 24px}
+.login .lg{text-align:center;margin-bottom:26px}
+.login .lg .n{font-size:11px;letter-spacing:1.6px;font-weight:700;color:var(--v)}
+.login .lg h1{font-size:25px;margin:8px 0 4px}
+.login .lg p{color:var(--g);font-size:13px;margin:0}
+.ulist{margin-top:4px}
+.u{background:#fff;border:1px solid var(--bd);border-radius:11px;padding:11px 13px;margin-top:9px;
+display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.u b{display:block;font-size:13.5px}
+.u small{display:block;color:var(--g);font-size:11px;margin-top:2px}
+.tag{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.tag.on{background:var(--vs);color:var(--v)}.tag.off{background:#EEE;color:var(--g)}
+.chk{display:flex;align-items:center;gap:9px;padding:7px 0}
+.chk input{width:19px;height:19px;flex:0 0 19px}
+.chk label{margin:0;font-size:13.5px;font-weight:400;color:var(--t)}
+.cargando{padding:40px;text-align:center;color:var(--g);font-size:13px}
+.calc{background:#EEF3FA;border:1px solid #CBDAEC;border-radius:12px;padding:13px;margin-top:14px}
+.calc .l{display:flex;justify-content:space-between;padding:5px 0;font-size:12.5px}
+.calc .l span{color:var(--g)}
+.calc .l b{white-space:nowrap}
+.calc .l.r b{color:#B3261E}
+.calc .neto{margin-top:9px;padding-top:10px;border-top:2px solid var(--az);
+display:flex;justify-content:space-between;align-items:baseline}
+.calc .neto span{font-size:10px;font-weight:700;letter-spacing:.9px;color:var(--az)}
+.calc .neto b{font-size:23px;color:var(--az);letter-spacing:-.5px}
+.notas{margin-top:10px;font-size:11px;line-height:1.55;color:var(--g)}
+.notas div{padding:3px 0}
+.notas div.w{color:var(--am);font-weight:600}
+.iva19{border:1px solid var(--bd);background:#fff;border-radius:9px;padding:0 12px;
+font-size:12px;font-weight:600;color:var(--g);cursor:pointer;white-space:nowrap}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.kpi .b{background:#fff;border:1px solid var(--bd);border-radius:11px;padding:11px 12px}
+.kpi .b small{display:block;font-size:9px;font-weight:700;letter-spacing:.6px;color:var(--g)}
+.kpi .b b{display:block;font-size:16.5px;margin-top:3px;letter-spacing:-.3px}
+.kpi .b i{font-style:normal;font-size:10.5px;font-weight:700}
+.lin{padding:9px 13px;border-bottom:1px solid #EFF2F0;display:flex;justify-content:space-between;
+align-items:center;gap:10px;font-size:12.5px}
+.lin:last-child{border-bottom:0}
+.lin span{color:var(--g)}
+.lin b{white-space:nowrap}
+.lin b.mal{color:var(--r)}.lin b.bien{color:var(--v)}
+.per{padding:11px 13px;border-bottom:1px solid #EFF2F0;cursor:pointer}
+.per:last-child{border-bottom:0}
+.per .n{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.per .n b{font-size:13.5px}
+.per .n span{font-size:11.5px;color:var(--g);white-space:nowrap}
+.per .d{font-size:11px;color:var(--g);margin-top:3px}
+.per .al{display:inline-block;margin-top:5px;background:var(--rs);color:var(--r);
+font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.barra{height:5px;background:#EDF0EE;border-radius:3px;margin-top:6px;overflow:hidden}
+.barra i{display:block;height:5px;background:var(--v)}
+.dls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dl{border:1px solid var(--bd);background:#fff;border-radius:10px;padding:12px 8px;font-size:12px;
+font-weight:600;color:var(--t);cursor:pointer}
+.dl.full{grid-column:1/-1}
+#d_out a.go{display:block;margin-top:10px;background:#157347;color:#fff;text-align:center;
+padding:13px;border-radius:10px;text-decoration:none;font-weight:700;font-size:13.5px}
+#d_out .w{margin-top:10px;font-size:11.5px;color:var(--g);text-align:center;line-height:1.5}
+.anx{background:#FBEAE9;color:#B3261E;border:0;border-radius:6px;width:26px;height:26px;font-size:11px;font-weight:700;cursor:pointer;line-height:1}
+.anx:active{background:#F3C9C6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- LOGIN -->
+<div id="p-login" class="pane login">
+  <div class="lg">
+    <div class="n">FERTIAGRO ALARC&Oacute;N S.A.S.</div>
+    <h1>Caja diaria</h1>
+    <p>Entre con su usuario y contrase&ntilde;a</p>
+  </div>
+  <div class="f"><label>Usuario</label><input id="l_u" autocapitalize="none" autocomplete="username"></div>
+  <div class="f"><label>Contrase&ntilde;a</label><input id="l_c" type="password" autocomplete="current-password"></div>
+  <div class="msg e" id="l_msg"></div>
+  <button class="bt bv" id="l_btn">Entrar</button>
+  <div class="hint">Cada quien entra con su propio usuario.<br>Todo lo que registre queda con su nombre y la hora.</div>
+</div>
+
+<!-- CARGANDO -->
+<div id="p-carga" class="pane"><div class="cargando">Cargando...</div></div>
+
+<!-- TABLERO -->
+<div id="p-caja" class="pane">
+  <div class="top">
+    <div>
+      <div class="marca">FERTIAGRO ALARC&Oacute;N S.A.S.</div>
+      <div class="tit">Caja</div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="chip" id="b_ger" style="display:none" onclick="irGerencia()">Gerencia</button>
+      <button class="chip" id="b_personas" style="display:none" onclick="irPersonas()">Personas</button>
+      <button class="chip" id="b_salir" onclick="salirApp()">Salir</button>
+    </div>
+  </div>
+  <div class="pad">
+    <div class="seg">
+      <button id="sg_dia" class="on" onclick="setPer('dia')">D&Iacute;A</button>
+      <button id="sg_semana" onclick="setPer('semana')">SEMANA</button>
+      <button id="sg_mes" onclick="setPer('mes')">MES</button>
+    </div>
+    <div class="nav">
+      <button onclick="mover(-1)">&lsaquo;</button>
+      <div class="lbl"><span id="n_lbl">-</span><small id="n_sub">&nbsp;</small></div>
+      <button onclick="mover(1)">&rsaquo;</button>
+    </div>
+
+    <div class="stats">
+      <div class="st"><small>ENTR&Oacute; A CAJA</small><b id="s_entro" style="color:#157347">$ 0</b></div>
+      <div class="st"><small>SALI&Oacute; DE CAJA</small><b id="s_salio" style="color:#B3261E">$ 0</b></div>
+      <div class="st"><small>QUEDA EN CAJA</small><b id="s_neto">$ 0</b></div>
+      <div class="st"><small>MOVIMIENTO DE CARTERA</small><b id="s_cart">$ 0</b></div>
+    </div>
+
+    <div class="acts">
+      <button class="bv" onclick="ir('ingreso')"><span>&#8595;</span>Entra dinero</button>
+      <button class="br" onclick="ir('egreso')"><span>&#8593;</span>Sale dinero</button>
+      <button class="ba" onclick="ir('cierre')"><span>&#9745;</span>Cerrar caja</button>
+    </div>
+    <button class="bt" id="b_pago" style="display:none;background:#12201A;margin-top:9px"
+      onclick="irPago()">Pagar a proveedor desde el banco</button>
+
+    <div class="card">
+      <div class="ch" style="background:#157347"><span>INGRESOS</span><b id="h_ing">$ 0</b></div>
+      <div id="t_ing"></div>
+    </div>
+
+    <div class="card">
+      <div class="ch" style="background:#B3261E"><span>EGRESOS</span><b id="h_egr">$ 0</b></div>
+      <div id="t_egr"></div>
+      <div class="cats" id="t_cat" style="display:none"></div>
+    </div>
+
+    <div class="card" id="c_ban" style="display:none"><div class="ch" style="background:#12201A"><span>PAGOS DESDE EL BANCO</span><b id="h_ban">$ 0</b></div><div id="t_ban"></div></div>
+
+    <div class="hint" id="t_cerr">&nbsp;</div>
+
+    <div class="card">
+      <div class="ch" style="background:#15201A"><span>DESCARGAR</span></div>
+      <div style="padding:12px 13px">
+        <div class="dls">
+          <button class="dl" onclick="bajar('pdf')">PDF del periodo</button>
+          <button class="dl" onclick="bajar('csv')">Excel del periodo</button>
+          <button class="dl full" onclick="bajarArqueo()">Arqueo del dia para firmar (media hoja)</button>
+          <button class="dl full" onclick="bajarBanco()">Pagos desde el banco del periodo (PDF para firmar)</button>
+        </div>
+        <div id="d_out"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INGRESO -->
+<div id="p-ingreso" class="pane">
+  <div class="top" style="background:#157347">
+    <div><div class="marca" style="color:#B7DCC6">REGISTRAR</div><div class="tit">&darr; Entra dinero</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="f"><label>Fecha</label><input type="date" id="i_fecha"></div>
+    <div class="f"><label>Tipo de ingreso</label><select id="i_tipo"></select></div>
+    <div class="f"><label>Medio de pago</label><select id="i_medio"></select></div>
+    <div class="f"><label>No. de factura o POS</label><input id="i_doc" placeholder="FA 4044"></div>
+    <div class="f"><label>Cliente</label><input id="i_tercero" placeholder="Nombre del cliente" list="l_cli"><datalist id="l_cli"></datalist></div>
+    <div class="f"><label>Concepto</label><input id="i_concepto" placeholder="Venta de insumos, abono a cartera..."></div>
+    <div class="f"><label>Valor</label><input id="i_valor" inputmode="numeric" placeholder="$ 0"></div>
+    <div class="msg e" id="i_msg"></div>
+    <button class="bt bv" id="i_btn">Registrar ingreso</button>
+    <div class="hint">Queda a nombre de <b id="i_yo">-</b> con la hora del registro.</div>
+  </div>
+</div>
+
+<!-- EGRESO -->
+<div id="p-egreso" class="pane">
+  <div class="top" style="background:#B3261E">
+    <div><div class="marca" style="color:#F0B9B5">REGISTRAR</div><div class="tit">&uarr; Sale dinero</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="f"><label>Fecha</label><input type="date" id="e_fecha"></div>
+    <div class="f"><label>&iquest;De d&oacute;nde sale la plata?</label><select id="e_medio"></select></div>
+    <div class="f"><label>&iquest;A qui&eacute;n le entrega? Nombre completo</label><input id="e_tercero" placeholder="Como aparece en la c&eacute;dula"></div>
+    <div class="f r2">
+      <div class="sm"><label>Tipo</label><select id="e_tipodoc"><option>CC</option><option>NIT</option></select></div>
+      <div><label>No. de identificaci&oacute;n</label><input id="e_ident" inputmode="numeric" placeholder="Sin puntos"></div>
+    </div>
+    <div class="f"><label>&iquest;Por qu&eacute; se paga?</label><input id="e_concepto" placeholder="Flete, compra de empaques..."></div>
+    <div class="f"><label>Categor&iacute;a del gasto</label><select id="e_categoria"></select></div>
+    <div class="sep">&iquest;ES UN PAGO A UN PROVEEDOR?</div><div class="f"><select id="e_prov" onchange="verRetEgr()"><option value="NO">No &mdash; gasto menor, sin retenci&oacute;n</option><option value="SI">S&iacute; &mdash; calcular lo que le debo pagar</option></select></div><div id="e_rbox" style="display:none">  <div class="f"><label>&iquest;Qu&eacute; r&eacute;gimen tiene el proveedor?</label>    <select id="e_reg" onchange="calcEgr()">      <option value="ORDINARIO">R&eacute;gimen ordinario &mdash; responsable de IVA</option>      <option value="SIMPLE">R&eacute;gimen SIMPLE de tributaci&oacute;n</option>      <option value="NO RESPONSABLE">No responsable de IVA</option>    </select></div>  <div class="f"><label>Concepto del pago</label><select id="e_con" onchange="calcEgr()"></select></div>  <div class="f" id="e_declf"><label>&iquest;El proveedor es declarante de renta?</label>    <select id="e_decl" onchange="calcEgr()">      <option value="SI">S&iacute;, es declarante</option>      <option value="NO">No es declarante</option>      <option value="NOSE">No s&eacute;</option>    </select></div>  <div class="f"><label>Base (valor antes de IVA)</label><input id="e_base" inputmode="numeric" placeholder="$ 0"></div>  <div class="f"><label>IVA de la factura</label>    <div class="r2"><input id="e_iva" inputmode="numeric" placeholder="$ 0">      <button type="button" class="iva19" style="flex:0 0 auto" onclick="eIvaPct(19)">19%</button>      <button type="button" class="iva19" style="flex:0 0 auto" onclick="eIvaPct(5)">5%</button>      <button type="button" class="iva19" style="flex:0 0 auto" onclick="eIvaPct(0)">Sin IVA</button></div></div>  <div class="calc">    <div class="l"><span>Base</span><b id="ec_base">$ 0</b></div>    <div class="l"><span>IVA</span><b id="ec_iva">$ 0</b></div>    <div class="l"><span>Total de la factura</span><b id="ec_tot">$ 0</b></div>    <div class="l r"><span id="ec_rtfl">Retefuente de renta</span><b id="ec_rtf">$ 0</b></div>    <div class="l r"><span>ReteIVA</span><b id="ec_riva">$ 0</b></div>    <div class="neto"><span>LE DEBE ENTREGAR</span><b id="ec_neto">$ 0</b></div>    <div class="notas" id="ec_notas"></div>  </div></div><div class="f"><label>Valor</label><input id="e_valor" inputmode="numeric" placeholder="$ 0"></div><div id="e_difw" style="display:none;margin-top:-4px;margin-bottom:10px;background:var(--ams);border-left:4px solid var(--am);border-radius:0 7px 7px 0;padding:9px 11px;font-size:11.5px;font-weight:600;color:var(--am);line-height:1.5"></div>
+    <div class="aviso" id="e_aviso"><b>No lo pague en efectivo</b><p id="e_aviso_t"></p></div>
+    <div class="f"><label>Qui&eacute;n autoriza el pago</label><select id="e_autoriza"></select></div>
+    <div class="sep">&iquest;EL BENEFICIARIO ENTREGA FACTURA?</div>
+    <div class="rad">
+      <div><input type="radio" name="ds" id="ds1" value="NO"><label for="ds1">S&iacute;, me dio factura</label></div>
+      <div><input type="radio" name="ds" id="ds2" value="SI" checked><label for="ds2">No &mdash; hay que hacerle documento soporte</label></div>
+      <div><input type="radio" name="ds" id="ds3" value="REVISAR"><label for="ds3">No s&eacute;, que lo revise contabilidad</label></div>
+    </div>
+    <div class="f"><label>Foto del soporte o del recibo</label>
+      <input type="file" id="e_foto" accept="image/*" capture="environment"></div>
+    <div class="msg e" id="e_msg"></div>
+    <button class="bt br" id="e_btn">Registrar la salida</button>
+    <div class="hint">Art. 771-5 E.T. &mdash; los pagos de m&aacute;s de 100 UVT deben salir por medio financiero
+      para que el costo sea deducible en renta.</div>
+  </div>
+</div>
+
+<!-- CIERRE -->
+<div id="p-cierre" class="pane">
+  <div class="top" style="background:#1A4C8B">
+    <div><div class="marca" style="color:#B5CBE5">ARQUEO</div><div class="tit">&#9745; Cerrar caja</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="f"><label>Fecha del cierre</label><input type="date" id="c_fecha"></div>
+    <div class="f"><label>Cajero del d&iacute;a</label><select id="c_cajero"></select></div>
+    <div class="den">
+      <h4>CU&Aacute;NTOS DE CADA UNO &mdash; BILLETES</h4>
+      <div class="gr" id="g_b"></div>
+      <h4 style="margin-top:11px">MONEDAS</h4>
+      <div class="gr" id="g_m"></div>
+    </div>
+    <div class="tt"><span>USTED CONT&Oacute;</span><b id="c_total">$ 0</b></div>
+    <div class="sep">CONSIGNACI&Oacute;N</div>
+    <div class="f r2">
+      <div><label>No. consignaci&oacute;n</label><input id="c_cons" inputmode="numeric" placeholder="0000000"></div>
+      <div><label>Banco</label><select id="c_banco"></select></div>
+    </div>
+    <div class="f"><label>Valor consignado</label><input id="c_valcons" inputmode="numeric" placeholder="$ 0"></div>
+    <div class="f"><label>&iquest;Qui&eacute;n lleva el dinero al banco?</label><select id="c_quien"></select></div>
+    <div class="f"><label>Observaciones del d&iacute;a</label><textarea id="c_obs" placeholder="Opcional"></textarea></div>
+    <div class="msg e" id="c_msg"></div>
+    <button class="bt ba" id="c_btn">Cerrar la caja del d&iacute;a</button>
+    <div class="hint">Cuente el efectivo antes de mirar el saldo esperado.<br>
+      El cierre queda firmado por <b id="c_yo">-</b>.</div>
+  </div>
+</div>
+
+<!-- ANULAR -->
+<div id="p-anular" class="pane">
+  <div class="top" style="background:#7A1C17">
+    <div><div class="marca" style="color:#F0B9B5">CORREGIR UN ERROR</div>
+      <div class="tit">Anular el registro</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="calc" id="an_res" style="margin-top:0"></div>
+    <div class="f"><label>&iquest;Por qu&eacute; se anula? (queda escrito en el libro)</label>
+      <textarea id="an_mot" rows="3" placeholder="Ej: se digito 500.000 en vez de 50.000"></textarea></div>
+    <div class="f" id="an_vf"><label>&iquest;Qu&eacute; sigue?</label>
+      <select id="an_vol">
+        <option value="SI">Anular y registrar enseguida el movimiento corregido</option>
+        <option value="NO">Solo anular</option>
+      </select></div>
+    <div class="aviso" style="display:block"><b>El registro no se borra</b>
+      <p>Queda marcado como ANULADO con su nombre, la fecha, la hora y el motivo. El efecto en los saldos pasa a cero solo y queda la huella completa para contabilidad.</p></div>
+    <div class="err" id="an_msg"></div>
+    <button class="bt ba" id="an_btn">Anular el registro</button>
+  </div>
+</div>
+
+<!-- PAGO A PROVEEDOR -->
+<div id="p-pago" class="pane">
+  <div class="top" style="background:#12201A">
+    <div><div class="marca" style="color:#8FBFA4">PAGO DESDE EL BANCO</div>
+      <div class="tit">Pagar a proveedor</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="f"><label>Fecha del pago</label><input type="date" id="g_fecha"></div>
+    <div class="f"><label>Proveedor</label><input id="g_prov" placeholder="Nombre o razon social"></div>
+    <div class="f"><label>NIT o C&eacute;dula</label><input id="g_nit" inputmode="numeric" placeholder="Sin puntos"></div>
+    <div class="f"><label>&iquest;Qu&eacute; r&eacute;gimen tiene el proveedor?</label>
+      <select id="g_reg">
+        <option value="ORDINARIO">R&eacute;gimen ordinario &mdash; responsable de IVA</option>
+        <option value="SIMPLE">R&eacute;gimen SIMPLE de tributaci&oacute;n</option>
+        <option value="NO RESPONSABLE">No responsable de IVA</option>
+      </select></div>
+    <div class="f"><label>Concepto del pago</label><select id="g_con"></select></div>
+    <div class="f" id="g_declf"><label>&iquest;El proveedor es declarante de renta?</label>
+      <select id="g_decl">
+        <option value="SI">S&iacute;, es declarante</option>
+        <option value="NO">No es declarante</option>
+        <option value="NOSE">No s&eacute;</option>
+      </select></div>
+    <div class="f"><label>No. de factura</label><input id="g_fac" placeholder="FV 1234"></div>
+    <div class="f"><label>Descripci&oacute;n</label><input id="g_desc" placeholder="Que se compro o que servicio fue"></div>
+    <div class="f"><label>Base (valor antes de IVA)</label><input id="g_base" inputmode="numeric" placeholder="$ 0"></div>
+    <div class="f"><label>IVA de la factura</label>
+      <div class="r2"><input id="g_iva" inputmode="numeric" placeholder="$ 0">
+        <button type="button" class="iva19" style="flex:0 0 auto" onclick="ivaPct(19)">19%</button><button type="button" class="iva19" style="flex:0 0 auto" onclick="ivaPct(5)">5%</button><button type="button" class="iva19" style="flex:0 0 auto" onclick="ivaPct(0)">Sin IVA</button></div><div style="font-size:11px;color:#6b7280;margin-top:5px">Toque la tarifa que trae la factura. Si es excluido, exento o el proveedor no es responsable de IVA, use Sin IVA. Tambien puede escribir el valor a mano.</div></div>
+
+    <div class="calc">
+      <div class="l"><span>Base</span><b id="c_base">$ 0</b></div>
+      <div class="l"><span>IVA</span><b id="c_iva">$ 0</b></div>
+      <div class="l"><span>Total de la factura</span><b id="c_tot">$ 0</b></div>
+      <div class="l r"><span id="c_rtfl">Retefuente de renta</span><b id="c_rtf">$ 0</b></div>
+      <div class="l r"><span>ReteIVA</span><b id="c_riva">$ 0</b></div>
+      <div class="neto"><span>LE DEBE PAGAR</span><b id="c_neto">$ 0</b></div>
+      <div class="notas" id="c_notas"></div>
+    </div>
+
+    <div class="f"><label>Valor que va a girar</label>
+      <input id="g_neto" inputmode="numeric" placeholder="$ 0">
+      <div id="g_difw" style="display:none;margin-top:7px;background:var(--ams);
+        border-left:4px solid var(--am);border-radius:0 7px 7px 0;padding:9px 11px;
+        font-size:11.5px;font-weight:600;color:var(--am);line-height:1.5"></div></div>
+
+    <div class="f r2">
+      <div><label>Banco de donde sale</label><select id="g_banco"></select></div>
+      <div><label>No. de transacci&oacute;n</label><input id="g_tx" placeholder="Comprobante"></div>
+    </div>
+    <div class="f"><label>Observaciones</label><textarea id="g_obs" placeholder="Opcional"></textarea></div>
+    <div class="msg e" id="g_msg"></div>
+    <button class="bt ba" id="g_btn">Registrar el pago</button>
+    <div class="hint">Queda a nombre de <b id="g_yo">-</b>. El c&aacute;lculo lo vuelve a hacer el servidor al guardar.</div>
+  </div>
+</div>
+
+<!-- GERENCIA -->
+<div id="p-gerencia" class="pane">
+  <div class="top">
+    <div><div class="marca">FERTIAGRO ALARC&Oacute;N S.A.S.</div><div class="tit">Gerencia</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="nav" style="margin-top:0">
+      <button onclick="moverG(-1)">&lsaquo;</button>
+      <div class="lbl"><span id="g_lbl">-</span><small>Mes completo</small></div>
+      <button onclick="moverG(1)">&rsaquo;</button>
+    </div>
+    <div id="g_cuerpo"><div class="cargando">Cargando...</div></div>
+  </div>
+</div>
+
+<!-- DETALLE PERSONA -->
+<div id="p-detper" class="pane">
+  <div class="top">
+    <div><div class="marca">GERENCIA</div><div class="tit" id="dp_tit">Persona</div></div>
+    <button class="chip" onclick="ir('gerencia')">Volver</button>
+  </div>
+  <div class="pad">
+    <div id="dp_res"></div>
+    <div class="card"><div class="ch" style="background:#15201A"><span>SUS REGISTROS</span></div>
+      <div id="dp_tabla"><div class="cargando">Cargando...</div></div></div>
+  </div>
+</div>
+
+<!-- PERSONAS -->
+<div id="p-personas" class="pane">
+  <div class="top">
+    <div><div class="marca">CONFIGURACI&Oacute;N</div><div class="tit">Personas y accesos</div></div>
+    <button class="chip" onclick="ir('caja')">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="ulist" id="u_lista"></div>
+    <button class="bt bv" onclick="editarUsuario(null)">Agregar una persona</button>
+  </div>
+</div>
+
+<!-- EDITAR PERSONA -->
+<div id="p-persona" class="pane">
+  <div class="top">
+    <div><div class="marca">CONFIGURACI&Oacute;N</div><div class="tit" id="u_tit">Persona</div></div>
+    <button class="chip" onclick="irPersonas()">Cerrar</button>
+  </div>
+  <div class="pad">
+    <div class="f"><label>Nombre completo</label><input id="u_nombre" placeholder="Como aparece en la c&eacute;dula"></div>
+    <div class="f"><label>Usuario para entrar</label><input id="u_usuario" autocapitalize="none" placeholder="sin espacios, ej: maria"></div>
+    <div class="f"><label>Contrase&ntilde;a</label><input id="u_clave" type="text" placeholder="Dejar vac&iacute;o para no cambiarla"></div>
+    <div class="f"><label>Rol</label><select id="u_rol">
+      <option value="CAJERO">Cajero</option><option value="SUPERVISOR">Supervisor</option>
+      <option value="GERENTE">Gerente (ve la analitica)</option>
+      <option value="ADMIN">Contabilidad (administra todo)</option></select></div>
+    <div class="sep">QU&Eacute; PUEDE HACER</div>
+    <div class="chk"><input type="checkbox" id="u_caja"><label for="u_caja">Maneja caja (registra ingresos y egresos)</label></div>
+    <div class="chk"><input type="checkbox" id="u_arqueo"><label for="u_arqueo">Hace el arqueo y cierra el d&iacute;a</label></div>
+    <div class="chk"><input type="checkbox" id="u_consigna"><label for="u_consigna">Lleva el dinero al banco</label></div>
+    <div class="chk"><input type="checkbox" id="u_autoriza"><label for="u_autoriza">Autoriza pagos</label></div>
+    <div class="chk"><input type="checkbox" id="u_banco"><label for="u_banco">Paga a proveedores desde el banco</label></div>
+    <div class="chk"><input type="checkbox" id="u_activo" checked><label for="u_activo">Activo (puede entrar)</label></div>
+    <div class="msg e" id="u_msg"></div>
+    <button class="bt bv" id="u_btn">Guardar</button>
+  </div>
+</div>
+
+<!-- OK -->
+<div id="p-ok" class="ok">
+  <div class="b">&#10003;</div>
+  <h3 id="ok_t">Listo</h3>
+  <p id="ok_s"></p>
+  <button class="bt bv" onclick="ir('caja')">Volver a la caja</button>
+</div>
+
+</div>
+<script>
+var VER='<?= ver ?>';
+var TK=null, YO=null, D=null;
+var PER='dia', ANCLA=null;
+var BILL=[100000,50000,20000,10000,5000,2000], MON=[1000,500,200,100,50];
+var MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function $(i){return document.getElementById(i)}
+function pes(n){return '$ '+(Number(n)||0).toLocaleString('es-CO').replace(/,/g,'.')}
+function num(s){return Number(String(s).replace(/[^0-9]/g,''))||0}
+function esc(s){return String(s==null?'':s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]})}
+function pdot(s){return String(s==null?'':s).replace(/,/g,'.')}
+function iso(d){var m=d.getMonth()+1,x=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(x<10?'0':'')+x}
+function hoyISO(){return D? D.hoy : iso(new Date())}
+function deISO(s){var p=String(s).split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function dmy(s){var p=String(s).split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+
+function ir(p){
+  var ps=document.querySelectorAll('.pane');
+  for(var i=0;i<ps.length;i++) ps[i].style.display='none';
+  $('p-ok').style.display='none';
+  $('p-'+p).style.display='block';
+  window.scrollTo(0,0);
+  if(p==='caja') cargar();
+}
+function msg(id,t){var e=$(id);e.textContent=t;e.style.display='block'}
+function limpiar(id){$(id).style.display='none'}
+
+/* ---------- login ---------- */
+$('l_btn').onclick=entrar;
+$('l_c').addEventListener('keydown',function(e){ if(e.key==='Enter') entrar() });
+function entrar(){
+  limpiar('l_msg');
+  var u=$('l_u').value.trim(), c=$('l_c').value;
+  if(!u||!c) return msg('l_msg','Escriba usuario y contrasena.');
+  var b=$('l_btn'); b.disabled=true; b.textContent='Entrando...';
+  google.script.run.withSuccessHandler(function(r){
+    b.disabled=false; b.textContent='Entrar';
+    if(!r.ok) return msg('l_msg',r.error);
+    TK=r.token; YO=r.yo;
+    try{ localStorage.setItem('cf_tk',TK) }catch(e){}
+    ir('carga'); arrancar();
+  }).withFailureHandler(function(e){
+    b.disabled=false; b.textContent='Entrar'; msg('l_msg',String(e));
+  }).login(u,c);
+}
+function salirApp(){
+  if(TK) google.script.run.salir(TK);
+  try{ localStorage.removeItem('cf_tk') }catch(e){}
+  TK=null; YO=null; $('l_u').value=''; $('l_c').value=''; ir('login');
+}
+
+/* ---------- arranque ---------- */
+function arrancar(){
+  google.script.run.withSuccessHandler(function(d){
+    if(!d.ok){ ir('login'); return msg('l_msg',d.error) }
+    D=d; YO=d.yo; ANCLA=deISO(d.hoy);
+    pintarFijos();
+    if(VER==='gerencia' && (YO.rol==='ADMIN'||YO.rol==='GERENTE')) irGerencia(); else ir('caja');
+  }).withFailureHandler(function(e){ ir('login'); msg('l_msg',String(e)) }).getDatos(TK);
+}
+
+function opts(id,arr,ph){
+  var s=$(id); if(!s) return; s.innerHTML='';
+  if(ph){var o=document.createElement('option');o.value='';o.textContent=ph;s.appendChild(o)}
+  arr.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;s.appendChild(o)});
+}
+function gente(f){ return D.gente.filter(f).map(function(p){return p.nombre}) }
+function moneda(el){ el.addEventListener('input',function(){var n=num(el.value); el.value=n?pes(n):''}) }
+
+function pintarFijos(){
+  ['i_fecha','e_fecha','c_fecha'].forEach(function(x){ $(x).value=D.hoy });
+  $('i_yo').textContent=YO.nombre; $('c_yo').textContent=YO.nombre;
+  $('b_personas').style.display = YO.rol==='ADMIN' ? 'inline-block' : 'none';
+  $('b_ger').style.display = (YO.rol==='ADMIN'||YO.rol==='GERENTE') ? 'inline-block' : 'none';
+  $('b_pago').style.display = (YO.banco||YO.rol==='ADMIN') ? 'block' : 'none';
+
+  opts('i_tipo', D.tipos.filter(function(t){return /VENTA|RECAUDO|OTRO INGRESO|BANCO A CAJA|SALDO INICIAL/.test(t)}));
+  opts('i_medio', D.medios);
+  var dl=$('l_cli'); dl.innerHTML=''; D.clientes.forEach(function(c){var o=document.createElement('option');o.value=c;dl.appendChild(o)});
+  opts('e_medio', D.medios.filter(function(m){return !/CR.DITO|POR CONFIRMAR/.test(m)}));
+  opts('e_categoria', D.categorias.filter(function(c){return !/VENTA MOSTRADOR|RECAUDO DE CARTERA/.test(c)}), '- escoja la categoria -');
+  opts('e_autoriza', gente(function(p){return p.autoriza}), '- nombre -');
+  opts('c_cajero', gente(function(p){return p.caja}), '- nombre -');
+  opts('c_banco', D.bancos);
+  opts('c_quien', gente(function(p){return p.consigna}), '- elija el nombre -');
+
+  ['i_valor','e_valor','c_valcons'].forEach(function(x){ moneda($(x)) });
+
+  if(!$('g_b').children.length){
+    function cel(c,a,b0){ a.forEach(function(v,i){
+      var d=document.createElement('div'); d.className='cl';
+      d.innerHTML='<span>$'+v.toLocaleString('es-CO').replace(/,/g,'.')+'</span><input inputmode="numeric" id="d'+(b0+i)+'" value="0">';
+      $(c).appendChild(d);
+    })}
+    cel('g_b',BILL,0); cel('g_m',MON,6);
+    for(var k=0;k<11;k++) $('d'+k).addEventListener('input',contar);
+  }
+  $('e_valor').addEventListener('input',verUVT);
+  $('e_medio').addEventListener('change',verUVT);
+}
+
+/* ---------- periodo ---------- */
+function setPer(p){
+  PER=p;
+  ['dia','semana','mes'].forEach(function(x){ $('sg_'+x).className = x===p?'on':'' });
+  cargar();
+}
+function mover(n){
+  var d=new Date(ANCLA);
+  if(PER==='dia') d.setDate(d.getDate()+n);
+  else if(PER==='semana') d.setDate(d.getDate()+7*n);
+  else d.setMonth(d.getMonth()+n);
+  ANCLA=d; cargar();
+}
+function rango(){
+  var d=new Date(ANCLA);
+  if(PER==='dia') return {a:iso(d), b:iso(d), lbl:dmy(iso(d)), sub:''};
+  if(PER==='semana'){
+    var w=new Date(d); var dw=(w.getDay()+6)%7; w.setDate(w.getDate()-dw);
+    var f=new Date(w); f.setDate(f.getDate()+6);
+    return {a:iso(w), b:iso(f), lbl:dmy(iso(w))+' al '+dmy(iso(f)), sub:'Semana'};
+  }
+  var p=new Date(d.getFullYear(), d.getMonth(), 1);
+  var u=new Date(d.getFullYear(), d.getMonth()+1, 0);
+  return {a:iso(p), b:iso(u), lbl:MESES[d.getMonth()].toUpperCase()+' '+d.getFullYear(), sub:'Mes completo'};
+}
+
+function cargar(){
+  if(!TK) return;
+  var r=rango();
+  $('n_lbl').textContent=r.lbl; $('n_sub').textContent=r.sub||'\u00a0';
+  $('t_ing').innerHTML='<div class="nada">Cargando...</div>';
+  $('t_egr').innerHTML='';
+  google.script.run.withSuccessHandler(pintar).withFailureHandler(function(e){
+    $('t_ing').innerHTML='<div class="nada">'+esc(String(e))+'</div>';
+  }).movimientos(TK, r.a, r.b);
+}
+
+var MOVS={}, BANS={}, ANU={};
+
+function tabla(arr){
+  if(!arr.length) return '<div class="nada">Sin movimientos en este periodo.</div>';
+  var tope=50, resto=arr.length-tope;
+  var h='<table>';
+  arr.slice(0,tope).forEach(function(f){
+    MOVS[f.fila]=f;
+    h+='<tr><td><b>'+esc(f.tipo)+'</b><span class="sub">'+esc(f.doc||'')+(f.doc?' &middot; ':'')+
+       esc(f.concepto||f.tercero||'')+'</span></td><td style="color:#6B726D;white-space:nowrap">'+
+       esc(f.medio)+'<span class="sub">'+esc(PER==='dia'?(f.quien||''):f.fecha)+'</span></td>'+
+       '<td class="n">'+esc(pdot(f.valor))+'</td>'+
+       '<td style="width:34px;text-align:center"><button type="button" class="anx" '+
+       'onclick="abrirAnular(1,'+f.fila+')" title="Anular este registro">&#10005;</button></td></tr>';
+  });
+  h+='</table>';
+  if(resto>0) h+='<div class="nada">y '+resto+' movimientos mas en el periodo. Para verlos todos, abra el libro de caja.</div>';
+  return h;
+}
+
+function tablaBanco(arr){
+  if(!arr.length) return '<div class="nada">Sin pagos desde el banco en este periodo.</div>';
+  var h='<table>';
+  arr.slice(0,50).forEach(function(f){
+    BANS[f.fila]=f;
+    h+='<tr><td><b>'+esc(f.proveedor||'')+'</b><span class="sub">'+esc(f.factura||'')+
+       (f.factura?' &middot; ':'')+esc(f.concepto||'')+'</span></td>'+
+       '<td style="color:#6B726D;white-space:nowrap">'+esc(f.banco||'')+
+       '<span class="sub">'+esc(f.quien||f.fecha)+'</span></td>'+
+       '<td class="n">'+esc(pdot(f.neto))+'</td>'+
+       '<td style="width:34px;text-align:center"><button type="button" class="anx" '+
+       'onclick="abrirAnular(2,'+f.fila+')" title="Anular este pago">&#10005;</button></td></tr>';
+  });
+  return h+'</table>';
+}
+
+function cargarBanco(){
+  var r=rango();
+  google.script.run.withSuccessHandler(function(x){
+    if(!x || !x.ok) return;
+    var t=0;
+    x.filas.forEach(function(f){ t+=num(f.neto) });
+    $('h_ban').textContent=pes(t);
+    $('t_ban').innerHTML=tablaBanco(x.filas);
+    $('c_ban').style.display = x.filas.length ? 'block' : 'none';
+  }).withFailureHandler(function(){}).pagosBanco(TK, r.a, r.b);
+}
+
+function abrirAnular(qu, fila){
+  var f = qu===1 ? MOVS[fila] : BANS[fila];
+  if(!f) return;
+  ANU={qu:qu, fila:fila};
+  limpiar('an_msg');
+  $('an_mot').value='';
+  $('an_vf').style.display = qu===1 ? 'block' : 'none';
+  $('an_vol').value='SI';
+  var l=[];
+  if(qu===1){
+    l.push(['Fecha', f.fecha]); l.push(['Tipo', f.tipo]); l.push(['Medio', f.medio]);
+    l.push(['Tercero', f.tercero||'']); l.push(['Concepto', f.concepto||'']);
+    l.push(['Quien lo registro', f.quien||'']);
+  } else {
+    l.push(['Fecha', f.fecha]); l.push(['Proveedor', f.proveedor||'']);
+    l.push(['Factura', f.factura||'']); l.push(['Banco', f.banco||'']);
+    l.push(['Quien pago', f.quien||'']);
+  }
+  var s='';
+  l.forEach(function(p){ s+='<div class="l"><span>'+esc(p[0])+'</span><b>'+esc(p[1])+'</b></div>' });
+  s+='<div class="neto"><span>VALOR</span><b>'+esc(pdot(qu===1?f.valor:f.neto))+'</b></div>';
+  $('an_res').innerHTML=s;
+  ir('anular');
+}
+
+$('an_btn').onclick=function(){
+  limpiar('an_msg');
+  var mot=$('an_mot').value.trim();
+  if(mot.length<5) return msg('an_msg','Escriba el motivo de la anulacion.');
+  var b=this; b.disabled=true; b.textContent='Anulando...';
+  var fn = ANU.qu===1 ? 'anularMovimiento' : 'anularPagoBanco';
+  var ok=function(r){
+    b.disabled=false; b.textContent='Anular el registro';
+    if(!r.ok) return msg('an_msg', r.error);
+    if(ANU.qu===1 && $('an_vol').value==='SI'){
+      var f=MOVS[ANU.fila];
+      CORRIGE={ id:r.id, tipo:f.tipo };
+      prefillCorreccion(f, r.id);
+      return;
+    }
+    fin('Registro anulado','Quedo la huella con su nombre y el motivo.');
+    cargar();
+  };
+  var er=function(e){ b.disabled=false; b.textContent='Anular el registro'; msg('an_msg',String(e)); };
+  if(ANU.qu===1) google.script.run.withSuccessHandler(ok).withFailureHandler(er).anularMovimiento(TK, ANU.fila, mot);
+  else google.script.run.withSuccessHandler(ok).withFailureHandler(er).anularPagoBanco(TK, ANU.fila, mot);
+};
+
+var CORRIGE=null;
+function prefillCorreccion(f, id){
+  var egr = String(f.tipo||'').toUpperCase().indexOf('EGRESO')>=0;
+  cargar();
+  if(egr){
+    ir('egreso');
+    $('e_tercero').value=f.tercero||'';
+    $('e_concepto').value=f.concepto||'';
+    $('e_valor').value=pdot(f.valor);
+    msg('e_msg','Esta corrigiendo el registro '+id+'. Cambie lo que estaba mal y registre de nuevo.');
+  } else {
+    ir('ingreso');
+    $('i_tercero').value=f.tercero||'';
+    $('i_concepto').value=f.concepto||'';
+    $('i_valor').value=pdot(f.valor);
+    msg('i_msg','Esta corrigiendo el registro '+id+'. Cambie lo que estaba mal y registre de nuevo.');
+  }
+}
+
+function bajarBanco(){
+  var r=rango();
+  $('d_out').innerHTML='<div class="w">Preparando la relacion de pagos del banco...</div>';
+  google.script.run.withSuccessHandler(linkDesc).withFailureHandler(function(e){
+    $('d_out').innerHTML='<div class="w">'+esc(String(e))+'</div>';
+  }).exportarBanco(TK, r.a, r.b);
+}
+
+function pintar(r){
+  if(!r.ok){ $('t_ing').innerHTML='<div class="nada">'+esc(r.error)+'</div>'; return }
+  $('s_entro').textContent=pes(r.entro);
+  $('s_salio').textContent=pes(r.salio);
+  $('s_neto').textContent=pes(r.entro-r.salio);
+  $('s_cart').textContent=pes(r.cartera);
+  var ti=0,te=0;
+  r.ingresos.forEach(function(f){ ti+=num(f.valor) });
+  r.egresos.forEach(function(f){ te+=num(f.valor) });
+  $('h_ing').textContent=pes(ti); $('h_egr').textContent=pes(te);
+  $('t_ing').innerHTML=tabla(r.ingresos);
+  $('t_egr').innerHTML=tabla(r.egresos);
+  cargarBanco();
+  if(r.porCat && r.porCat.length){
+    var h='';
+    r.porCat.forEach(function(c){ h+='<div><span>'+esc(c.cat)+'</span><b>'+pes(c.val)+'</b></div>' });
+    $('t_cat').innerHTML=h; $('t_cat').style.display='block';
+  } else $('t_cat').style.display='none';
+  $('t_cerr').innerHTML = r.cerrado ? ('Estado del dia: <b>'+esc(r.cerrado)+'</b>')
+    : (PER==='dia' ? 'El dia todavia no se ha cerrado.' : (r.dias+' dias con registro en el periodo.'));
+}
+
+/* ---------- registrar ---------- */
+function contar(){
+  var t=0;
+  BILL.forEach(function(v,i){ t+=v*num($('d'+i).value) });
+  MON.forEach(function(v,i){ t+=v*num($('d'+(6+i)).value) });
+  $('c_total').textContent=pes(t);
+}
+
+
+/* ---------- retencion en pagos de caja ---------- */
+var EVALTOCADO=false, ULTE={neto:0};
+
+function verRetEgr(){
+  var on = $('e_prov').value==='SI';
+  $('e_rbox').style.display = on ? 'block' : 'none';
+  if(!on){ $('e_difw').style.display='none'; return; }
+  if(PG){ prepEgr(); return; }
+  $('ec_notas').innerHTML='<div>Cargando tarifas...</div>';
+  google.script.run.withSuccessHandler(function(r){
+    if(!r.ok){ msg('e_msg', r.error); return; }
+    PG=r; prepEgr();
+  }).withFailureHandler(function(e){ msg('e_msg', String(e)) }).datosPago(TK);
+}
+
+function prepEgr(){
+  opts('e_con', PG.conceptos.map(function(c){ return c.concepto }));
+  ['e_base','e_iva'].forEach(function(x){
+    if(!$(x).dataset.mon){ moneda($(x)); $(x).dataset.mon='1' }
+    if(!$(x).dataset.lis){ $(x).addEventListener('input', calcEgr); $(x).dataset.lis='1' }
+  });
+  if(!$('e_valor').dataset.lisr){
+    $('e_valor').addEventListener('input', function(){ EVALTOCADO=true; difEgr(); });
+    $('e_valor').dataset.lisr='1';
+  }
+  EVALTOCADO=false;
+  calcEgr();
+}
+
+function eIvaPct(p){
+  var b=num($('e_base').value);
+  $('e_iva').value = p ? pes(Math.round(b*p/100)) : '';
+  calcEgr();
+}
+
+function calcEgr(){
+  if(!PG || $('e_prov').value!=='SI') return;
+  var base=num($('e_base').value), iva=num($('e_iva').value);
+  var reg=$('e_reg').value, con=$('e_con').value, decl=$('e_decl').value;
+  var R=motorRet(base, iva, reg, con, decl);
+  $('e_declf').style.display = (reg==='SIMPLE') ? 'none' : 'block';
+  ULTE.neto=R.neto;
+  $('ec_base').textContent=pes(base);
+  $('ec_iva').textContent=pes(R.iva);
+  $('ec_tot').textContent=pes(R.tot);
+  $('ec_rtfl').textContent=R.lbl;
+  $('ec_rtf').textContent=R.rtf?('- '+pes(R.rtf)):'$ 0';
+  $('ec_riva').textContent=R.riva?('- '+pes(R.riva)):'$ 0';
+  $('ec_neto').textContent=pes(R.neto);
+  var s='';
+  R.notas.forEach(function(n){ s+='<div'+(n.w?' class="w"':'')+'>'+esc(n.t)+'</div>' });
+  $('ec_notas').innerHTML=s;
+  if(!EVALTOCADO){ $('e_valor').value = R.neto ? pes(R.neto) : ''; verUVT(); }
+  difEgr();
+}
+
+function difEgr(){
+  if($('e_prov').value!=='SI'){ $('e_difw').style.display='none'; return; }
+  var p=num($('e_valor').value), d=p-ULTE.neto;
+  if(p && d!==0){
+    $('e_difw').style.display='block';
+    $('e_difw').textContent='Va a entregar '+(d>0?pes(d)+' mas':pes(-d)+' menos')+' que lo calculado ('+pes(ULTE.neto)+'). Queda registrado en el libro.';
+  } else $('e_difw').style.display='none';
+}
+
+function notaRetEgr(){
+  if(!PG || $('e_prov').value!=='SI') return '';
+  var base=num($('e_base').value), iva=num($('e_iva').value);
+  var R=motorRet(base, iva, $('e_reg').value, $('e_con').value, $('e_decl').value);
+  return '  |  PAGO A PROVEEDOR - Regimen: '+$('e_reg').value+' - Concepto: '+$('e_con').value
+    +' - Base: '+pes(base)+' - IVA: '+pes(R.iva)+' - Retefuente: '+pes(R.rtf)
+    +' - ReteIVA: '+pes(R.riva)+' - Neto calculado: '+pes(R.neto);
+}
+
+function verUVT(){
+  var v=num($('e_valor').value), m=$('e_medio').value||'';
+  if(/EFECTIVO/.test(m) && v>D.uvt100){
+    $('e_aviso').style.display='block';
+    $('e_aviso_t').textContent='Este pago pasa de 100 UVT ('+pes(D.uvt100)+'). Por ley tiene que salir por '+
+      'transferencia; si sale en efectivo, Fertiagro pierde el costo en la declaracion de renta.';
+  } else $('e_aviso').style.display='none';
+}
+function fin(t,s){
+  var ps=document.querySelectorAll('.pane');
+  for(var i=0;i<ps.length;i++) ps[i].style.display='none';
+  $('ok_t').textContent=t; $('ok_s').textContent=s; $('p-ok').style.display='block';
+  window.scrollTo(0,0);
+}
+
+$('i_btn').onclick=function(){
+  limpiar('i_msg');
+  if(!num($('i_valor').value)) return msg('i_msg','Falta el valor.');
+  var b=this; b.disabled=true; b.textContent='Guardando...';
+  google.script.run.withSuccessHandler(function(r){
+    b.disabled=false; b.textContent='Registrar ingreso';
+    if(!r.ok) return msg('i_msg',r.error);
+    ['i_doc','i_tercero','i_concepto','i_valor'].forEach(function(x){ $(x).value='' });
+    CORRIGE=null;
+    fin('Ingreso registrado','Fila '+r.fila+' del libro de caja.');
+  }).registrarMovimiento(TK,{
+    fecha:$('i_fecha').value, tipo:$('i_tipo').value, medio:$('i_medio').value,
+    documento:$('i_doc').value, tercero:$('i_tercero').value, concepto:$('i_concepto').value,
+    categoria:'', valor:num($('i_valor').value), anulaId:(CORRIGE?CORRIGE.id:''),
+    llegoBanco: /EFECTIVO/.test($('i_medio').value)?'':'NO'
+  });
+};
+
+$('e_btn').onclick=function(){
+  limpiar('e_msg');
+  if(!$('e_tercero').value.trim()) return msg('e_msg','Falta a quien se le entrega la plata.');
+  if(!num($('e_valor').value)) return msg('e_msg','Falta el valor.');
+  if(!$('e_categoria').value) return msg('e_msg','Falta la categoria del gasto.');
+  if(!$('e_autoriza').value) return msg('e_msg','Falta quien autoriza el pago.');
+  var b=this; b.disabled=true; b.textContent='Guardando...';
+  var ds=document.querySelector('input[name=ds]:checked').value;
+  var f=$('e_foto').files[0];
+  var env=function(foto){
+    google.script.run.withSuccessHandler(function(r){
+      b.disabled=false; b.textContent='Registrar la salida';
+      if(!r.ok) return msg('e_msg',r.error);
+      ['e_tercero','e_ident','e_concepto','e_valor','e_base','e_iva'].forEach(function(x){ if($(x)) $(x).value='' });
+      $('e_prov').value='NO'; $('e_rbox').style.display='none'; $('e_difw').style.display='none';
+      EVALTOCADO=false; ULTE.neto=0;
+      $('e_foto').value=''; $('e_aviso').style.display='none';
+      CORRIGE=null;
+      fin('Salida registrada','Fila '+r.fila+' del libro de caja.');
+    }).registrarMovimiento(TK,{
+      fecha:$('e_fecha').value, tipo:'EGRESO', medio:$('e_medio').value,
+      documento:'', tercero:$('e_tercero').value,
+      identificacion:$('e_tipodoc').value+' '+$('e_ident').value,
+      concepto:$('e_concepto').value, categoria:$('e_categoria').value,
+      valor:num($('e_valor').value), requiereDS:ds, numeroDS:'', llegoBanco:'', anulaId:(CORRIGE?CORRIGE.id:''),
+      observaciones:'Autoriza: '+$('e_autoriza').value+notaRetEgr(), foto:foto
+    });
+  };
+  if(f){ var rd=new FileReader(); rd.onload=function(){env(rd.result)}; rd.readAsDataURL(f) } else env('');
+};
+
+$('c_btn').onclick=function(){
+  limpiar('c_msg');
+  if(!$('c_cajero').value) return msg('c_msg','Falta el cajero del dia.');
+  var b=this; b.disabled=true; b.textContent='Cerrando...';
+  var den=[]; for(var k=0;k<11;k++) den.push(num($('d'+k).value));
+  google.script.run.withSuccessHandler(function(r){
+    b.disabled=false; b.textContent='Cerrar la caja del dia';
+    if(!r.ok) return msg('c_msg',r.error);
+    fin('Caja cerrada','Esperado '+r.esperado+'  |  Diferencia '+r.diferencia+'  |  '+r.estado);
+  }).registrarCierre(TK,{
+    fecha:$('c_fecha').value, cajero:$('c_cajero').value,
+    denominaciones:den, consignacion:$('c_cons').value, banco:$('c_banco').value,
+    valorConsignado:num($('c_valcons').value), quienConsigna:$('c_quien').value,
+    observaciones:$('c_obs').value
+  });
+};
+
+/* ---------- pago a proveedor ---------- */
+var PG=null, NETOTOCADO=false;
+
+function irPago(){
+  ir('pago');
+  if(PG){ prepararPago(); return }
+  $('c_notas').innerHTML='<div>Cargando tarifas...</div>';
+  google.script.run.withSuccessHandler(function(r){
+    if(!r.ok){ msg('g_msg', r.error); return }
+    PG=r; prepararPago();
+  }).withFailureHandler(function(e){ msg('g_msg', String(e)) }).datosPago(TK);
+}
+
+function prepararPago(){
+  $('g_fecha').value = PG.hoy;
+  $('g_yo').textContent = YO.nombre;
+  opts('g_con', PG.conceptos.map(function(c){ return c.concepto }));
+  opts('g_banco', PG.bancos);
+  ['g_base','g_iva','g_neto'].forEach(function(x){
+    if(!$(x).dataset.mon){ moneda($(x)); $(x).dataset.mon='1' }
+  });
+  ['g_base','g_iva','g_reg','g_con','g_decl'].forEach(function(x){
+    if(!$(x).dataset.lis){
+      $(x).addEventListener('input', calcPago);
+      $(x).addEventListener('change', calcPago);
+      $(x).dataset.lis='1';
+    }
+  });
+  if(!$('g_neto').dataset.lis){
+    $('g_neto').addEventListener('input', function(){ NETOTOCADO=true; verDif() });
+    $('g_neto').dataset.lis='1';
+  }
+  NETOTOCADO=false;
+  calcPago();
+}
+
+function ivaPct(p){
+  var b = num($('g_base').value);
+  $('g_iva').value = p ? pes(Math.round(b*p/100)) : '';
+  calcPago();
+}
+function iva19(){ ivaPct(19); }
+
+var ULT={neto:0};
+function motorRet(base, iva, reg, con, decl){
+  var tot=base+iva, rtf=0, riva=0, notas=[], lbl='Retefuente de renta';
+  if(reg==='SIMPLE'){
+    riva=Math.round(iva*PG.reteiva);
+    notas.push({t:'Proveedor del regimen SIMPLE: NO se le practica retefuente de renta (Art. 911 E.T.).'});
+    if(iva>0) notas.push({t:'Si se le practica reteIVA del '+(PG.reteiva*100).toFixed(0)+'% del IVA (Art. 437-2 num. 9 y Art. 437-1 E.T.).'});
+    else notas.push({t:'No facturo IVA, asi que no hay reteIVA.'});
+  } else if(reg==='NO RESPONSABLE'){
+    iva=0; tot=base;
+    notas.push({t:'Proveedor no responsable de IVA: la factura no lleva IVA.'});
+  }
+  if(reg!=='SIMPLE'){
+    var c=null;
+    PG.conceptos.forEach(function(x){ if(x.concepto===con) c=x });
+    if(c){
+      var tf=(decl==='NO')?c.nodecl:c.decl;
+      var minimo=c.baseUvt*PG.uvt;
+      if(c.baseUvt>0 && base>0 && base<minimo){
+        notas.push({t:'No hay retefuente: la base no llega a la base minima de '+c.baseUvt+' UVT ('+pes(minimo)+').'});
+      } else if(tf>0){
+        rtf=Math.round(base*tf);
+        lbl='Retefuente '+c.concepto.toLowerCase()+' al '+(tf*100).toFixed(2).replace('.',',')+'%';
+        notas.push({t:lbl+' sobre la base'+(decl==='NO'?' (no declarante)':'')+'.'});
+      }
+    }
+    if(decl==='NOSE') notas.push({t:'No sabe si el proveedor es declarante. Se calculo con la tarifa de declarante. Confirmelo con contabilidad antes de pagar.', w:1});
+  }
+  return {iva:iva, tot:tot, rtf:rtf, riva:riva, lbl:lbl, notas:notas, neto:tot-rtf-riva};
+}
+
+function calcPago(){
+  if(!PG) return;
+  var base=num($('g_base').value), iva=num($('g_iva').value);
+  var reg=$('g_reg').value, con=$('g_con').value, decl=$('g_decl').value;
+  var R=motorRet(base, iva, reg, con, decl);
+  $('g_declf').style.display = (reg==='SIMPLE') ? 'none' : 'block';
+  iva=R.iva;
+  var tot=R.tot, rtf=R.rtf, riva=R.riva, notas=R.notas, lbl=R.lbl;
+  var neto = R.neto;
+  ULT.neto = neto;
+
+  $('c_base').textContent=pes(base);
+  $('c_iva').textContent=pes(iva);
+  $('c_tot').textContent=pes(tot);
+  $('c_rtfl').textContent=lbl;
+  $('c_rtf').textContent=rtf?('- '+pes(rtf)):'$ 0';
+  $('c_riva').textContent=riva?('- '+pes(riva)):'$ 0';
+  $('c_neto').textContent=pes(neto);
+  var h='';
+  notas.forEach(function(n){ h+='<div'+(n.w?' class="w"':'')+'>'+esc(n.t)+'</div>' });
+  $('c_notas').innerHTML=h;
+
+  if(!NETOTOCADO) $('g_neto').value = neto? pes(neto):'';
+  verDif();
+}
+
+function verDif(){
+  var p=num($('g_neto').value), d=p-ULT.neto;
+  if(p && d!==0){
+    $('g_difw').style.display='block';
+    $('g_difw').textContent='Va a girar '+(d>0?'$ '+pes(d).replace('$ ','')+' mas':'$ '+
+      pes(-d).replace('$ ','')+' menos')+' que lo calculado ('+pes(ULT.neto)+
+      '). Queda registrada la diferencia y el motivo en el libro.';
+  } else $('g_difw').style.display='none';
+}
+
+$('g_btn').onclick=function(){
+  limpiar('g_msg');
+  if(!$('g_prov').value.trim()) return msg('g_msg','Falta el proveedor.');
+  if(!num($('g_base').value)) return msg('g_msg','Falta la base.');
+  if(!num($('g_neto').value)) return msg('g_msg','Falta el valor que va a girar.');
+  var b=this; b.disabled=true; b.textContent='Guardando...';
+  google.script.run.withSuccessHandler(function(r){
+    b.disabled=false; b.textContent='Registrar el pago';
+    if(!r.ok) return msg('g_msg', r.error);
+    ['g_prov','g_nit','g_fac','g_desc','g_base','g_iva','g_neto','g_tx','g_obs'].forEach(function(x){ $(x).value='' });
+    NETOTOCADO=false; calcPago();
+    fin('Pago registrado', 'Girados '+pes(r.pagado)+
+      (r.dif? '  |  diferencia frente al calculo: '+pes(r.dif) : '')+'. Fila '+r.fila+' de PAGOS BANCO.');
+  }).registrarPagoBanco(TK,{
+    fecha:$('g_fecha').value, proveedor:$('g_prov').value, nit:$('g_nit').value,
+    regimen:$('g_reg').value, concepto:$('g_con').value, declarante:$('g_decl').value,
+    factura:$('g_fac').value, descripcion:$('g_desc').value,
+    base:num($('g_base').value), iva:num($('g_iva').value),
+    netoPagado:num($('g_neto').value), banco:$('g_banco').value,
+    transaccion:$('g_tx').value, observaciones:$('g_obs').value
+  });
+};
+
+/* ---------- gerencia ---------- */
+var GAN=null, GR=null;
+function irGerencia(){ if(!GAN) GAN=deISO(D.hoy); ir('gerencia'); cargarGer() }
+function moverG(n){ var d=new Date(GAN); d.setMonth(d.getMonth()+n); GAN=d; cargarGer() }
+function rangoG(){
+  var d=new Date(GAN);
+  var p=new Date(d.getFullYear(),d.getMonth(),1), u=new Date(d.getFullYear(),d.getMonth()+1,0);
+  return {a:iso(p), b:iso(u), lbl:MESES[d.getMonth()].toUpperCase()+' '+d.getFullYear()};
+}
+function cargarGer(){
+  var r=rangoG(); $('g_lbl').textContent=r.lbl;
+  $('g_cuerpo').innerHTML='<div class="cargando">Cargando...</div>';
+  google.script.run.withSuccessHandler(pintarGer).withFailureHandler(function(e){
+    $('g_cuerpo').innerHTML='<div class="cargando">'+esc(String(e))+'</div>';
+  }).analitica(TK, r.a, r.b);
+}
+function pct(a,b){
+  if(!b) return '';
+  var p=(a-b)/b*100;
+  var c = p>=0 ? '#157347' : '#B3261E';
+  return '<i style="color:'+c+'">'+(p>=0?'+':'')+p.toFixed(0)+'% vs mes anterior</i>';
+}
+function pintarGer(r){
+  if(!r.ok){ $('g_cuerpo').innerHTML='<div class="cargando">'+esc(r.error)+'</div>'; return }
+  GR=r;
+  var k=r.k, D2=r.disc, R=r.riesgo;
+  var h='<div class="kpi">'+
+    '<div class="b"><small>FACTURADO DEL MES</small><b>'+pes(k.ventas)+'</b>'+pct(k.ventas,r.prev.ventas)+'</div>'+
+    '<div class="b"><small>EGRESOS DEL MES</small><b>'+pes(k.egresos)+'</b>'+pct(k.egresos,r.prev.egresos)+'</div>'+
+    '<div class="b"><small>ENTR&Oacute; A CAJA</small><b style="color:#157347">'+pes(k.entro)+'</b></div>'+
+    '<div class="b"><small>SALI&Oacute; DE CAJA</small><b style="color:#B3261E">'+pes(k.salio)+'</b></div>'+
+    '<div class="b"><small>QUEDA EN CAJA</small><b>'+pes(k.entro-k.salio)+'</b></div>'+
+    '<div class="b"><small>MOVIMIENTO DE CARTERA</small><b>'+pes(k.cartera)+'</b></div></div>';
+
+  h+='<div class="card"><div class="ch" style="background:#6B4E00"><span>LO FACTURADO NO ES LO QUE ENTRO</span></div>'+
+    lin('Venta cobrada de una vez (efectivo, tarjeta, transferencia)', pes(k.contado), '')+
+    lin('Venta a credito &mdash; quedo en cartera, NO es ingreso', pes(k.credito), k.credito?'mal':'')+
+    lin('Venta por confirmar &mdash; falta definir el medio de pago', pes(k.porconf), k.porconf?'mal':'')+
+    lin('Recaudo de cartera del mes &mdash; entra plata de ventas de otros meses', pes(k.recaudo), '')+
+    '<div style="padding:10px 13px;font-size:11px;line-height:1.55;color:var(--g)">'+
+    'FACTURADO DEL MES es lo que se vendio, no lo que entro. La venta a credito y la que esta por confirmar '+
+    'no son ingreso del mes. La plata que de verdad entro es ENTRO A CAJA mas lo que llego al banco.'+
+    '</div></div>';
+
+  h+='<div class="card"><div class="ch" style="background:#1A4C8B"><span>DISCIPLINA DEL CIERRE</span></div>'+
+    lin('Dias con registro', D2.dias, '')+
+    lin('Dias cerrados y firmados', D2.cerrados, D2.cerrados>=D2.dias&&D2.dias>0?'bien':'mal')+
+    lin('Dias sin firmar', D2.sinFirmar, D2.sinFirmar>0?'mal':'bien')+
+    lin('Dias en que el arqueo no cuadro', D2.noCuadran, D2.noCuadran>0?'mal':'bien')+
+    lin('Diferencia acumulada', pes(D2.difAcum), D2.difAcum!==0?'mal':'bien')+'</div>';
+
+  var pct40 = R.tope? (R.efAno/R.tope*100):0;
+  h+='<div class="card"><div class="ch" style="background:#B3261E"><span>RIESGO TRIBUTARIO</span></div>'+
+    lin('Pagos en efectivo sobre 100 UVT', R.uvtN+'  ('+pes(R.uvtV)+')', R.uvtN>0?'mal':'bien')+
+    lin('Egresos sin documento soporte', R.sinDS, R.sinDS>0?'mal':'bien')+
+    lin('Ingresos no confirmados en banco', R.sinConf, R.sinConf>0?'mal':'bien')+
+    lin('Registros en POR CONFIRMAR', R.porConf+'  ('+pes(R.porConfV)+')', R.porConf>0?'mal':'bien')+
+    lin('Efectivo pagado en el ano', pes(R.efAno), '')+
+    '<div style="padding:0 13px 12px"><div class="barra"><i style="width:'+Math.min(100,pct40).toFixed(1)+
+    '%;background:'+(pct40>70?'#B3261E':'#157347')+'"></i></div>'+
+    '<div style="font-size:10.5px;color:var(--g);margin-top:5px">'+pct40.toFixed(1)+
+    '% del tope de 40.000 UVT ('+pes(R.tope)+'). Art. 771-5 E.T.</div></div></div>';
+
+  if(r.porCat.length){
+    h+='<div class="card"><div class="ch" style="background:#15201A"><span>EN QUE SE GASTO</span></div>';
+    var mx=r.porCat[0].val;
+    r.porCat.forEach(function(c){
+      h+='<div class="lin" style="display:block"><div style="display:flex;justify-content:space-between">'+
+         '<span>'+esc(c.cat)+'</span><b>'+pes(c.val)+'</b></div>'+
+         '<div class="barra"><i style="width:'+(c.val/mx*100).toFixed(1)+'%"></i></div></div>';
+    });
+    h+='</div>';
+  }
+
+  h+='<div class="card"><div class="ch" style="background:#157347"><span>QUIEN ESTUVO EN LA CAJA</span>'+
+     '<b>'+r.gente.length+'</b></div>';
+  if(!r.gente.length) h+='<div class="nada">Sin registros en el mes.</div>';
+  r.gente.forEach(function(g,i){
+    var al=[];
+    if(g.uvt) al.push(g.uvt+' sobre 100 UVT');
+    if(g.sinDS) al.push(g.sinDS+' sin soporte');
+    if(g.difArq) al.push('arqueo '+pes(g.difArq));
+    h+='<div class="per" onclick="verPersona('+i+')">'+
+       '<div class="n"><b>'+esc(g.nombre)+'</b><span>'+g.movs+' movimientos</span></div>'+
+       '<div class="d">Ingresos '+pes(g.valIng)+'  &middot;  Egresos '+pes(g.valEgr)+
+       (g.cierres? '  &middot;  '+g.cierres+' cierres firmados':'')+'</div>'+
+       (al.length? '<span class="al">'+esc(al.join('  |  '))+'</span>':'')+'</div>';
+  });
+  h+='</div>';
+  $('g_cuerpo').innerHTML=h;
+}
+function lin(t,v2,cl){
+  return '<div class="lin"><span>'+t+'</span><b class="'+(cl||'')+'">'+v2+'</b></div>';
+}
+function verPersona(i){
+  var g=GR.gente[i], r=rangoG();
+  $('dp_tit').textContent=g.nombre;
+  $('dp_res').innerHTML='<div class="kpi" style="margin-top:0">'+
+    '<div class="b"><small>MOVIMIENTOS</small><b>'+g.movs+'</b></div>'+
+    '<div class="b"><small>CIERRES FIRMADOS</small><b>'+g.cierres+'</b></div>'+
+    '<div class="b"><small>INGRESOS</small><b style="color:#157347">'+pes(g.valIng)+'</b></div>'+
+    '<div class="b"><small>EGRESOS</small><b style="color:#B3261E">'+pes(g.valEgr)+'</b></div></div>'+
+    (g.uvt||g.sinDS? '<div class="card"><div class="ch" style="background:#B3261E"><span>ALERTAS</span></div>'+
+      lin('Pagos en efectivo sobre 100 UVT', g.uvt, g.uvt?'mal':'bien')+
+      lin('Egresos sin documento soporte', g.sinDS, g.sinDS?'mal':'bien')+'</div>':'');
+  $('dp_tabla').innerHTML='<div class="cargando">Cargando...</div>';
+  ir('detper');
+  google.script.run.withSuccessHandler(function(x){
+    if(!x.ok){ $('dp_tabla').innerHTML='<div class="nada">'+esc(x.error)+'</div>'; return }
+    if(!x.filas.length){ $('dp_tabla').innerHTML='<div class="nada">Sin registros.</div>'; return }
+    var t='<table>';
+    x.filas.forEach(function(f){
+      t+='<tr><td><b>'+esc(f.tipo)+'</b><span class="sub">'+esc(f.doc||'')+(f.doc?' &middot; ':'')+
+         esc(f.concepto||f.tercero||'')+'</span></td>'+
+         '<td style="color:#6B726D;white-space:nowrap">'+esc(f.medio)+'<span class="sub">'+esc(f.fecha)+'</span></td>'+
+         '<td class="n">'+esc(pdot(f.valor))+'</td></tr>';
+    });
+    $('dp_tabla').innerHTML=t+'</table>';
+  }).registrosPersona(TK, r.a, r.b, g.nombre);
+}
+
+/* ---------- descargas ---------- */
+function bajar(f){
+  var r=rango();
+  $('d_out').innerHTML='<div class="w">Preparando el archivo, espere unos segundos...</div>';
+  google.script.run.withSuccessHandler(linkDesc).withFailureHandler(function(e){
+    $('d_out').innerHTML='<div class="w">'+esc(String(e))+'</div>';
+  }).exportar(TK, r.a, r.b, f, r.lbl);
+}
+function bajarArqueo(){
+  if(PER!=='dia'){
+    $('d_out').innerHTML='<div class="w">El arqueo es de un solo dia. Pase a la pestana DIA, escoja el dia y vuelva a tocar.</div>';
+    return;
+  }
+  var r=rango();
+  $('d_out').innerHTML='<div class="w">Preparando el arqueo...</div>';
+  google.script.run.withSuccessHandler(linkDesc).withFailureHandler(function(e){
+    $('d_out').innerHTML='<div class="w">'+esc(String(e))+'</div>';
+  }).exportarArqueo(TK, r.a);
+}
+function linkDesc(r){
+  if(!r || !r.ok){ $('d_out').innerHTML='<div class="w">'+esc(r?r.error:'No se pudo generar')+'</div>'; return }
+  $('d_out').innerHTML='<a class="go" href="'+r.url+'" target="_blank">Descargar '+esc(r.nombre)+'</a>'+
+    '<div class="w">Si el celular no lo abre, <a href="'+r.ver+'" target="_blank" style="color:#1A4C8B">vealo aqui</a>. '+
+    'El archivo se borra solo a las 24 horas.</div>';
+}
+
+/* ---------- personas ---------- */
+var EDIT=null;
+function irPersonas(){
+  ir('personas');
+  $('u_lista').innerHTML='<div class="nada">Cargando...</div>';
+  google.script.run.withSuccessHandler(function(r){
+    if(!r.ok){ $('u_lista').innerHTML='<div class="nada">'+esc(r.error)+'</div>'; return }
+    D.gente=r.lista.filter(function(u){return u.activo});
+    var h='';
+    r.lista.forEach(function(u,i){
+      var p=[]; if(u.caja)p.push('caja'); if(u.arqueo)p.push('arqueo');
+      if(u.consigna)p.push('banco'); if(u.autoriza)p.push('autoriza');
+      h+='<div class="u" onclick="editarUsuario('+i+')"><div><b>'+esc(u.nombre)+'</b>'+
+         '<small>'+esc(u.usuario)+' &middot; '+esc(u.rol)+(p.length?' &middot; '+p.join(', '):'')+'</small></div>'+
+         '<span class="tag '+(u.activo?'on':'off')+'">'+(u.activo?'ACTIVO':'INACTIVO')+'</span></div>';
+    });
+    $('u_lista').innerHTML=h; window.__u=r.lista;
+  }).listarUsuarios(TK);
+}
+function editarUsuario(i){
+  EDIT = (i===null||i===undefined) ? null : window.__u[i];
+  $('u_tit').textContent = EDIT ? 'Editar persona' : 'Nueva persona';
+  $('u_nombre').value = EDIT?EDIT.nombre:'';
+  $('u_usuario').value = EDIT?EDIT.usuario:'';
+  $('u_usuario').readOnly = !!EDIT;
+  $('u_clave').value='';
+  $('u_clave').placeholder = EDIT?'Dejar vacio para no cambiarla':'Escriba una contrasena';
+  $('u_rol').value = EDIT?EDIT.rol:'CAJERO';
+  ['caja','arqueo','consigna','autoriza','banco'].forEach(function(k){ $('u_'+k).checked = EDIT?!!EDIT[k]:false });
+  $('u_activo').checked = EDIT?!!EDIT.activo:true;
+  limpiar('u_msg');
+  ir('persona');
+}
+$('u_btn').onclick=function(){
+  limpiar('u_msg');
+  var b=this; b.disabled=true; b.textContent='Guardando...';
+  google.script.run.withSuccessHandler(function(r){
+    b.disabled=false; b.textContent='Guardar';
+    if(!r.ok) return msg('u_msg',r.error);
+    irPersonas();
+  }).guardarUsuario(TK,{
+    nombre:$('u_nombre').value, usuario:$('u_usuario').value, clave:$('u_clave').value,
+    rol:$('u_rol').value, caja:$('u_caja').checked, arqueo:$('u_arqueo').checked,
+    consigna:$('u_consigna').checked, autoriza:$('u_autoriza').checked,
+    banco:$('u_banco').checked, activo:$('u_activo').checked
+  });
+};
+
+/* ---------- inicio ---------- */
+(function(){
+  var t=null; try{ t=localStorage.getItem('cf_tk') }catch(e){}
+  if(t){ TK=t; ir('carga'); arrancar(); } else ir('login');
+})();
+</script>
+</body>
+</html>

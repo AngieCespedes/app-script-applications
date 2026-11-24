@@ -1,0 +1,19 @@
+[
+  "actualizarControles",
+  "actualizarFormatosProyecto",
+  "alEditar",
+  "api",
+  "asignarClave",
+  "dialogoProyectos",
+  "doGet",
+  "elegirCarpeta",
+  "eliminarSolicitud",
+  "guardarEnlaceApp",
+  "instalar",
+  "menuInstalarApp",
+  "menuModoProduccion",
+  "menuModoPrueba",
+  "mostrarEnlaces",
+  "onOpen",
+  "sincronizar"
+]

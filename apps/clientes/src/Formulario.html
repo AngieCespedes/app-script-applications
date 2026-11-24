@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Clientes Social Solar</title>
+  <style>
+    :root {
+      --color-primario: #fbb03b; 
+      --color-oscuro: #1a1a1a;   
+      --color-fondo: #f4f6f9;
+    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--color-fondo); margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .contenedor { background: #ffffff; max-width: 650px; width: 100%; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 8px solid var(--color-primario); box-sizing: border-box; }
+    
+    .marca-banner-claro { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+    .marca-banner-claro .logo-renderizado { font-family: 'Arial Black', Gadget, sans-serif; font-size: 34px; font-weight: 900; color: #1a1a1a; letter-spacing: 1px; margin: 0; text-transform: uppercase; }
+    .marca-banner-claro .logo-renderizado span { color: var(--color-primario); font-weight: normal; }
+    .marca-banner-claro .subtitulo { font-weight: bold; color: var(--color-oscuro); margin: 8px 0 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .descripcion-bloque { text-align: left; background: #f9f9f9; padding: 20px; border-left: 4px solid var(--color-primario); border-radius: 4px; font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 30px; }
+    .seccion-titulo { background-color: #1a1a1a; color: white; padding: 8px 12px; font-size: 14px; font-weight: bold; text-transform: uppercase; margin: 25px 0 15px 0; border-radius: 4px; border-left: 4px solid var(--color-primario); }
+    
+    .grupo-campo { margin-bottom: 18px; }
+    label { display: block; font-weight: 600; color: var(--color-oscuro); margin-bottom: 6px; font-size: 13.5px; }
+    input[type="text"], input[type="file"], input[type="email"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    input:focus { border-color: var(--color-primario); outline: none; }
+    input[type="file"] { background: #fafafa; padding: 8px; cursor: pointer; }
+    
+    .btn-enviar { width: 100%; background-color: var(--color-oscuro); color: #ffffff; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.3s; margin-top: 20px; border: 2px solid var(--color-oscuro); }
+    .btn-enviar:hover { background-color: var(--color-primario); color: var(--color-oscuro); border-color: var(--color-primario); }
+    .cargando { display: none; text-align: center; color: #666; font-weight: bold; margin-top: 15px; font-size: 14px; }
+    .pie-pagina-firma { border-top: 1px solid #eee; margin-top: 35px; padding-top: 15px; text-align: center; font-size: 12px; color: #777; }
+  </style>
+</head>
+<body>
+
+<div class="contenedor">
+  <div class="marca-banner-claro">
+    <!-- Logotipo digitalizado directamente en el código para evitar errores de carga -->
+    <h1 class="logo-renderizado">SOCIAL <span>SOLAR</span></h1>
+    <div class="subtitulo">Portal de Actualización de Datos y Creación de Clientes</div>
+  </div>
+  
+  <div class="descripcion-bloque">
+    <p><strong>Estimado Cliente:</strong></p>
+    <p>Para formalizar los procesos comerciales y de facturación electrónica con <strong>Social Solar</strong> vigentes para el año 2026, solicitamos diligenciar la información tributaria y cargar su documento reglamentario.</p>
+    <p>Por favor, adjunte su documento de soporte obligatorio en formato <strong>PDF</strong>:</p>
+    <ul style="padding-left: 20px; margin-top: 5px;">
+      <li>RUT actualizado a 2026 (con responsabilidades DIAN vigentes).</li>
+    </ul>
+    <p style="font-size: 11.5px; color: #888; margin-top: 12px; font-style: italic; margin-bottom: 0;">Información tratada bajo estricta reserva de confidencialidad (Ley 1581 de 2012).</p>
+  </div>
+
+  <form id="formCliente">
+    <div class="seccion-titulo">1. Identificación Principal</div>
+    <div class="grupo-campo">
+      <label for="identificacion">Cédula de Ciudadanía o NIT (Con dígito de verificación)</label>
+      <input type="text" id="identificacion" required placeholder="Ej: 901234567-8">
+    </div>
+    <div class="grupo-campo">
+      <label for="nombre">Nombre Completo o Razón Social</label>
+      <input type="text" id="nombre" required placeholder="Ej: Inversiones El Sol S.A.S.">
+    </div>
+    <div class="grupo-campo">
+      <label for="telefono">Teléfono / Celular de Contacto</label>
+      <input type="text" id="telefono" required placeholder="Ej: 3142907801">
+    </div>
+    <div class="grupo-campo">
+      <label for="ciudad">Ciudad / Municipio</label>
+      <input type="text" id="ciudad" required placeholder="Ej: Paipa, Boyacá">
+    </div>
+    <div class="grupo-campo">
+      <label for="direccion">Dirección Fiscal / Domicilio</label>
+      <input type="text" id="direccion" required placeholder="Ej: Calle 10 # 4-25">
+    </div>
+    
+    <div class="seccion-titulo">2. Recepción de Facturas Electrónicas</div>
+    <div class="grupo-campo">
+      <label for="contactoFacturas">Nombre de la Persona de Contacto (Facturación)</label>
+      <input type="text" id="contactoFacturas" required placeholder="Ej: María Claudia Restrepo">
+    </div>
+    <div class="grupo-campo">
+      <label for="correoFacturas">Correo Exclusivo para Recibir Facturas</label>
+      <input type="email" id="correoFacturas" required placeholder="Ej: facturacion@empresa.com">
+    </div>
+    
+    <div class="seccion-titulo">3. Contacto de Tesorería / Pagos</div>
+    <div class="grupo-campo">
+      <label for="contactoTesoreria">Nombre de la Persona de Contacto (Tesorería)</label>
+      <input type="text" id="contactoTesoreria" required placeholder="Ej: Andrés Mendoza">
+    </div>
+    <div class="grupo-campo">
+      <label for="correoTesoreria">Correo de Contacto de Tesorería</label>
+      <input type="email" id="correoTesoreria" required placeholder="Ej: tesoreria@empresa.com">
+    </div>
+    
+    <div class="seccion-titulo">4. Documentación Obligatoria (PDF)</div>
+    <div class="grupo-campo">
+      <label for="rut">Adjuntar RUT 2026</label>
+      <input type="file" id="rut" accept=".pdf" required>
+    </div>
+    
+    <button type="button" class="btn-enviar" onclick="enviarFormulario()">Registrar Datos de Cliente</button>
+    <div id="status" class="cargando">Procesando y creando repositorios en Drive comercial...</div>
+  </form>
+
+  <div class="pie-pagina-firma">
+    Elaborado por: <strong>Paula Catalina Martínez Villate</strong><br>
+    <span style="color:#999; font-style: italic;">Coordinadora Contable y Administrativa — Social Solar</span>
+  </div>
+</div>
+
+<script>
+  function transformarArchivo(idInput) {
+    return new Promise((resolve) => {
+      var input = document.getElementById(idInput);
+      if (input.files.length === 0) { resolve(null); return; }
+      var archivo = input.files[0];
+      var lector = new FileReader();
+      lector.onload = function(e) {
+        resolve({
+          nombre: archivo.name,
+          tipo: archivo.type,
+          base64: e.target.result
+        });
+      };
+      lector.readAsDataURL(archivo);
+    });
+  }
+
+  async function enviarFormulario() {
+    var form = document.getElementById("formCliente");
+    if(!form.checkValidity()) { form.reportValidity(); return; }
+    
+    document.getElementById("status").style.display = "block";
+    
+    var datos = {
+      identificacion: document.getElementById("identificacion").value,
+      nombre: document.getElementById("nombre").value,
+      telefono: document.getElementById("telefono").value,
+      ciudad: document.getElementById("ciudad").value,
+      direccion: document.getElementById("direccion").value,
+      contactoFacturas: document.getElementById("contactoFacturas").value,
+      correoFacturas: document.getElementById("correoFacturas").value,
+      contactoTesoreria: document.getElementById("contactoTesoreria").value,
+      correoTesoreria: document.getElementById("correoTesoreria").value
+    };
+    
+    var fRut = await transformarArchivo("rut");
+    
+    google.script.run
+      .withSuccessHandler(function(respuesta) {
+        document.getElementById("status").style.display = "none";
+        alert(respuesta.mensaje);
+        if(respuesta.exito) form.reset();
+      })
+      .api('procesarCliente', datos, fRut);
+  }
+</script>
+</body>
+</html>
