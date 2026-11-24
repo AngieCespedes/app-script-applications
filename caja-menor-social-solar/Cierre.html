@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+:root{--am:#FFB41D;--am2:#E09C00;--ne:#1A1A1A;--cr:#FFF8E7;--cr2:#FFE7B0;
+ --bd:#E2E0DA;--sec:#6B6761;--ok:#1E7B34;--okbg:#E6F4EA;--mal:#B3261E;
+ --malbg:#FDECEA;--avi:#8A5A00;--avibg:#FFF1CC;--inf:#1F3864;--infbg:#EDF2FA}
+*{box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:var(--ne);margin:0;padding:18px}
+h2{font-size:16px;margin:0 0 3px}
+.sub{color:var(--sec);font-size:12px;margin-bottom:14px}
+label{display:block;font-size:10.5px;color:var(--sec);margin:8px 0 3px;
+ font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+input,select{width:100%;padding:7px 8px;border:1px solid var(--bd);border-radius:6px;font-size:13px}
+button{font:inherit;border:0;border-radius:8px;cursor:pointer;padding:10px 12px;
+ font-weight:bold;font-size:13px;width:100%;margin-top:6px}
+.am{background:var(--am);color:var(--ne)} .am:hover{background:var(--am2)}
+.cl{background:#fff;color:var(--ne);border:1px solid var(--bd)}
+button:disabled{opacity:.5;cursor:wait}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.al{border-radius:8px;padding:10px 12px;font-size:12.3px;margin:8px 0;border:1px solid;line-height:1.45}
+.al b{display:block;margin-bottom:2px}
+.ok{background:var(--okbg);border-color:#bfe3c9;color:#145c27}
+.av{background:var(--avibg);border-color:#f0d89a;color:#6b4700}
+.mal{background:var(--malbg);border-color:#f3c7c3;color:#8c1d16}
+.inf{background:var(--infbg);border-color:#c9d8ef;color:var(--inf)}
+.caja{border:1px solid var(--bd);border-radius:10px;padding:14px}
+.caja.pri{border-color:var(--am2);background:var(--cr)}
+.caja h3{font-size:13px;margin:0 0 5px}
+.caja p{color:var(--sec);font-size:12px;margin:0 0 10px;line-height:1.45}
+.fila{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bd);font-size:12.5px}
+.fila b{font-variant-numeric:tabular-nums}
+.msg{font-size:12.5px;padding:10px;border-radius:7px;margin:10px 0;display:none}
+ul{margin:4px 0 0;padding-left:18px} li{margin-bottom:2px}
+</style>
+</head>
+<body>
+
+<h2>Entregar la relación</h2>
+<div class="sub">Indique el periodo que va a entregar. Se arma la relación con los movimientos de esas fechas.</div>
+
+<div id="cargando" class="sub">Revisando la relación…</div>
+
+<div id="todo" style="display:none">
+  <div class="g2">
+    <div>
+      <label>Fecha inicial de la entrega</label>
+      <input type="date" id="d1">
+      <label>Fecha final de la entrega</label>
+      <input type="date" id="d2">
+      <label>Se entrega a</label>
+      <select id="para"></select>
+
+      <div id="resumen" style="margin-top:14px"></div>
+    </div>
+
+    <div>
+      <div id="estado"></div>
+
+      <div class="caja" style="margin-bottom:12px">
+        <h3>📄 Entrega física</h3>
+        <p>Se genera el PDF, se imprime, se anexan los soportes en papel y el gerente firma a mano.</p>
+        <button class="cl" id="bFis" onclick="cerrar('fisica')">Generar el PDF</button>
+      </div>
+
+      <div class="caja pri">
+        <h3>💻 Entrega digital</h3>
+        <p>Además del PDF, le llega por correo a quien aprueba, con el resumen y el archivo adjunto.</p>
+        <button class="am" id="bDig" onclick="cerrar('digital')">Generar y enviar</button>
+      </div>
+
+      <div class="al inf" style="margin-top:12px"><b>Las dos dejan el mismo rastro</b>
+        Firmada en papel o aprobada por correo, la relación queda cerrada con fecha, responsable y PDF.
+        Solo cambia dónde queda la firma.</div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <div id="final"></div>
+</div>
+
+<script>
+var INFO = null;
+function $(i){ return document.getElementById(i); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function msg(t,c){ var m=$('msg'); m.innerHTML=t; m.style.display='block';
+  m.style.background = c==='mal'?'#FDECEA':c==='ok'?'#E6F4EA':'#EDF2FA';
+  m.style.color = c==='mal'?'#8c1d16':c==='ok'?'#145c27':'#1F3864'; }
+
+function servidor(fn){
+  var args = Array.prototype.slice.call(arguments,1);
+  return new Promise(function(ok,mal){
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(mal);
+    r[fn].apply(r,args);
+  });
+}
+
+function aISO(txt){
+  var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(txt||'').trim());
+  if(!m) return '';
+  return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
+}
+
+servidor('datosCierre').then(function(d){
+  INFO = d;
+  $('cargando').style.display = 'none';
+  $('todo').style.display = 'block';
+
+  $('d1').value = aISO(d.desde);
+  if(d.hasta) $('d2').value = aISO(d.hasta);
+  else { var h=new Date(); $('d2').value = h.getFullYear()+'-'+('0'+(h.getMonth()+1)).slice(-2)+'-'+('0'+h.getDate()).slice(-2); }
+
+  $('para').innerHTML =
+    '<option>'+esc(d.correoGer)+'</option>' +
+    '<option>'+esc(d.correoCtd)+'</option>';
+
+  $('resumen').innerHTML =
+    '<div class="fila"><span>Relación</span><b>N.° '+esc(d.numero)+'</b></div>'+
+    '<div class="fila"><span>Responsable</span><b>'+esc(d.responsable)+'</b></div>'+
+    '<div class="fila"><span>Saldo anterior</span><b>'+esc(d.saldoAnterior)+'</b></div>'+
+    '<div class="fila"><span>Ingresos</span><b>'+esc(d.ingresos)+'</b></div>'+
+    '<div class="fila"><span>Egresos</span><b>'+esc(d.egresos)+'</b></div>'+
+    '<div class="fila"><span>Saldo final</span><b>'+esc(d.saldoFinal)+'</b></div>'+
+    '<div class="fila"><span>Efectivo contado</span><b>'+esc(d.contado||'Sin arqueo')+'</b></div>'+
+    '<div class="fila"><span>Arqueo</span><b>'+esc(d.estadoArqueo)+'</b></div>'+
+    '<div class="fila"><span>Movimientos</span><b>'+esc(d.movimientos)+'</b></div>';
+
+  var h = '';
+  if(d.errores.length){
+    h += '<div class="al mal"><b>No se puede cerrar todavía</b><ul>' +
+      d.errores.map(function(e){ return '<li>'+esc(e)+'</li>'; }).join('') + '</ul></div>';
+    $('bFis').disabled = true; $('bDig').disabled = true;
+  } else {
+    h += '<div class="al ok"><b>La relación está lista para entregar</b>'+
+      esc(d.movimientos)+' movimientos, saldo final '+esc(d.saldoFinal)+'.</div>';
+  }
+  if(d.avisos.length)
+    h += '<div class="al av"><b>Para tener en cuenta</b><ul>' +
+      d.avisos.map(function(a){ return '<li>'+esc(a)+'</li>'; }).join('') + '</ul></div>';
+  $('estado').innerHTML = h;
+}).catch(function(e){
+  $('cargando').innerHTML = '<div class="al mal"><b>No se pudo leer la relación</b>'+esc(e.message)+'</div>';
+});
+
+function cerrar(modo){
+  var d1 = $('d1').value, d2 = $('d2').value;
+  if(!d1 || !d2){ msg('Indique las dos fechas.','mal'); return; }
+  if(d2 < d1){ msg('La fecha final es anterior a la inicial.','mal'); return; }
+  $('bFis').disabled = true; $('bDig').disabled = true;
+  msg(modo === 'digital'
+    ? 'Generando el PDF y enviando el correo…'
+    : 'Generando el PDF…');
+
+  servidor('cerrarRelacion', d1, d2, modo, $('para').value).then(function(r){
+    $('msg').style.display = 'none';
+    $('final').innerHTML =
+      '<div class="al ok"><b>Relación N.° '+esc(r.numero)+' cerrada</b>'+
+      esc(r.movimientos)+' movimientos pasaron a Movimientos e Historial. '+
+      'Saldo final '+esc(r.saldo)+'.<br><br>'+
+      '<a href="'+r.url+'" target="_blank"><b>Abrir el PDF en Drive</b></a>'+
+      (r.enviado ? '<br>Enviado a '+esc(r.enviado) : '') +
+      '<br><br>Ya quedó abierta la relación N.° '+esc(r.siguiente)+
+      ' con el saldo final como saldo anterior.</div>'+
+      '<button class="cl" onclick="google.script.host.close()">Cerrar</button>';
+    $('todo').querySelector('.g2').style.display = 'none';
+  }).catch(function(e){
+    msg('<b>No se cerró la relación.</b><br>'+esc(e.message), 'mal');
+    $('bFis').disabled = false; $('bDig').disabled = false;
+  });
+}
+</script>
+</body>
+</html>

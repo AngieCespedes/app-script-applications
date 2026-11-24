@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{
+  --am:#FFB41D; --am2:#E09C00; --ne:#1A1A1A; --crema:#FFF8E7; --crema2:#FFE7B0;
+  --gris:#F4F4F2; --borde:#E2E0DA; --txt:#1A1A1A; --sec:#6B6761;
+  --ok:#1E7B34; --okbg:#E6F4EA; --mal:#B3261E; --malbg:#FDECEA; --avi:#8A5A00; --avibg:#FFF1CC;
+  --azul:#1F3864;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--txt);background:var(--gris);font-size:14px;line-height:1.45}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px}
+input,select,textarea{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--borde);
+  border-radius:8px;background:#fff;color:var(--txt)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--am);outline-offset:-1px;border-color:var(--am)}
+label{display:block;font-size:11.5px;font-weight:600;color:var(--sec);margin:0 0 4px;
+  text-transform:uppercase;letter-spacing:.04em}
+.hide{display:none!important}
+
+/* ===== LOGIN ===== */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,#1A1A1A 0%,#2d2d2d 60%,#3a3122 100%);padding:24px}
+.loginbox{background:#fff;border-radius:16px;padding:30px;max-width:390px;width:100%;
+  box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.logo{width:52px;height:52px;border-radius:12px;background:var(--am);display:flex;
+  align-items:center;justify-content:center;font-weight:800;color:var(--ne);font-size:19px;margin-bottom:14px}
+.loginbox h1{font-size:19px}
+.loginbox p.s{color:var(--sec);font-size:12.5px;margin:4px 0 20px}
+.loginbox .f{margin-bottom:12px}
+.btn{background:var(--am);color:var(--ne);font-weight:700;padding:11px 16px;width:100%;
+  border-radius:9px;transition:.15s}
+.btn:hover{background:var(--am2)}
+.btn.dark{background:var(--ne);color:#fff}
+.btn.dark:hover{background:#000}
+.btn.ghost{background:#fff;color:var(--ne);border:1px solid var(--borde);font-weight:600}
+.btn.ghost:hover{background:var(--crema)}
+.btn.sm{width:auto;padding:7px 12px;font-size:12.5px}
+.btn.xs{width:auto;padding:5px 9px;font-size:11.5px;font-weight:600}
+.demo{margin-top:18px;border-top:1px solid var(--borde);padding-top:14px}
+.demo p{font-size:11px;color:var(--sec);margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.demo button{display:block;width:100%;text-align:left;background:var(--crema);border:1px solid var(--crema2);
+  padding:9px 11px;margin-bottom:6px;font-size:12.5px;border-radius:8px}
+.demo button:hover{background:var(--crema2)}
+.demo b{display:block;font-size:13px}
+.demo span{color:var(--sec);font-size:11.5px}
+
+/* ===== APP ===== */
+#app{display:flex;min-height:100vh}
+aside{width:232px;background:var(--ne);color:#fff;flex-shrink:0;display:flex;flex-direction:column}
+.brand{padding:16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #2e2e2e}
+.brand .logo{width:34px;height:34px;font-size:13px;border-radius:9px;margin:0}
+.brand b{font-size:13.5px;display:block;line-height:1.2}
+.brand span{font-size:10.5px;color:#9a948a}
+nav{padding:10px 8px;flex:1;overflow:auto}
+nav .gr{font-size:10px;color:#7d7870;text-transform:uppercase;letter-spacing:.09em;
+  padding:12px 10px 5px;font-weight:700}
+nav a{display:flex;gap:9px;align-items:center;padding:9px 10px;color:#ddd8d0;text-decoration:none;
+  border-radius:8px;font-size:13.2px;margin-bottom:1px;cursor:pointer}
+nav a:hover{background:#262626;color:#fff}
+nav a.on{background:var(--am);color:var(--ne);font-weight:700}
+nav a .ic{width:17px;text-align:center;font-size:14px}
+nav a .pill{margin-left:auto;background:var(--mal);color:#fff;border-radius:9px;
+  padding:1px 6px;font-size:10.5px;font-weight:700}
+.who{padding:12px 14px;border-top:1px solid #2e2e2e;font-size:12px}
+.who b{display:block;color:#fff}
+.who span{color:#9a948a;font-size:11px}
+.who button{margin-top:8px;background:#262626;color:#ddd;font-size:11.5px;padding:5px 9px;width:auto}
+
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+header{background:#fff;border-bottom:1px solid var(--borde);padding:14px 22px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h2{font-size:17px}
+header .sub{color:var(--sec);font-size:12.5px}
+header .right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{background:var(--crema);border:1px solid var(--crema2);border-radius:20px;
+  padding:4px 11px;font-size:12px;font-weight:600}
+.chip.v{background:var(--okbg);border-color:#bfe3c9;color:var(--ok)}
+.chip.r{background:var(--malbg);border-color:#f3c7c3;color:var(--mal)}
+.wrap{padding:20px 22px;max-width:1120px}
+
+.card{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:18px;margin-bottom:16px}
+.card > h3{font-size:14.5px;margin-bottom:3px}
+.card > p.d{color:var(--sec);font-size:12.5px;margin:0 0 14px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:14px}
+.kpi span{display:block;font-size:11px;color:var(--sec);text-transform:uppercase;
+  letter-spacing:.05em;font-weight:700;margin-bottom:5px}
+.kpi b{font-size:21px;display:block;letter-spacing:-.02em}
+.kpi small{color:var(--sec);font-size:11.5px}
+.kpi.am{background:var(--crema);border-color:var(--crema2)}
+.kpi.rojo b{color:var(--mal)}
+
+/* acciones grandes */
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+@media(max-width:900px){.acts{grid-template-columns:1fr 1fr}}
+.act{background:#fff;border:1px solid var(--borde);border-radius:12px;padding:15px;text-align:left;
+  transition:.15s}
+.act:hover{border-color:var(--am);box-shadow:0 4px 14px rgba(0,0,0,.07);transform:translateY(-1px)}
+.act .e{font-size:22px;display:block;margin-bottom:7px}
+.act b{display:block;font-size:13.5px;margin-bottom:2px}
+.act span{color:var(--sec);font-size:11.8px;line-height:1.35;display:block}
+.act.pri{background:var(--am);border-color:var(--am2)}
+.act.pri span{color:#6b5200}
+
+/* tabla */
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+th{text-align:left;background:var(--ne);color:#fff;padding:9px 10px;font-weight:600;font-size:11.5px;
+  text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:9px 10px;border-bottom:1px solid var(--borde);vertical-align:top}
+tbody tr:hover{background:var(--crema)}
+td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-ok{background:var(--okbg);color:var(--ok)}
+.b-av{background:var(--avibg);color:var(--avi)}
+.b-mal{background:var(--malbg);color:var(--mal)}
+.b-gr{background:#ECEAE5;color:var(--sec)}
+
+/* alertas */
+.al{border-radius:9px;padding:11px 13px;font-size:12.8px;margin-bottom:11px;border:1px solid}
+.al-ok{background:var(--okbg);border-color:#bfe3c9;color:#145c27}
+.al-av{background:var(--avibg);border-color:#f0d89a;color:#6b4700}
+.al-mal{background:var(--malbg);border-color:#f3c7c3;color:#8c1d16}
+.al-inf{background:#EDF2FA;border-color:#c9d8ef;color:#1F3864}
+.al b{display:block;margin-bottom:2px}
+.al .nrm{font-size:11.5px;opacity:.85;display:block;margin-top:4px}
+
+.sep{height:1px;background:var(--borde);margin:16px 0}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.hint{font-size:11.5px;color:var(--sec);margin-top:4px}
+.drop{border:2px dashed var(--borde);border-radius:10px;padding:22px;text-align:center;
+  background:var(--crema);color:var(--sec);font-size:12.8px;cursor:pointer}
+.drop:hover{border-color:var(--am);background:var(--crema2)}
+
+/* comprobante */
+.doc{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:24px;
+  font-size:12.5px;max-width:720px}
+.doc .h{display:flex;gap:14px;align-items:flex-start;border-bottom:2px solid var(--ne);padding-bottom:12px;margin-bottom:14px}
+.doc .h .logo{width:44px;height:44px;font-size:15px;margin:0}
+.doc .h b{font-size:14px;display:block}
+.doc .h span{color:var(--sec);font-size:11.5px}
+.doc .h .n{margin-left:auto;text-align:right}
+.doc .h .n b{font-size:13px}
+.doc dl{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;margin:0 0 14px}
+.doc dt{color:var(--sec);font-size:11.5px;font-weight:600}
+.doc dd{margin:0;font-weight:600}
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:30px}
+.firmas div{border-top:1px solid var(--ne);padding-top:6px;font-size:11.5px;color:var(--sec)}
+
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.wamsg{background:#E7FFDB;border:1px solid #bfe3a9;border-radius:10px;border-top-right-radius:2px;
+  padding:11px 13px;font-size:12.8px;white-space:pre-wrap;line-height:1.5}
+.lnk{color:#0B6BCB;word-break:break-all}
+.ck{display:flex;gap:8px;align-items:flex-start;font-size:12.8px;font-weight:500;
+  text-transform:none;letter-spacing:0;color:var(--txt);margin:0}
+.ck input{width:auto;margin-top:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--borde);margin-bottom:16px;flex-wrap:wrap}
+.tabs button{background:none;padding:9px 13px;font-size:13px;color:var(--sec);font-weight:600;
+  border-radius:8px 8px 0 0;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ne);border-bottom-color:var(--am);background:var(--crema)}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:14px 0}
+@media(max-width:900px){.flow{grid-template-columns:1fr}}
+.flow div{background:var(--crema);border:1px solid var(--crema2);border-radius:9px;padding:10px;font-size:11.8px}
+.flow div b{display:block;font-size:12.5px;margin-bottom:2px}
+.flow div.on{background:var(--am);border-color:var(--am2)}
+.flow div.off{background:#fff;border-color:var(--borde);color:var(--sec)}
+.den{display:grid;grid-template-columns:110px 1fr 120px;gap:8px;align-items:center;margin-bottom:6px}
+.den span{font-size:12.5px;font-weight:600}
+.den b{text-align:right;font-variant-numeric:tabular-nums}
+
+/* toast y modal */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120%);
+  background:var(--ne);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;max-width:480px;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .25s;z-index:900;line-height:1.4}
+#toast.on{transform:translateX(-50%) translateY(0)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;
+  justify-content:center;padding:20px;z-index:950;overflow:auto}
+#modal .mbox{background:#fff;border-radius:14px;max-width:780px;width:100%;max-height:92vh;overflow:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.4)}
+#modal .mh{padding:16px 20px;border-bottom:1px solid var(--borde);display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0}
+#modal .mh h3{font-size:15px}
+#modal .mh button{margin-left:auto;background:none;color:var(--sec);font-size:20px;padding:0 6px;width:auto}
+#modal .mb{padding:20px}
+
+/* ===== CELULAR ===== */
+#btnMenu{display:none;background:var(--ne);color:#fff;width:auto;padding:8px 12px;
+  font-size:17px;line-height:1;border-radius:9px;flex-shrink:0}
+#velo{display:none}
+@media(max-width:760px){
+  #btnMenu{display:inline-flex;align-items:center}
+  aside{position:fixed;top:0;bottom:0;left:0;z-index:700;transform:translateX(-100%);
+    transition:transform .22s;box-shadow:0 0 44px rgba(0,0,0,.55)}
+  aside.abierto{transform:translateX(0)}
+  #velo{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:690}
+  #velo.abierto{display:block}
+  header{position:sticky;top:0;z-index:600;padding:11px 13px;gap:10px}
+  header h2{font-size:15.5px}
+  header .sub{font-size:11.5px}
+  .wrap{padding:14px 13px}
+  .card{padding:14px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .acts{grid-template-columns:1fr}
+  .loginbox{padding:24px 20px}
+  input,select,textarea{font-size:16px}
+  .btn{padding:13px 16px}
+  .btn.xs{padding:8px 11px;font-size:12.5px}
+  table{font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<div id="cargando" style="min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,#1A1A1A 0%,#2d2d2d 60%,#3a3122 100%);color:#fff;
+  flex-direction:column;gap:14px;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+  <div class="logo" style="margin:0">SS</div>
+  <b style="font-size:17px">Caja Menor</b>
+  <span style="font-size:13px;opacity:.75">Social Solar S.A.S. · abriendo…</span>
+  <div id="cargaErr" style="max-width:460px;text-align:center;font-size:13px;color:#FFB41D"></div>
+</div>
+
+<div id="login" class="hide">
+  <div class="loginbox">
+    <div class="logo">SS</div>
+    <h1>Caja Menor</h1>
+    <p class="s">Social Solar S.A.S. · NIT 901.128.826-6</p>
+
+    <div class="f">
+      <label>Usuario</label>
+      <input id="lg_usr" readonly style="background:#F4F4F2;color:#6B6761">
+      <div class="hint" style="color:#1E7B34">✓ Verificado por Google</div>
+    </div>
+
+    <div class="f">
+      <label>¿Quién está registrando?</label>
+      <select id="lg_sel" onchange="lgOtro()"></select>
+      <input id="lg_nom" class="hide" placeholder="Nombre y apellido" style="margin-top:8px">
+      <div class="hint">Su nombre queda en cada movimiento que guarde.</div>
+    </div>
+
+    <button class="btn dark" onclick="entrarQuien()">Ingresar</button>
+
+    <div class="demo">
+      <p>Su rol en el sistema</p>
+      <div id="lg_roles"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <aside>
+    <div class="brand">
+      <div class="logo">SS</div>
+      <div><b>Caja Menor</b><span>Social Solar S.A.S.</span></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="who">
+      <b id="whoN"></b><span id="whoR"></span>
+    </div>
+  </aside>
+
+  <main>
+<div id="velo" onclick="menu()"></div>
+    <header>
+      <button id="btnMenu" onclick="menu()" aria-label="Menú">☰</button>
+      <div><h2 id="tit"></h2><div class="sub" id="sub"></div></div>
+      <div class="right" id="hright"></div>
+    </header>
+    <div class="wrap" id="view"></div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   CAJA MENOR — SOCIAL SOLAR S.A.S.
+   Página web conectada al libro real. Todo lo que se ve
+   sale de las hojas; todo lo que se guarda cae en ellas.
+   ========================================================= */
+
+var D = null;          /* datos de arranque */
+var QUIEN = '';        /* quién está registrando en esta sesión */
+try { QUIEN = window.localStorage.getItem('cm_quien') || ''; } catch(e){}
+var PANT = 'inicio';
+var ROL = 'auxiliar';
+var DEN = [100000,50000,20000,10000,5000,2000,1000,500,200,100];
+
+function $(i){ return document.getElementById(i); }
+function esc(s){ return String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function cop(n){ return '$ ' + Math.round(Number(n)||0).toLocaleString('es-CO'); }
+function num(v){ return Number(String(v==null?'':v).replace(/[^0-9]/g,''))||0; }
+
+function toast(t, c){
+  var e = $('toast');
+  e.textContent = t;
+  e.className = 'on ' + (c||'');
+  e.style.background = c==='mal' ? '#B3261E' : c==='ok' ? '#1E7B34' : '#1A1A1A';
+  clearTimeout(window._tt);
+  window._tt = setTimeout(function(){ e.className=''; }, 4200);
+}
+
+function servidor(fn){
+  var args = Array.prototype.slice.call(arguments,1);
+  return new Promise(function(ok,mal){
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(mal);
+    r[fn].apply(r,args);
+  });
+}
+
+function leerArchivo(id){
+  var el = $(id), f = el && el.files && el.files[0];
+  if(!f) return Promise.resolve(null);
+  return new Promise(function(ok,mal){
+    var r = new FileReader();
+    r.onload = function(){ ok({ nombre:f.name, tipo:f.type,
+      base64:String(r.result).split(',')[1] }); };
+    r.onerror = function(){ mal(new Error('No se pudo leer el archivo.')); };
+    r.readAsDataURL(f);
+  });
+}
+
+function hoyISO(){
+  var d=new Date();
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+
+/* ===================== ARRANQUE ===================== */
+
+/* el arranque lo hace arrancar(), más abajo */
+
+/* ===================== MENÚ ===================== */
+
+var MENU = {
+  auxiliar: [
+    ['OPERACIÓN DIARIA'],
+    ['inicio','🏠','Inicio'], ['pago','💸','Registrar pago'],
+    ['ingreso','💵','Registrar ingreso'], ['entrega','📤','Entregar efectivo'],
+    ['soportes','📷','Leer fotos / PDF'],
+    ['ANTES DE PAGAR'],
+    ['banca','🔎','¿Puedo pagar en efectivo?'], ['politicas','📘','Políticas'],
+    ['banco','🏦','Banco y tope'],
+    ['LEGALIZACIÓN'],
+    ['links','🔗','Pedir documentos', function(){ return D ? D.pendientes : 0; }],
+    ['CIERRE'],
+    ['arqueo','🧮','Arqueo'], ['cierre','📨','Entregar la relación'],
+    ['informes','📄','Relaciones cerradas'],
+    ['confirmar','🤝','Entregas de efectivo'],
+    ['empalme','🔁','Entrega del cargo'],
+    ['datos','🔗','Enlaces y carpetas']
+  ],
+  contadora: [
+    ['CONTROL'],
+    ['tablero','📊','Tablero'], ['gestion','📈','Gestión de la caja'],
+    ['casos','🙋','Casos por definir', function(){ return D ? D.casos : 0; }],
+    ['revisar','🔍','Revisar la relación'],
+    ['auditoria','⚠️','Hallazgos'],
+    ['banca','🔎','Bancarización'], ['banco','🏦','Banco y tope'],
+    ['REGISTRO'],
+    ['inicio','🏠','Relación en curso'], ['pago','💸','Registrar pago'],
+    ['ingreso','💵','Registrar ingreso'], ['entrega','📤','Entregar efectivo'],
+    ['soportes','📷','Leer fotos / PDF'],
+    ['arqueo','🧮','Arqueo'], ['cierre','📨','Entregar la relación'],
+    ['CONFIGURACIÓN'],
+    ['usuarios','👥','Usuarios y claves'],
+    ['politicas','📘','Políticas'], ['links','🔗','Links a proveedores'],
+    ['accesos','🧹','Limpiar accesos al libro'],
+    ['params','⚙️','Responsables y topes'],
+    ['informes','📄','Relaciones cerradas'],
+    ['confirmar','🤝','Entregas de efectivo'],
+    ['empalme','🔁','Entrega del cargo'],
+    ['datos','🔗','Enlaces y carpetas']
+  ],
+  gerencia: [
+    ['REVISIÓN'],
+    ['aprobar','✅','Relaciones para aprobar', function(){ return D ? D.porAprobar : 0; }],
+    ['informes','📄','Historial de relaciones'],
+    ['confirmar','🤝','Efectivo que recibí', function(){ return D ? D.porConfirmar : 0; }],
+    ['tablero','📊','Tablero'], ['banco','🏦','Banco y tope'],
+    ['auditoria','⚠️','Hallazgos'], ['politicas','📘','Políticas'],
+    ['datos','🔗','Enlaces y carpetas']
+  ]
+};
+
+function pintarNav(){
+  var items = MENU[ROL] || MENU.auxiliar;
+  $('nav').innerHTML = items.map(function(it){
+    if(it.length === 1) return '<div class="gr">'+esc(it[0])+'</div>';
+    var n = it[3] ? it[3]() : 0;
+    var pill = n ? ' <span class="pill">'+n+'</span>' : '';
+    return '<a onclick="ir(\''+it[0]+'\')" data-p="'+it[0]+'">'+
+           '<span class="ic">'+it[1]+'</span>'+esc(it[2])+pill+'</a>';
+  }).join('');
+}
+
+function ir(p){
+  try { document.querySelector('aside').classList.remove('abierto');
+        document.getElementById('velo').classList.remove('abierto'); } catch(e){}
+  PANT = p;
+  var V = VISTAS[p];
+  if(!V){ toast('Esa pantalla todavía no está.','mal'); return; }
+  document.querySelectorAll('#nav a').forEach(function(a){
+    a.classList.toggle('on', a.dataset.p === p);
+  });
+  $('tit').textContent = V.t;
+  $('sub').innerHTML = V.s || '';
+  $('hright').innerHTML = V.h ? V.h() : '';
+  $('view').innerHTML = V.render();
+  window.scrollTo(0,0);
+  if(V.after) V.after();
+}
+
+function recargar(){
+  return servidor('datosWeb').then(function(d){
+    D = d; pintarNav();
+    if($('hright') && VISTAS[PANT] && VISTAS[PANT].h) $('hright').innerHTML = VISTAS[PANT].h();
+    return d;
+  });
+}
+
+function cargando(destino){
+  $(destino).innerHTML = '<div class="card" style="text-align:center;color:#6B6761">Consultando el libro…</div>';
+}
+
+/* ===================== SEMÁFORO ===================== */
+
+function semaforo(){
+  if(!D) return '';
+  if(D.excedente > 0) return '<div class="al al-mal"><b>⬆ La caja está '+cop(D.excedente)+
+    ' por encima del objetivo de '+cop(D.objetivo)+'</b>'+
+    'Hay que consignar el excedente al banco hoy. El efectivo de más en caja es riesgo.'+
+    '<div style="margin-top:8px"><button class="btn xs dark" onclick="ir(\'entrega\')">'+
+    'Registrar la consignación →</button></div></div>';
+  if(D.reembolso > 0) return '<div class="al al-mal"><b>⬇ La caja quedó por debajo del mínimo de '+
+    cop(D.minimo)+'</b>Hay que pedirle al gerente un reembolso de '+cop(D.reembolso)+'.</div>';
+  return '<div class="al al-ok"><b>✓ Saldo dentro del rango</b>'+D.saldoTxt+
+    ' en caja, contra un objetivo de '+cop(D.objetivo)+'.</div>';
+}
+
+function kpis(){
+  if(!D) return '';
+  return '<div class="kpis">'+
+    '<div class="kpi"><span>Saldo en caja</span><b>'+D.saldoTxt+'</b></div>'+
+    '<div class="kpi"><span>Objetivo</span><b>'+cop(D.objetivo)+'</b></div>'+
+    '<div class="kpi"><span>Filas libres</span><b>'+D.libres+'</b></div>'+
+    '<div class="kpi"><span>Responsable</span><b style="font-size:14px">'+esc(D.responsable)+'</b></div>'+
+    '</div>';
+}
+
+function opciones(lista, sel){
+  return (lista||[]).map(function(x){
+    return '<option'+(x===sel?' selected':'')+'>'+esc(x)+'</option>';
+  }).join('');
+}
+
+/* ===================== VISTAS ===================== */
+
+var VISTAS = {};
+
+/* ---------------- INICIO ---------------- */
+VISTAS.inicio = {
+  t: 'Caja menor — relación en curso',
+  s: 'Todo lo que entra y sale de la caja, con su soporte.',
+  h: function(){ return D ? '<span class="chip">Relación N.° '+esc(D.numero)+'</span>'+
+       '<span class="chip '+(D.excedente||D.reembolso?'r':'v')+'">'+esc(D.saldoTxt)+'</span>' : ''; },
+  render: function(){
+    return kpis() + semaforo() +
+      '<div class="acts" style="margin-bottom:16px">'+
+      '<button class="act pri" onclick="ir(\'pago\')"><span class="e">💸</span>'+
+        '<b>Registrar un pago</b><span>Salida de efectivo con su soporte</span></button>'+
+      '<button class="act" onclick="ir(\'ingreso\')"><span class="e">💵</span>'+
+        '<b>Registrar un ingreso</b><span>Recaudo o reposición del banco</span></button>'+
+      '<button class="act" onclick="ir(\'entrega\')"><span class="e">📤</span>'+
+        '<b>Entregar efectivo</b><span>Consignación o entrega a una persona</span></button>'+
+      '<button class="act" onclick="ir(\'arqueo\')"><span class="e">🧮</span>'+
+        '<b>Arqueo</b><span>Contar la plata y cuadrar</span></button>'+
+      '</div>'+
+      '<div class="card"><h3>Movimientos de la relación</h3>'+
+      '<p class="d">Sale directo de la hoja Relación del libro.</p>'+
+      '<div id="tablaRel">Cargando…</div></div>';
+  },
+  after: function(){
+    servidor('datosRelacion').then(function(r){
+      if(!r.filas.length){
+        $('tablaRel').innerHTML = '<div class="al al-inf"><b>La relación está vacía</b>'+
+          'Todavía no hay movimientos registrados en la relación N.° '+esc(r.numero)+'.</div>';
+        return;
+      }
+      $('tablaRel').innerHTML =
+        '<div class="al al-inf"><b>Periodo '+esc(r.desde)+(r.hasta?' a '+esc(r.hasta):' — abierta')+
+        '</b>Saldo anterior '+esc(r.saldoAnterior)+' · ingresos '+esc(r.ingresos)+
+        ' · egresos '+esc(r.egresos)+' · saldo final '+esc(r.saldoFinal)+'</div>'+
+        '<div class="tw"><table><thead><tr>'+
+        '<th>N.°</th><th>Fecha</th><th>Documento</th><th>Tercero</th><th>Descripción</th>'+
+        '<th class="num">Ingreso</th><th class="num">Egreso</th><th>Revisión</th><th>Deducible</th>'+
+        '</tr></thead><tbody>'+
+        r.filas.map(function(f){
+          var ok = f.revision && f.revision.indexOf('OK') === 0;
+          return '<tr><td>'+f.n+'</td><td>'+esc(f.fecha)+'</td><td>'+esc(f.soporte)+'</td>'+
+            '<td>'+esc(f.tercero)+'</td><td>'+esc(f.descripcion)+'</td>'+
+            '<td class="num">'+esc(f.ingreso)+'</td><td class="num">'+esc(f.egreso)+'</td>'+
+            '<td><span class="badge '+(ok?'b-ok':'b-mal')+'">'+esc(f.revision||'—')+'</span></td>'+
+            '<td><span class="badge '+(f.deducible==='SÍ'?'b-ok':f.deducible==='NO'?'b-mal':'b-av')+'">'+
+              esc(f.deducible||'—')+'</span></td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }).catch(function(e){ $('tablaRel').innerHTML = '<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- PAGO ---------------- */
+VISTAS.pago = {
+  t: 'Registrar un pago de caja menor',
+  s: 'Salida de efectivo. El sistema valida topes y soporte <b>antes</b> de guardar.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>El pago</h3><p class="d">Lo básico de la operación.</p>'+
+        '<div class="grid g2">'+
+          '<div><label>Fecha del documento</label><input type="date" id="g_fecha" value="'+hoyISO()+'"></div>'+
+          '<div><label>Valor pagado</label><input id="g_valor" inputmode="numeric" oninput="valPago()" placeholder="0"></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">¿A quién se le entregó el efectivo?</label>'+
+        '<select id="g_benef" onchange="nuevoEn(\'benef\')">'+opciones(D.benef)+'<option value="__nuevo__">+ Agregar un nombre…</option></select>'+'<div id="nv_benef" class="hide" style="margin-top:8px"></div>'+
+        '<p class="d" style="margin:5px 0 0">Quien recibió la plata. Casi nunca es el mismo del documento.</p>'+
+        '<label style="margin-top:10px">¿A nombre de quién viene el documento?</label>'+
+        '<input id="g_prov" oninput="valPago()" placeholder="Vendedor o prestador">'+
+        '<label style="margin-top:10px">NIT o cédula del vendedor</label>'+
+        '<input id="g_nit" oninput="valPago()" placeholder="901128826-6">'+
+        '<label style="margin-top:10px">Descripción</label>'+
+        '<input id="g_desc" placeholder="Qué se compró">'+
+        '<label style="margin-top:10px">Medio de pago</label>'+
+        '<select id="g_medio" onchange="valPago()">'+opciones(D.medios)+'</select>'+
+      '</div>'+
+      '<div class="card"><h3>El soporte y la contabilidad</h3>'+
+        '<p class="d">Esto es lo que decide si el gasto se puede deducir.</p>'+
+        '<label>Tipo de soporte que trajo</label>'+
+        '<select id="g_tipo" onchange="valPago()">'+opciones(D.soportes)+'</select>'+
+        '<label style="margin-top:10px">N.° de factura o documento</label>'+
+        '<input id="g_sop" placeholder="FE-1866531">'+
+        '<label style="margin-top:10px">Estado del soporte</label>'+
+        '<select id="g_estado" onchange="valPago()">'+opciones(D.estados)+'</select>'+
+        '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>Categoría</label><select id="g_cat" onchange="valPago()">'+opciones(D.categorias)+'</select></div>'+
+          '<div><label>Centro de costo</label><select id="g_centro" onchange="nuevoEn(\'centro\')">'+opciones(D.centros)+'<option value="__nuevo__">+ Agregar un centro…</option></select>'+'<div id="nv_centro" class="hide" style="margin-top:8px"></div></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">Cuenta contable (World Office)</label>'+
+        '<select id="g_cuenta">'+opciones(D.cuentas)+'</select>'+
+        '<label style="margin-top:10px">Concepto de retención</label>'+
+        '<select id="g_ret" onchange="valPago()">'+opciones(D.retenciones)+'</select>'+
+        '<label style="margin-top:10px">Nota para la contadora</label>'+
+        '<textarea id="g_nota" rows="2" placeholder="Lo que ella necesita saber para decidir"></textarea>'+
+        '<label style="margin-top:10px">Foto del soporte</label>'+
+        '<input type="file" id="g_file" accept="image/*,application/pdf">'+
+      '</div></div>'+
+      '<div id="g_val"></div>'+
+      '<div style="display:flex;gap:10px;margin-top:4px">'+
+        '<button class="btn dark" id="g_btn" onclick="guardarPago()" style="max-width:260px">Guardar el pago</button>'+
+        '<button class="btn ghost" onclick="ir(\'inicio\')" style="max-width:140px">Volver</button>'+
+      '</div>';
+  },
+  after: function(){ valPago(); }
+};
+
+function valPago(){
+  if(!D || !$('g_val')) return;
+  var v = num($('g_valor').value);
+  var tipo = $('g_tipo').value||'', nit = ($('g_nit').value||'').replace(/\D/g,'');
+  var medio = $('g_medio').value||'', estado = $('g_estado').value||'';
+  var benef = $('g_benef').value||'', prov = ($('g_prov').value||'').trim();
+  var ret = $('g_ret').value||'';
+  var esEfectivo = medio.indexOf('Efectivo') === 0;
+  var h = '', bloquea = false;
+
+  if(benef === '__nuevo__' || ($('g_centro') && $('g_centro').value === '__nuevo__')){ bloquea = true;
+    h += '<div class="al al-av"><b>Termine de agregar el nombre</b>'+
+         'Escríbalo y oprima «Guardar en la lista», o cancele.</div>'; }
+  if(!v) h += '<div class="al al-av"><b>Escriba el valor</b>Sin valor no se puede validar nada.</div>';
+  if(esEfectivo && v > D.saldo){ bloquea = true;
+    h += '<div class="al al-mal"><b>No alcanza el efectivo</b>En caja hay '+cop(D.saldo)+
+         ' y está registrando '+cop(v)+'.</div>'; }
+  if(v > D.topeGasto){ bloquea = true;
+    h += '<div class="al al-mal"><b>Supera el tope por gasto ('+cop(D.topeGasto)+')</b>'+
+         'Requiere autorización de gerencia antes de pagarse por caja menor.</div>'; }
+  if(esEfectivo && v > D.topeEfectivo){ bloquea = true;
+    h += '<div class="al al-mal"><b>'+cop(v)+' en efectivo supera las 100 UVT</b>'+
+         'Va obligatoriamente por canal bancario. Art. 771-5 par. 2 E.T.</div>'; }
+  else if(!esEfectivo && v)
+    h += '<div class="al al-ok"><b>Pago bancarizado</b>'+esc(medio)+
+         ' no cuenta contra el tope de efectivo. Oficio DIAN 100202208-0176/2023.</div>';
+
+  if(nit && /^2{9,12}$/.test(nit)){ bloquea = true;
+    h += '<div class="al al-mal"><b>NIT genérico de consumidor final</b>'+
+         'No soporta nada: exija factura a nombre de Social Solar S.A.S.</div>'; }
+
+  if(tipo.indexOf('papel') > -1){
+    if(v > D.topePOS){ bloquea = true;
+      h += '<div class="al al-mal"><b>Tiquete POS en papel por '+cop(v)+'</b>'+
+           'Supera las 5 UVT ('+cop(D.topePOS)+'). Exija factura electrónica. Art. 616-1 par. 2 E.T.</div>'; }
+    else h += '<div class="al al-mal"><b>El POS en papel no es deducible</b>'+
+         'Pida documento equivalente electrónico con los datos de Social Solar.</div>';
+  }
+
+  if(benef && benef.indexOf('directo') === -1 && prov)
+    h += '<div class="al al-inf"><b>Doble trazabilidad</b>El efectivo lo recibió '+esc(benef)+
+         ' y el soporte queda a nombre de '+esc(prov)+'. Circular 004 num. 4.E.</div>';
+  if(benef && benef.indexOf('directo') === -1 && !prov)
+    h += '<div class="al al-av"><b>Falta el vendedor del documento</b>'+
+         'El DSE se le hace al vendedor, no a quien hizo la compra.</div>';
+
+  if(/no quiso|no se pudo/i.test(estado))
+    h += '<div class="al al-mal"><b>Queda NO DEDUCIBLE</b>'+
+         'El caso pasa a la contadora con su nota y entra al informe mensual. Circular 004 num. 4.G.</div>';
+  if(/falta el dse/i.test(estado))
+    h += '<div class="al al-av"><b>Queda con reloj de plazo</b>'+D.plazoDSE+
+         ' días desde la operación. Después pierde el efecto fiscal.</div>';
+
+  if(ret.indexOf('No aplica') === 0 && v > 500000)
+    h += '<div class="al al-av"><b>¿Seguro que no hay retención?</b>Por '+cop(v)+
+         ' vale la pena revisar el concepto.</div>';
+
+  if(!h) h = '<div class="al al-ok"><b>Todo en orden</b>Cumple topes, medio de pago y soporte.</div>';
+  if(bloquea) h = '<div class="al al-mal"><b>⛔ No se puede guardar así</b>'+
+                  'Corrija lo que está en rojo.</div>' + h;
+  $('g_val').innerHTML = h;
+  $('g_btn').disabled = bloquea;
+}
+
+function guardarPago(){
+  $('g_btn').disabled = true; toast('Guardando el pago…');
+  leerArchivo('g_file').then(function(a){
+    return servidor('guardarPago', {
+      fecha:$('g_fecha').value, valor:$('g_valor').value,
+      beneficiario:$('g_benef').value, proveedor:$('g_prov').value, nit:$('g_nit').value,
+      descripcion:$('g_desc').value, medio:$('g_medio').value,
+      categoria:$('g_cat').value, centro:$('g_centro').value,
+      cuenta:$('g_cuenta').value, retencion:$('g_ret').value,
+      tipoSoporte:$('g_tipo').value, soporte:$('g_sop').value,
+      estadoSoporte:$('g_estado').value, nota:$('g_nota').value, archivo:a, quien:QUIEN
+    });
+  }).then(function(r){
+    D = r.panel; pintarNav();
+    toast('Fila '+r.n+' guardada · '+r.revision+' · Deducible: '+r.deducible,
+          r.revision.indexOf('OK')===0 ? 'ok' : 'mal');
+    ['g_valor','g_prov','g_nit','g_desc','g_sop','g_nota'].forEach(function(i){ $(i).value=''; });
+    $('g_file').value = '';
+    valPago();
+  }).catch(function(e){ toast(e.message,'mal'); $('g_btn').disabled=false; });
+}
+
+/* ---------------- INGRESO ---------------- */
+VISTAS.ingreso = {
+  t: 'Registrar un ingreso de efectivo',
+  s: 'Recaudo de un cliente o reposición del banco.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>El ingreso</h3>'+
+        '<label>Origen del dinero</label>'+
+        '<select id="i_origen" onchange="valIng()">'+opciones(D.origenes)+'</select>'+
+        '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>Fecha</label><input type="date" id="i_fecha" value="'+hoyISO()+'"></div>'+
+          '<div><label>Valor recibido</label><input id="i_valor" inputmode="numeric" oninput="valIng()"></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">N.° de soporte</label>'+
+        '<input id="i_sop" placeholder="RC-0042 o N.° del retiro">'+
+        '<label style="margin-top:10px">Concepto</label><input id="i_desc">'+
+        '<label style="margin-top:10px">Centro de costo</label>'+
+        '<select id="i_centro">'+opciones(D.centros)+'</select>'+
+        '<label style="margin-top:10px">Soporte</label>'+
+        '<input type="file" id="i_file" accept="image/*,application/pdf">'+
+      '</div>'+
+      '<div class="card" id="i_cruce"><h3>Para poder cruzarlo después</h3>'+
+        '<p class="d">Un recaudo sin recibo de caja ni factura no se puede aplicar en World Office.</p>'+
+        '<label>Cliente o pagador</label><input id="i_cliente" oninput="valIng()">'+
+        '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>N.° recibo de caja</label><input id="i_rc" oninput="valIng()"></div>'+
+          '<div><label>Factura que cruza</label><input id="i_fv" oninput="valIng()"></div>'+
+        '</div>'+
+        '<label style="margin-top:10px">¿Cruce aplicado en World Office?</label>'+
+        '<select id="i_cruceap"><option>Pendiente</option><option>Sí</option><option>No aplica</option></select>'+
+      '</div></div>'+
+      '<div id="i_val"></div>'+
+      '<div style="display:flex;gap:10px;margin-top:4px">'+
+        '<button class="btn dark" id="i_btn" onclick="guardarIngreso()" style="max-width:260px">Guardar el ingreso</button>'+
+        '<button class="btn ghost" onclick="ir(\'inicio\')" style="max-width:140px">Volver</button>'+
+      '</div>';
+  },
+  after: function(){ valIng(); }
+};
+
+function valIng(){
+  if(!D || !$('i_val')) return;
+  var o = $('i_origen').value||'', v = num($('i_valor').value);
+  var esCliente = /cliente/i.test(o), esBanco = /banco/i.test(o);
+  $('i_cruce').style.display = esCliente ? '' : 'none';
+
+  var h='', falta=false;
+  if(esCliente){
+    var p=[];
+    if(!($('i_cliente').value||'').trim()) p.push('el nombre del cliente');
+    if(!($('i_rc').value||'').trim())      p.push('el N.° de recibo de caja');
+    if(!($('i_fv').value||'').trim())      p.push('la factura que cruza');
+    if(p.length){ falta=true;
+      h += '<div class="al al-mal"><b>Falta '+p.join(', ')+'</b>'+
+           'Sin eso el recaudo no se puede cruzar después.</div>'; }
+    else h += '<div class="al al-ok"><b>Recaudo completo</b>Queda listo para cruzar en World Office.</div>';
+  }
+  if(esBanco) h += '<div class="al al-inf"><b>Reposición de caja</b>'+
+    'Adjunte el comprobante del retiro. La fila también queda en la hoja Banco.</div>';
+  if(v && !esBanco && (D.saldo + v) > D.objetivo)
+    h += '<div class="al al-mal"><b>La caja quedaría en '+cop(D.saldo+v)+'</b>'+
+         'Por encima del objetivo de '+cop(D.objetivo)+'. Hay que consignar el excedente hoy.</div>';
+  if(!h) h = '<div class="al al-inf"><b>Trazabilidad</b>Todo ingreso queda con su origen y su soporte.</div>';
+  $('i_val').innerHTML = h;
+  $('i_btn').disabled = falta;
+}
+
+function guardarIngreso(){
+  $('i_btn').disabled = true; toast('Guardando el ingreso…');
+  leerArchivo('i_file').then(function(a){
+    return servidor('guardarIngreso', {
+      fecha:$('i_fecha').value, valor:$('i_valor').value, origen:$('i_origen').value,
+      cliente:$('i_cliente').value, reciboCaja:$('i_rc').value,
+      facturaCruza:$('i_fv').value, cruceAplicado:$('i_cruceap').value,
+      soporte:$('i_sop').value, descripcion:$('i_desc').value,
+      centro:$('i_centro').value, categoria:'Venta de contado (ingreso)',
+      tipoSoporte:'Factura electrónica', medio:'Efectivo (billetes y monedas)', archivo:a, quien:QUIEN
+    });
+  }).then(function(r){
+    D = r.panel; pintarNav();
+    toast('Ingreso guardado en la fila '+r.n+'. '+r.revision, 'ok');
+    ['i_valor','i_cliente','i_rc','i_fv','i_sop','i_desc'].forEach(function(i){ $(i).value=''; });
+    $('i_file').value=''; valIng();
+  }).catch(function(e){ toast(e.message,'mal'); $('i_btn').disabled=false; });
+}
+
+/* ---------------- ENTREGA ---------------- */
+VISTAS.entrega = {
+  t: 'Entregar efectivo',
+  s: 'Cada salida de plata que no es un gasto deja su comprobante.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>La entrega</h3>'+
+        '<label>¿A dónde va el efectivo?</label>'+
+        '<select id="e_destino" onchange="destEnt()">'+opciones(D.destinos)+
+          '<option value="__nueva__">+ Agregar una persona…</option></select>'+
+        '<div id="e_nueva" class="al al-inf hide" style="margin-top:10px">'+
+          '<b>Agregar una persona</b>'+
+          '<input id="e_pnombre" placeholder="Nombre completo" style="margin:6px 0">'+
+          '<button class="btn xs dark" onclick="addPersona()" style="width:auto;padding:6px 12px">'+
+          'Guardar en la lista</button></div>'+
+        '<label style="margin-top:10px">Valor entregado</label>'+
+        '<input id="e_valor" inputmode="numeric" oninput="valEnt()">'+
+        '<label style="margin-top:10px">Concepto</label>'+
+        '<input id="e_concepto" placeholder="Ej.: consignación del excedente">'+
+        '<label style="margin-top:10px">Centro de costo</label>'+
+        '<select id="e_centro">'+opciones(D.centros)+'</select>'+
+        '<label style="margin-top:10px">Soporte de la entrega</label>'+
+        '<input type="file" id="e_file" accept="image/*,application/pdf">'+
+      '</div>'+
+      '<div class="card"><h3>Qué pasa al guardar</h3>'+
+        '<p class="d">Para que quede claro el rastro que deja.</p>'+
+        '<div class="al al-inf"><b>Se genera un comprobante numerado</b>'+
+        'EE-0001, EE-0002… Queda en la hoja Entregas y también como egreso en la relación.</div>'+
+        '<div class="al al-inf"><b>Si va al banco, queda en la hoja Banco</b>'+
+        'Para cruzarlo después contra el extracto.</div>'+
+        '<div class="al al-av"><b>Si va a una persona, queda «Por confirmar»</b>'+
+        'Hasta que quien recibe lo confirme, la relación no se puede cerrar.</div>'+
+        '<div id="e_val"></div>'+
+      '</div></div>'+
+      '<div style="display:flex;gap:10px;margin-top:4px">'+
+        '<button class="btn dark" id="e_btn" onclick="guardarEntrega()" style="max-width:260px">Generar el comprobante</button>'+
+        '<button class="btn ghost" onclick="ir(\'inicio\')" style="max-width:140px">Volver</button>'+
+      '</div>';
+  },
+  after: function(){ destEnt(); }
+};
+
+function destEnt(){
+  if(!$('e_destino')) return;
+  $('e_nueva').classList.toggle('hide', $('e_destino').value !== '__nueva__');
+  valEnt();
+}
+function addPersona(){
+  var n = ($('e_pnombre').value||'').trim();
+  if(!n){ toast('Escriba el nombre.','mal'); return; }
+  D.destinos.push(n);
+  var sel = $('e_destino');
+  sel.innerHTML = opciones(D.destinos) + '<option value="__nueva__">+ Agregar una persona…</option>';
+  sel.value = n;
+  $('e_pnombre').value = '';
+  destEnt();
+  toast(n + ' quedó en la lista de destinos.','ok');
+}
+function valEnt(){
+  if(!D || !$('e_val')) return;
+  var v = num($('e_valor').value), d = $('e_destino').value||'';
+  var h='', bloquea=false;
+  if(d === '__nueva__'){ bloquea = true;
+    h += '<div class="al al-av"><b>Elija o agregue una persona</b></div>'; }
+  if(v > D.saldo){ bloquea = true;
+    h += '<div class="al al-mal"><b>No alcanza</b>En caja hay '+cop(D.saldo)+'.</div>'; }
+  if(v && D.excedente > 0 && /banco|consignaci/i.test(d) && v < D.excedente)
+    h += '<div class="al al-av"><b>El excedente es '+cop(D.excedente)+'</b>'+
+         'Está consignando '+cop(v)+'. La caja quedaría todavía por encima del objetivo.</div>';
+  $('e_val').innerHTML = h;
+  $('e_btn').disabled = bloquea;
+}
+function guardarEntrega(){
+  $('e_btn').disabled = true; toast('Generando el comprobante…');
+  leerArchivo('e_file').then(function(a){
+    return servidor('guardarEntrega', {
+      destino:$('e_destino').value, valor:$('e_valor').value,
+      concepto:$('e_concepto').value, centro:$('e_centro').value, archivo:a, quien:QUIEN
+    });
+  }).then(function(r){
+    D = r.panel; pintarNav();
+    toast('Comprobante '+r.consecutivo+' generado.','ok');
+    $('e_valor').value=''; $('e_concepto').value=''; $('e_file').value=''; valEnt();
+  }).catch(function(e){ toast(e.message,'mal'); $('e_btn').disabled=false; });
+}
+
+/* ---------------- BANCARIZACIÓN ---------------- */
+VISTAS.banca = {
+  t: '¿Puedo pagarle en efectivo?',
+  s: 'Cuánto efectivo lleva ese tercero en el año y si todavía se le puede pagar así.',
+  render: function(){
+    return '<div class="card" style="max-width:620px">'+
+      '<h3>Consultar un tercero</h3>'+
+      '<p class="d">Se calcula sobre la hoja Bancarización del libro, con los pagos ya registrados.</p>'+
+      '<label>Tercero</label>'+
+      '<input id="b_nombre" list="b_lista" placeholder="Escriba o elija de la lista">'+
+      '<datalist id="b_lista"></datalist>'+
+      '<button class="btn dark" onclick="consultar()" style="margin-top:12px;max-width:200px">Consultar</button>'+
+      '<div id="b_res" style="margin-top:14px"></div></div>'+
+      '<div class="card"><h3>La regla, en corto</h3>'+
+      '<div class="al al-inf"><b>Tope por pago individual: 100 UVT</b>'+
+      'Hoy son '+cop(D.topeEfectivo)+'. Un pago en efectivo por encima de eso no se acepta como costo ni deducción. '+
+      'Art. 771-5 par. 2 E.T.</div>'+
+      '<div class="al al-inf"><b>Nequi y Daviplata cuentan como bancarizado</b>'+
+      'No suman contra el tope de efectivo. Oficio DIAN 100202208-0176/2023.</div>'+
+      '<div class="al al-inf"><b>El tope aplica por transacción, no acumulado por tercero</b>'+
+      'Consejo de Estado, sentencia 26676 de 2023. Aun así conviene vigilar el acumulado.</div></div>';
+  },
+  after: function(){
+    servidor('listaTercerosBanca').then(function(l){
+      $('b_lista').innerHTML = l.map(function(x){ return '<option value="'+esc(x)+'">'; }).join('');
+    }).catch(function(){});
+  }
+};
+function consultar(){
+  var n = ($('b_nombre').value||'').trim();
+  if(!n){ toast('Escriba el nombre del tercero.','mal'); return; }
+  $('b_res').innerHTML = 'Consultando…';
+  servidor('consultaTercero', n).then(function(r){
+    if(!r){ $('b_res').innerHTML=''; return; }
+    var cl = r.veredicto.indexOf('SÍ')===0 ? 'al-ok' : 'al-mal';
+    $('b_res').innerHTML = '<div class="al '+cl+'"><b>'+esc(r.tercero)+'</b>'+
+      'Efectivo en el año: '+esc(r.efectivo)+' · por banco: '+esc(r.banco)+' · '+
+      esc(r.porcentaje)+' de las 100 UVT'+
+      '<div style="font-size:15px;font-weight:700;margin-top:8px">'+esc(r.veredicto)+'</div></div>';
+  }).catch(function(e){ $('b_res').innerHTML = '<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+/* ---------------- LINKS / WHATSAPP ---------------- */
+VISTAS.links = {
+  t: 'Pedir documentos a los proveedores',
+  s: 'Los pagos que quedaron sin soporte válido y a quién hay que perseguir.',
+  render: function(){
+    return '<div class="al al-av"><b>El DSE se genera el mismo día o acumulado semanal</b>'+
+      'Fuera de plazo pierde el efecto fiscal. Circular 004 num. 3 · Concepto DIAN 006942 de 2025.</div>'+
+      '<div class="card"><h3>Link del formulario</h3>'+
+      '<p class="d">El que se le manda al proveedor para que deje sus datos.</p>'+
+      '<input id="l_link" value="https://forms.gle/ss-dse-proveedor"></div>'+
+      '<div id="l_lista">Buscando pendientes…</div>';
+  },
+  after: function(){
+    servidor('listaPendientes').then(function(l){
+      if(!l.length){
+        $('l_lista').innerHTML = '<div class="al al-ok"><b>No hay pendientes</b>'+
+          'Todos los pagos de la relación tienen su soporte.</div>'; return;
+      }
+      $('l_lista').innerHTML = l.map(function(p){
+        var venc = p.plazo === 'VENCIDO';
+        return '<div class="card"><h3>'+esc(p.proveedor||'Sin nombre')+'</h3>'+
+          '<p class="d">'+esc(p.fecha)+' · '+esc(p.valorTxt)+' · '+esc(p.estado)+'</p>'+
+          '<div class="al '+(venc?'al-mal':'al-av')+'"><b>'+
+            (venc?'DSE VENCIDO':'Vence en '+esc(p.plazo))+'</b>'+
+            (venc?'Ya no tiene efecto fiscal: márquelo como no deducible.':'')+'</div>'+
+          '<div class="grid g2"><div><label>Celular</label>'+
+          '<input id="cel'+p.fila+'" inputmode="numeric" placeholder="3001234567"></div>'+
+          '<div style="display:flex;align-items:flex-end">'+
+          '<button class="btn dark" onclick="wa('+p.fila+',\''+esc(p.proveedor).replace(/'/g,"\\'")+
+            '\',\''+esc(p.valorTxt)+'\',\''+esc(p.fecha)+'\')">📲 Armar el WhatsApp</button></div></div>'+
+          '<div id="wa'+p.fila+'"></div></div>';
+      }).join('');
+    }).catch(function(e){ $('l_lista').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function wa(fila, nombre, valor, fecha){
+  var cel = ($('cel'+fila).value||'').replace(/\D/g,'');
+  servidor('linkWhatsApp', cel, nombre, valor, fecha, $('l_link').value)
+    .then(function(url){
+      $('wa'+fila).innerHTML = '<div class="al al-ok" style="margin-top:10px">'+
+        '<b>Mensaje listo</b><a href="'+url+'" target="_blank" rel="noopener">'+
+        'Abrir el chat de '+esc(nombre)+' →</a></div>';
+    }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- ARQUEO ---------------- */
+VISTAS.arqueo = {
+  t: 'Arqueo de caja',
+  s: 'Contar la plata y cuadrarla contra el sistema.',
+  render: function(){
+    return '<div class="grid g2">'+
+      '<div class="card"><h3>Conteo</h3>'+
+      '<p class="d">Cuántos billetes y monedas hay de cada denominación.</p>'+
+      '<div id="a_den"></div></div>'+
+      '<div class="card"><h3>Resultado</h3>'+
+      '<div class="kpis" style="grid-template-columns:1fr;gap:10px">'+
+        '<div class="kpi am"><span>Total contado</span><b id="a_total">$ 0</b></div>'+
+        '<div class="kpi"><span>Saldo según el sistema</span><b id="a_sistema">'+esc(D.saldoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Diferencia</span><b id="a_dif">—</b></div>'+
+      '</div>'+
+      '<label style="margin-top:12px">Observaciones</label>'+
+      '<textarea id="a_obs" rows="3" placeholder="Si no cuadra, explique por qué"></textarea>'+
+      '<button class="btn dark" onclick="guardarArqueo()" style="margin-top:12px">Guardar el arqueo</button>'+
+      '<div id="a_res" style="margin-top:12px"></div></div></div>';
+  },
+  after: function(){
+    $('a_den').innerHTML = DEN.map(function(d,i){
+      return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px">'+
+        '<span style="width:76px;text-align:right;font-weight:700;font-size:12.5px">'+cop(d)+'</span>'+
+        '<input type="number" min="0" id="d'+i+'" oninput="calcArqueo()" style="width:72px;text-align:center">'+
+        '<b id="s'+i+'" style="flex:1;text-align:right;font-size:12.5px">—</b></div>';
+    }).join('');
+    calcArqueo();
+  }
+};
+function calcArqueo(){
+  var t = 0;
+  DEN.forEach(function(d,i){
+    var q = Number($('d'+i).value)||0, v = q*d; t += v;
+    $('s'+i).textContent = v ? cop(v) : '—';
+  });
+  $('a_total').textContent = cop(t);
+  var dif = t - D.saldo;
+  $('a_dif').textContent = (dif>0?'+ ':dif<0?'− ':'')+cop(Math.abs(dif));
+  $('a_dif').style.color = dif===0 ? '#1E7B34' : '#B3261E';
+}
+function guardarArqueo(){
+  var c = {};
+  DEN.forEach(function(d,i){ c[String(d)] = Number($('d'+i).value)||0; });
+  toast('Guardando el arqueo…');
+  servidor('guardarArqueo', c, $('a_obs').value).then(function(r){
+    D = r.panel; pintarNav();
+    var cl = r.estado === 'Cuadra' ? 'al-ok' : 'al-mal';
+    $('a_res').innerHTML = '<div class="al '+cl+'"><b>'+esc(r.estado)+'</b>'+
+      'Contado '+esc(r.totalTxt)+' contra '+esc(r.sistemaTxt)+' del sistema.</div>'+
+      '<div class="tw"><table><thead><tr><th>Antes de cerrar</th><th>Estado</th></tr></thead><tbody>'+
+      r.checklist.map(function(x){
+        return '<tr><td>'+esc(x.texto)+'</td><td><span class="badge '+
+          (x.estado==='OK'?'b-ok':'b-mal')+'">'+esc(x.estado)+'</span></td></tr>';
+      }).join('')+'</tbody></table></div>';
+    toast('Arqueo guardado.','ok');
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- CIERRE ---------------- */
+VISTAS.cierre = {
+  t: 'Entregar la relación',
+  s: 'Indique el periodo. Se arma el PDF con los movimientos de esas fechas.',
+  render: function(){ return '<div id="c_todo">Revisando la relación…</div>'; },
+  after: function(){
+    servidor('datosCierre').then(function(d){
+      $('c_todo').innerHTML =
+        '<div class="grid g2">'+
+        '<div class="card"><h3>Periodo y resumen</h3>'+
+          '<div class="grid g2">'+
+          '<div><label>Fecha inicial</label><input type="date" id="c_d1" value="'+aISO(d.desde)+'"></div>'+
+          '<div><label>Fecha final</label><input type="date" id="c_d2" value="'+
+            (d.hasta?aISO(d.hasta):hoyISO())+'"></div></div>'+
+          '<label style="margin-top:10px">Se entrega a</label>'+
+          '<select id="c_para"><option>'+esc(d.correoGer)+'</option><option>'+esc(d.correoCtd)+'</option></select>'+
+          '<div class="tw" style="margin-top:14px"><table><tbody>'+
+          [['Relación','N.° '+d.numero],['Responsable',d.responsable],
+           ['Saldo anterior',d.saldoAnterior],['Ingresos',d.ingresos],['Egresos',d.egresos],
+           ['Saldo final',d.saldoFinal],['Efectivo contado',d.contado||'Sin arqueo'],
+           ['Arqueo',d.estadoArqueo],['Movimientos',d.movimientos]].map(function(p){
+            return '<tr><td>'+esc(p[0])+'</td><td class="num"><b>'+esc(p[1])+'</b></td></tr>';
+          }).join('')+'</tbody></table></div></div>'+
+        '<div class="card"><h3>Cómo se entrega</h3><div id="c_estado"></div>'+
+          '<div class="al al-inf"><b>📄 Entrega física</b>'+
+          'Se genera el PDF, se imprime, se anexan los soportes y el gerente firma a mano.</div>'+
+          '<button class="btn ghost" id="c_fis" onclick="cerrar(\'fisica\')">Generar el PDF</button>'+
+          '<div class="al al-inf" style="margin-top:14px"><b>💻 Entrega digital</b>'+
+          'Además del PDF, le llega por correo a quien aprueba, con el resumen y el adjunto.</div>'+
+          '<button class="btn dark" id="c_dig" onclick="cerrar(\'digital\')">Generar y enviar</button>'+
+        '</div></div><div id="c_final"></div>';
+      var h = '';
+      if(d.errores.length){
+        h = '<div class="al al-mal"><b>No se puede cerrar todavía</b><ul style="margin:4px 0 0;padding-left:18px">'+
+          d.errores.map(function(e){ return '<li>'+esc(e)+'</li>'; }).join('')+'</ul></div>';
+        $('c_fis').disabled = true; $('c_dig').disabled = true;
+      } else {
+        h = '<div class="al al-ok"><b>La relación está lista para entregar</b>'+
+          esc(d.movimientos)+' movimientos, saldo final '+esc(d.saldoFinal)+'.</div>';
+      }
+      if(d.avisos.length)
+        h += '<div class="al al-av"><b>Para tener en cuenta</b><ul style="margin:4px 0 0;padding-left:18px">'+
+          d.avisos.map(function(a){ return '<li>'+esc(a)+'</li>'; }).join('')+'</ul></div>';
+      $('c_estado').innerHTML = h;
+    }).catch(function(e){ $('c_todo').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function aISO(txt){
+  var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(txt||'').trim());
+  return m ? m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2) : hoyISO();
+}
+function cerrar(modo){
+  var d1 = $('c_d1').value, d2 = $('c_d2').value;
+  if(!d1 || !d2){ toast('Indique las dos fechas.','mal'); return; }
+  if(d2 < d1){ toast('La fecha final es anterior a la inicial.','mal'); return; }
+  $('c_fis').disabled = true; $('c_dig').disabled = true;
+  toast(modo==='digital' ? 'Generando el PDF y enviando…' : 'Generando el PDF…');
+  servidor('cerrarRelacion', d1, d2, modo, $('c_para').value).then(function(r){
+    $('c_final').innerHTML = '<div class="al al-ok"><b>Relación N.° '+esc(r.numero)+' cerrada</b>'+
+      esc(r.movimientos)+' movimientos pasaron a Movimientos e Historial. Saldo final '+esc(r.saldo)+'.<br><br>'+
+      '<a href="'+r.url+'" target="_blank" rel="noopener"><b>Abrir el PDF en Drive →</b></a>'+
+      (r.enviado ? '<br>Enviado a '+esc(r.enviado) : '')+
+      '<br><br>Quedó abierta la relación N.° '+esc(r.siguiente)+' con el saldo final como saldo anterior.</div>';
+    recargar();
+  }).catch(function(e){
+    toast(e.message,'mal'); $('c_fis').disabled=false; $('c_dig').disabled=false;
+  });
+}
+
+/* ---------------- CASOS ---------------- */
+VISTAS.casos = {
+  t: 'Casos por definir',
+  s: 'Lo que quien maneja la caja no pudo decidir solo. El pago ya se hizo: aquí se define el tratamiento fiscal.',
+  render: function(){ return '<div id="c_lista">Buscando…</div>'; },
+  after: function(){
+    servidor('listaCasos').then(function(l){
+      var abiertos = l.filter(function(c){ return c.resuelto !== 'Resuelto'; });
+      if(!abiertos.length){
+        $('c_lista').innerHTML = '<div class="al al-ok"><b>No hay casos abiertos</b></div>'; return;
+      }
+      $('c_lista').innerHTML = abiertos.map(function(c){
+        return '<div class="card"><h3>Caso '+c.n+' · '+esc(c.fecha)+' · '+esc(c.valor)+'</h3>'+
+          '<p class="d">Recibió el efectivo: '+esc(c.beneficiario)+'<br>'+
+          'Vendedor: '+esc(c.vendedor)+' ('+esc(c.id)+')<br>'+esc(c.estado)+'</p>'+
+          '<div class="al al-av"><b>Nota de quien pagó</b>'+esc(c.nota)+'</div>'+
+          '<div class="grid g2"><div><label>Decisión</label><select id="dec'+c.n+'">'+
+            '<option>Generar DSE con la cédula — deducible</option>'+
+            '<option>Marcar NO DEDUCIBLE e informar en el mensual</option>'+
+            '<option>Exigir factura electrónica al establecimiento</option>'+
+            '<option>Devolver: falta información para decidir</option></select></div>'+
+          '<div><label>Instrucción para la causación</label><input id="ins'+c.n+'"></div></div>'+
+          '<button class="btn dark" onclick="decidir('+c.n+')" style="margin-top:12px;max-width:220px">'+
+          'Guardar decisión</button></div>';
+      }).join('');
+    }).catch(function(e){ $('c_lista').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function decidir(n){
+  servidor('guardarDecision', n, $('dec'+n).value, $('ins'+n).value)
+    .then(function(){ toast('Decisión guardada.','ok'); recargar().then(function(){ ir('casos'); }); })
+    .catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- TABLERO ---------------- */
+VISTAS.tablero = {
+  t: 'Tablero de control',
+  s: 'Todo sale de las otras hojas. Aquí no se escribe nada.',
+  render: function(){ return '<div id="t_cont">Consultando el libro…</div>'; },
+  after: function(){
+    servidor('datosTablero').then(function(t){
+      var tabla = function(titulo, pares){
+        return '<div class="card"><h3>'+titulo+'</h3><div class="tw"><table><tbody>'+
+          pares.map(function(p){
+            return '<tr><td>'+esc(p.etiqueta)+'</td><td class="num"><b>'+esc(p.valor)+'</b></td></tr>';
+          }).join('')+'</tbody></table></div></div>';
+      };
+      $('t_cont').innerHTML = kpis() + semaforo() +
+        '<div class="grid g2">'+ tabla('Situación de la caja', t.situacion) +
+        tabla('Alerta de saldo', t.alerta) + '</div>'+
+        '<div class="card"><h3>Semáforo de cumplimiento</h3><ul style="margin:0;padding-left:18px">'+
+        t.semaforo.map(function(l){ return '<li style="margin-bottom:4px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>'+
+        '<div class="card"><h3>Próximos pasos</h3><ul style="margin:0;padding-left:18px">'+
+        t.pasos.map(function(l){ return '<li style="margin-bottom:4px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>';
+    }).catch(function(e){ $('t_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- GESTIÓN ---------------- */
+VISTAS.gestion = {
+  t: 'Gestión de la caja menor',
+  s: 'Cuánto queda deducible, cuánto se pierde y cómo se está llevando.',
+  render: function(){ return '<div id="g_cont">Calculando indicadores…</div>'; },
+  after: function(){
+    servidor('datosGestion').then(function(g){
+      $('g_cont').innerHTML =
+        '<div class="card"><h3>Indicadores · año '+esc(g.anio)+' · '+esc(g.responsable)+'</h3>'+
+        '<div class="tw"><table><thead><tr><th>Indicador</th><th class="num">Resultado</th>'+
+        '<th class="num">Meta</th><th>Estado</th></tr></thead><tbody>'+
+        g.indicadores.map(function(i){
+          var b = i.estado === 'OK' ? 'b-ok' : i.estado === 'Revisar' ? 'b-mal' : 'b-gr';
+          return '<tr><td>'+esc(i.indicador)+'</td><td class="num"><b>'+esc(i.resultado)+'</b></td>'+
+            '<td class="num">'+esc(i.meta)+'</td><td>'+
+            (i.estado ? '<span class="badge '+b+'">'+esc(i.estado)+'</span>' : '')+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>'+
+        '<div class="card"><h3>Cómo leer estos números</h3>'+
+        g.notas.map(function(n){
+          return '<div class="al al-inf"><b>'+esc(n.titulo)+'</b>'+esc(n.texto)+'</div>';
+        }).join('')+'</div>';
+    }).catch(function(e){ $('g_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- BANCO ---------------- */
+VISTAS.banco = {
+  t: 'Banco y tope de la caja',
+  s: 'Todo lo que sale de la caja hacia el banco y todo lo que entra del banco.',
+  render: function(){ return '<div id="bk_cont">Consultando…</div>'; },
+  after: function(){
+    servidor('datosBanco').then(function(b){
+      var h = '<div class="kpis">'+
+        '<div class="kpi am"><span>Saldo en caja</span><b>'+esc(b.saldoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Objetivo</span><b>'+esc(b.objetivoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Mínimo</span><b>'+esc(b.minimoTxt)+'</b></div>'+
+        '<div class="kpi '+(b.excedente||b.reembolso?'rojo':'')+'"><span>Estado</span>'+
+        '<b style="font-size:14px">'+esc(b.estado)+'</b></div></div>';
+      if(b.excedente>0) h += '<div class="al al-mal"><b>Consignar '+cop(b.excedente)+'</b>'+
+        'La caja está por encima del objetivo.</div>';
+      if(b.reembolso>0) h += '<div class="al al-mal"><b>Pedir reembolso de '+cop(b.reembolso)+'</b>'+
+        'La caja está por debajo del mínimo.</div>';
+      h += '<div class="card"><h3>Movimientos entre la caja y el banco</h3>';
+      if(!b.filas.length) h += '<div class="al al-inf"><b>Todavía no hay movimientos</b>'+
+        'Aquí caen las consignaciones del excedente y los retiros para reponer la caja.</div>';
+      else h += '<div class="tw"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Comprobante</th>'+
+        '<th class="num">Valor</th><th>Quién</th><th>Relación</th><th>Soporte</th>'+
+        '<th>Verificado</th></tr></thead><tbody>'+
+        b.filas.map(function(f){
+          return '<tr><td>'+esc(f.fecha)+'</td><td>'+esc(f.tipo)+'</td><td>'+esc(f.comprobante)+'</td>'+
+            '<td class="num">'+esc(f.valor)+'</td><td>'+esc(f.quien)+'</td><td>'+esc(f.relacion)+'</td>'+
+            '<td>'+esc(f.soporte)+'</td><td><span class="badge '+
+            (f.verificado==='Sí'?'b-ok':'b-av')+'">'+esc(f.verificado)+'</span></td></tr>';
+        }).join('')+'</tbody></table></div>';
+      $('bk_cont').innerHTML = h + '</div>';
+    }).catch(function(e){ $('bk_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- POLÍTICAS ---------------- */
+VISTAS.politicas = {
+  t: 'Políticas de caja menor y documento soporte',
+  s: 'Circulares internas 004 y 005 del 26 de junio de 2026.',
+  render: function(){ return '<div id="p_cont">Leyendo las políticas…</div>'; },
+  after: function(){
+    servidor('datosPoliticas').then(function(p){
+      $('p_cont').innerHTML =
+        '<div class="card"><h3>Topes vigentes</h3><div class="tw"><table><thead><tr>'+
+        '<th>Concepto</th><th class="num">Valor</th><th>Nota</th></tr></thead><tbody>'+
+        p.topes.map(function(t){
+          return '<tr><td>'+esc(t.concepto)+'</td><td class="num"><b>'+esc(t.valor)+'</b></td>'+
+            '<td>'+esc(t.nota)+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>'+
+        '<div class="card"><h3>¿A quién se le hace documento soporte?</h3>'+
+        '<div class="tw"><table><thead><tr><th>Operación o proveedor</th><th>¿DSE?</th>'+
+        '<th>Soporte correcto</th></tr></thead><tbody>'+
+        p.tabla.map(function(f){
+          return '<tr><td>'+esc(f.caso)+'</td><td><span class="badge '+
+            (f.dse==='SÍ'?'b-av':'b-gr')+'">'+esc(f.dse)+'</span></td>'+
+            '<td>'+esc(f.soporte)+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>'+
+        '<div class="grid g2">'+
+        '<div class="card"><h3>Antes de cada pago</h3><ul style="margin:0;padding-left:18px">'+
+        p.antes.map(function(l){ return '<li style="margin-bottom:5px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>'+
+        '<div class="card"><h3>Errores que más cuestan</h3><ul style="margin:0;padding-left:18px">'+
+        p.errores.map(function(l){ return '<li style="margin-bottom:5px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div></div>';
+    }).catch(function(e){ $('p_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- INFORMES ---------------- */
+VISTAS.informes = {
+  t: 'Relaciones cerradas',
+  s: 'El histórico, con su PDF y la carpeta del mes.',
+  render: function(){ return '<div id="h_cont">Consultando el historial…</div>'; },
+  after: function(){
+    servidor('datosInformes').then(function(l){
+      if(!l.length){ $('h_cont').innerHTML='<div class="al al-inf"><b>Todavía no hay relaciones cerradas</b>'+
+        'Aparecerán aquí a medida que se vayan entregando.</div>'; return; }
+      $('h_cont').innerHTML = '<div class="card"><div class="tw"><table><thead><tr>'+
+        '<th>N.°</th><th>Fecha</th><th>Periodo</th><th>Responsable</th>'+
+        '<th class="num">Ingresos</th><th class="num">Egresos</th><th class="num">Saldo final</th>'+
+        '<th class="num">Dif. arqueo</th><th>Entrega</th><th>PDF</th></tr></thead><tbody>'+
+        l.map(function(r){
+          return '<tr><td><b>'+esc(r.numero)+'</b></td><td>'+esc(r.fecha)+'</td>'+
+            '<td>'+esc(r.desde)+(r.hasta?' – '+esc(r.hasta):'')+'</td>'+
+            '<td>'+esc(r.responsable)+'</td><td class="num">'+esc(r.ingresos)+'</td>'+
+            '<td class="num">'+esc(r.egresos)+'</td><td class="num"><b>'+esc(r.saldoFinal)+'</b></td>'+
+            '<td class="num">'+esc(r.diferencia)+'</td><td>'+esc(r.aprobacion)+'</td>'+
+            '<td>'+(r.pdf?'<a href="'+esc(r.pdf)+'" target="_blank" rel="noopener">Abrir</a>':'—')+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+    }).catch(function(e){ $('h_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- CONFIRMAR ENTREGAS ---------------- */
+VISTAS.confirmar = {
+  t: 'Entregas de efectivo',
+  s: 'Quien recibió la plata confirma aquí. Sin confirmar, la relación no cierra.',
+  render: function(){ return '<div id="e_cont">Consultando…</div>'; },
+  after: function(){
+    servidor('datosEntregas').then(function(l){
+      if(!l.length){ $('e_cont').innerHTML='<div class="al al-inf"><b>No hay entregas registradas</b></div>'; return; }
+      $('e_cont').innerHTML = '<div class="card"><div class="tw"><table><thead><tr>'+
+        '<th>N.°</th><th>Fecha</th><th>Entrega</th><th>Recibe</th><th class="num">Valor</th>'+
+        '<th>Concepto</th><th>Soporte</th><th>Estado</th><th></th></tr></thead><tbody>'+
+        l.map(function(e){
+          var pend = e.confirmado === 'Por confirmar';
+          return '<tr><td><b>'+esc(e.consecutivo)+'</b></td><td>'+esc(e.fecha)+'</td>'+
+            '<td>'+esc(e.entrega)+'</td><td>'+esc(e.recibe)+'</td>'+
+            '<td class="num">'+esc(e.valor)+'</td><td>'+esc(e.concepto)+'</td>'+
+            '<td>'+esc(e.soporte)+'</td>'+
+            '<td><span class="badge '+(pend?'b-av':'b-ok')+'">'+esc(e.confirmado)+'</span></td>'+
+            '<td>'+(pend?'<button class="btn xs dark" style="width:auto;padding:5px 10px" onclick="confEnt(\''+
+              esc(e.consecutivo)+'\')">Confirmar</button>':'')+'</td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+    }).catch(function(e){ $('e_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function confEnt(c){
+  servidor('confirmarEntrega', c).then(function(m){
+    toast(m,'ok'); recargar().then(function(){ ir('confirmar'); });
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- AUDITORÍA ---------------- */
+VISTAS.auditoria = {
+  t: 'Hallazgos',
+  s: 'Lo que hay que corregir antes de cerrar y lo que conviene mirar.',
+  render: function(){ return '<div id="au_cont">Revisando…</div>'; },
+  after: function(){
+    servidor('datosAuditoria').then(function(a){
+      var h = '';
+      if(!a.errores.length && !a.avisos.length)
+        h += '<div class="al al-ok"><b>Sin hallazgos</b>'+a.movimientos+
+             ' movimientos revisados, saldo '+esc(a.saldo)+'.</div>';
+      if(a.errores.length) h += '<div class="card"><h3>Hay que corregirlo antes de cerrar</h3>'+
+        a.errores.map(function(e){ return '<div class="al al-mal">'+esc(e)+'</div>'; }).join('')+'</div>';
+      if(a.avisos.length) h += '<div class="card"><h3>Para tener en cuenta</h3>'+
+        a.avisos.map(function(e){ return '<div class="al al-av">'+esc(e)+'</div>'; }).join('')+'</div>';
+      if(a.conAlerta.length) h += '<div class="card"><h3>Movimientos con alerta</h3>'+
+        '<div class="tw"><table><thead><tr><th>N.°</th><th>Fecha</th><th>Tercero</th>'+
+        '<th class="num">Valor</th><th>Qué dice</th></tr></thead><tbody>'+
+        a.conAlerta.map(function(f){
+          return '<tr><td>'+f.n+'</td><td>'+esc(f.fecha)+'</td><td>'+esc(f.tercero)+'</td>'+
+            '<td class="num">'+esc(f.valor)+'</td>'+
+            '<td><span class="badge b-mal">'+esc(f.revision)+'</span></td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+      h += '<div class="card"><h3>Semáforo de cumplimiento</h3><ul style="margin:0;padding-left:18px">'+
+        a.semaforo.map(function(l){ return '<li style="margin-bottom:4px">'+esc(l)+'</li>'; }).join('')+
+        '</ul></div>';
+      $('au_cont').innerHTML = h;
+    }).catch(function(e){ $('au_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- PARÁMETROS ---------------- */
+VISTAS.params = {
+  t: 'Responsables y topes',
+  s: 'Quién ha tenido la caja y con qué reglas se opera.',
+  render: function(){ return '<div id="pa_cont">Consultando…</div>'; },
+  after: function(){
+    servidor('datosParams').then(function(p){
+      $('pa_cont').innerHTML =
+        '<div class="al al-inf"><b>Responsable de la caja hoy: '+esc(p.actual)+'</b>'+
+        'Sale de las fechas de inicio y retiro de la tabla de abajo.</div>'+
+        '<div class="card"><h3>Usuarios y roles</h3>'+
+        '<p class="d">El correo con el que entra cada persona decide qué pantallas ve. '+
+        'Solo la contadora puede cambiarlo.</p>'+
+        '<div class="grid g3">'+
+        '<div><label>Contadora</label><input id="rl_ctd" value="'+esc(p.roles?p.roles.ctd:'')+'"></div>'+
+        '<div><label>Auxiliar — quien maneja la caja</label><input id="rl_aux" value="'+esc(p.roles?p.roles.aux:'')+'"></div>'+
+        '<div><label>Gerencia</label><input id="rl_ger" value="'+esc(p.roles?p.roles.ger:'')+'"></div>'+
+        '</div>'+
+        (p.puedeEditar
+          ? '<button class="btn dark" onclick="guardarRolesWeb()" style="margin-top:12px;max-width:240px">Guardar los roles</button>'
+          : '<div class="al al-av" style="margin-top:12px"><b>Solo lectura</b>Entró como '+esc(p.yo||'')+
+            '. Para cambiar los roles hay que entrar con el correo de la contadora.</div>')+
+        '<div class="al al-inf" style="margin-top:12px"><b>Dos cosas distintas</b>'+
+        'Esto decide qué VE cada quien. Que pueda ENTRAR depende de que el libro esté compartido con ese correo.</div>'+
+        '</div>'+
+        '<div class="card"><h3>Responsables</h3>'+
+        '<div class="tw"><table><thead><tr><th>Nombre</th><th>Cédula</th><th>Correo</th>'+
+        '<th>Desde</th><th>Hasta</th><th>Estado</th></tr></thead><tbody>'+
+        p.responsables.map(function(r){
+          var act = (r.estado||'').indexOf('ACTIVO') === 0;
+          return '<tr><td><b>'+esc(r.nombre)+'</b></td><td>'+esc(r.cedula)+'</td>'+
+            '<td>'+esc(r.correo)+'</td><td>'+esc(r.desde)+'</td><td>'+esc(r.hasta)+'</td>'+
+            '<td><span class="badge '+(act?'b-ok':'b-gr')+'">'+esc(r.estado)+'</span></td></tr>';
+        }).join('')+'</tbody></table></div>'+
+        '<h3 style="margin-top:18px">Agregar a quien recibe la caja</h3>'+
+        '<div class="grid g3">'+
+        '<div><label>Nombre completo</label><input id="r_nombre"></div>'+
+        '<div><label>Cédula</label><input id="r_cedula"></div>'+
+        '<div><label>Correo</label><input id="r_correo"></div></div>'+
+        '<div class="grid g3" style="margin-top:10px">'+
+        '<div><label>Celular</label><input id="r_celular"></div>'+
+        '<div><label>Desde</label><input type="date" id="r_desde"></div>'+
+        '<div><label>Hasta (opcional)</label><input type="date" id="r_hasta"></div></div>'+
+        '<button class="btn dark" onclick="addResp()" style="margin-top:12px;max-width:220px">Agregar</button>'+
+        '</div>'+
+        '<div class="card"><h3>Topes y correos</h3><div class="tw"><table><tbody>'+
+        p.parametros.map(function(x){
+          return '<tr><td>'+esc(x.etiqueta)+'</td><td class="num"><b>'+esc(x.valor)+'</b></td></tr>';
+        }).join('')+'</tbody></table></div>'+
+        '<p class="d" style="margin-top:12px">Para cambiar un tope o un correo, edítelo en la hoja '+
+        '<b>Listas</b> del libro. Aquí solo se muestran.</p></div>';
+    }).catch(function(e){ $('pa_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+function guardarRolesWeb(){
+  toast('Guardando los roles…');
+  servidor('guardarRoles', {
+    contadora: $('rl_ctd').value,
+    auxiliar:  $('rl_aux').value,
+    gerencia:  $('rl_ger').value
+  }).then(function(){
+    toast('Roles guardados. Cada quien verá su menú la próxima vez que entre.','ok');
+    recargar().then(function(){ ir('params'); });
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function addResp(){
+  servidor('agregarResponsable', {
+    nombre:$('r_nombre').value, cedula:$('r_cedula').value, correo:$('r_correo').value,
+    celular:$('r_celular').value, desde:$('r_desde').value, hasta:$('r_hasta').value
+  }).then(function(){ toast('Responsable agregado.','ok'); ir('params'); })
+    .catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- ENLACES ---------------- */
+VISTAS.datos = {
+  t: 'Enlaces y carpetas',
+  s: 'Todo lo de la caja menor, en un solo sitio. Cada quien ve lo que le corresponde.',
+  render: function(){ return '<div id="u_cont">Consultando Drive…</div>'; },
+  after: function(){
+    servidor('datosUbicacion').then(function(u){
+      var fila = function(x){
+        return '<tr><td style="width:26%"><b>'+esc(x.titulo)+'</b>'+
+          '<div style="color:#6B6761;font-size:11.5px;margin-top:2px">'+esc(x.nota)+'</div></td>'+
+          '<td>'+(x.url
+            ? '<a href="'+esc(x.url)+'" target="_blank" rel="noopener"><b>'+esc(x.nombre)+' →</b></a>'+
+              '<div style="color:#6B6761;font-size:10.5px;margin-top:3px;word-break:break-all">'+
+              esc(x.url)+'</div>'
+            : '<span style="color:#B3261E">No disponible</span>')+'</td></tr>';
+      };
+      $('u_cont').innerHTML =
+        '<div class="card"><h3>Enlaces</h3>'+
+        '<p class="d">Cada uno abre en una pestaña nueva. Son los mismos del manual.</p>'+
+        '<div class="tw"><table><thead><tr><th>Qué es</th><th>Enlace</th></tr></thead><tbody>'+
+        u.fijos.map(fila).join('')+'</tbody></table></div></div>'+
+
+      (ROL !== 'contadora'
+        ? '<div class="al al-inf"><b>Por qué no aparecen todos los enlaces</b>'+
+          'El libro y las carpetas de archivo los administra la contadora. '+
+          (ROL === 'auxiliar'
+            ? 'Usted registra todo por esta plataforma: los soportes se archivan solos en la carpeta del mes, '+
+              'sin que le toque abrir el libro.'
+            : 'Usted entra al libro en modo lectura, para consultar sin riesgo de mover una fórmula.')+
+          '</div>'
+        : '')+
+
+        (u.documentos.length
+          ? '<div class="card"><h3>Documentos y políticas</h3>'+
+            '<p class="d">Lo que haya hoy en la carpeta 00 PLANTILLAS Y POLÍTICAS. '+
+            'Si agrega un archivo allá, aparece aquí solo.</p>'+
+            '<div class="tw"><table><thead><tr><th>Archivo</th><th>Abrir</th></tr></thead><tbody>'+
+            u.documentos.map(function(d){
+              return '<tr><td>'+esc(d.nombre)+'</td>'+
+                '<td><a href="'+esc(d.url)+'" target="_blank" rel="noopener">Abrir →</a></td></tr>';
+            }).join('')+'</tbody></table></div></div>'
+          : '')+
+
+        (u.carpetasDelMes.length
+          ? '<div class="card"><h3>Carpetas de '+esc(u.mes)+'</h3>'+
+            '<p class="d">Dónde cae cada soporte este mes.</p>'+
+            '<div class="tw"><table><thead><tr><th>Carpeta</th><th>Abrir</th></tr></thead><tbody>'+
+            u.carpetasDelMes.map(function(c){
+              return '<tr><td>'+esc(c.nombre)+'</td>'+
+                '<td><a href="'+esc(c.url)+'" target="_blank" rel="noopener">Abrir →</a></td></tr>';
+            }).join('')+'</tbody></table></div></div>'
+          : '')+
+
+        '<div class="al al-inf"><b>Cómo se nombra cada soporte</b>'+
+        'AAAAMMDD_TERCERO_NÚMERO — por ejemplo 20261117_FERRETERIA_LA_14_FE1234. '+
+        'La fecha es la <b>del documento</b>, no la del día en que se registró, '+
+        'para que el soporte caiga en el mes que le corresponde.</div>';
+    }).catch(function(e){ $('u_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+/* ---------------- LOTE DE SOPORTES ---------------- */
+VISTAS.soportes = {
+  t: 'Leer fotos o PDF de soportes',
+  s: 'Varios recibos de una sola vez. Se suben, se completan y se registran juntos.',
+  render: function(){
+    return '<div class="card"><h3>1. Suba los archivos</h3>'+
+      '<p class="d">Fotos o PDF, hasta 20 por tanda. Quedan en la carpeta 00 POR CLASIFICAR del mes '+
+      'hasta que los registre; al registrarlos se mueven solos a la carpeta que les toca.</p>'+
+      '<input type="file" id="lt_files" accept="image/*,application/pdf" multiple>'+
+      '<button class="btn dark" onclick="subirLote()" id="lt_btn" style="margin-top:12px;max-width:240px">'+
+      'Subir los archivos</button>'+
+      '<div id="lt_sub" style="margin-top:12px"></div></div>'+
+      '<div id="lt_fichas"></div>';
+  }
+};
+
+function subirLote(){
+  var el = $('lt_files');
+  if(!el.files || !el.files.length){ toast('Elija al menos un archivo.','mal'); return; }
+  if(el.files.length > 20){ toast('Máximo 20 archivos por tanda.','mal'); return; }
+  $('lt_btn').disabled = true;
+  $('lt_sub').innerHTML = '<div class="al al-inf">Subiendo '+el.files.length+' archivo(s)…</div>';
+  var lecturas = [];
+  for(var i=0;i<el.files.length;i++) lecturas.push(leerUno(el.files[i]));
+  Promise.all(lecturas).then(function(archivos){
+    return servidor('subirLote', archivos);
+  }).then(function(r){
+    D = r.panel; pintarNav();
+    var ok = r.archivos.filter(function(a){ return a.ok; });
+    var mal = r.archivos.filter(function(a){ return !a.ok; });
+    $('lt_sub').innerHTML =
+      '<div class="al al-ok"><b>'+ok.length+' archivo(s) en Drive</b>'+
+      '<a href="'+r.carpeta+'" target="_blank" rel="noopener">Ver la carpeta 00 POR CLASIFICAR →</a></div>'+
+      (mal.length ? '<div class="al al-mal"><b>'+mal.length+' no se pudieron subir</b>'+
+        mal.map(function(a){ return esc(a.nombre)+': '+esc(a.error); }).join('<br>')+'</div>' : '');
+    pintarFichas(ok);
+    $('lt_btn').disabled = false;
+    $('lt_files').value = '';
+  }).catch(function(e){
+    $('lt_sub').innerHTML = '<div class="al al-mal">'+esc(e.message)+'</div>';
+    $('lt_btn').disabled = false;
+  });
+}
+
+function leerUno(f){
+  return new Promise(function(ok,mal){
+    var r = new FileReader();
+    r.onload = function(){ ok({ nombre:f.name, tipo:f.type, base64:String(r.result).split(',')[1] }); };
+    r.onerror = function(){ mal(new Error('No se pudo leer '+f.name)); };
+    r.readAsDataURL(f);
+  });
+}
+
+function pintarFichas(lista){
+  if(!lista.length){ $('lt_fichas').innerHTML=''; return; }
+  $('lt_fichas').innerHTML =
+    '<div class="card"><h3>2. Complete cada uno</h3>'+
+    '<p class="d">Un recuadro por archivo. Los que deje sin valor no se registran.</p></div>'+
+    lista.map(function(a,i){
+      return '<div class="card" id="fc'+i+'" data-id="'+a.id+'">'+
+        '<h3><a href="'+a.url+'" target="_blank" rel="noopener">'+esc(a.nombre)+'</a></h3>'+
+        '<div class="grid g4">'+
+          '<div><label>Fecha del documento</label><input type="date" id="f_fecha'+i+'" value="'+hoyISO()+'"></div>'+
+          '<div><label>Valor</label><input id="f_valor'+i+'" inputmode="numeric"></div>'+
+          '<div><label>N.° documento</label><input id="f_sop'+i+'"></div>'+
+          '<div><label>Tipo de soporte</label><select id="f_tipo'+i+'">'+opciones(D.soportes)+'</select></div>'+
+        '</div>'+
+        '<div class="grid g4" style="margin-top:10px">'+
+          '<div><label>Tercero del documento</label><input id="f_prov'+i+'"></div>'+
+          '<div><label>NIT o cédula</label><input id="f_nit'+i+'"></div>'+
+          '<div><label>Categoría</label><select id="f_cat'+i+'">'+opciones(D.categorias)+'</select></div>'+
+          '<div><label>Centro de costo</label><select id="f_centro'+i+'">'+opciones(D.centros)+'</select></div>'+
+        '</div>'+
+        '<div class="grid g4" style="margin-top:10px">'+
+          '<div><label>Recibió el efectivo</label><select id="f_benef'+i+'">'+opciones(D.benef)+'</select></div>'+
+          '<div><label>Medio de pago</label><select id="f_medio'+i+'">'+opciones(D.medios)+'</select></div>'+
+          '<div><label>Estado del soporte</label><select id="f_estado'+i+'">'+opciones(D.estados)+'</select></div>'+
+          '<div><label>Descripción</label><input id="f_desc'+i+'"></div>'+
+        '</div></div>';
+    }).join('')+
+    '<button class="btn dark" onclick="registrarLote('+lista.length+')" id="lt_reg" '+
+    'style="max-width:280px">Registrar los pagos</button>'+
+    '<div id="lt_res" style="margin-top:12px"></div>';
+}
+
+function registrarLote(n){
+  var fichas = [];
+  for(var i=0;i<n;i++){
+    var v = num($('f_valor'+i).value);
+    if(!v) continue;
+    fichas.push({
+      idArchivo: $('fc'+i).dataset.id,
+      nombreArchivo: $('fc'+i).querySelector('a').textContent,
+      fecha:$('f_fecha'+i).value, valor:$('f_valor'+i).value,
+      soporte:$('f_sop'+i).value, tipoSoporte:$('f_tipo'+i).value,
+      proveedor:$('f_prov'+i).value, nit:$('f_nit'+i).value,
+      categoria:$('f_cat'+i).value, centro:$('f_centro'+i).value,
+      beneficiario:$('f_benef'+i).value, medio:$('f_medio'+i).value,
+      estadoSoporte:$('f_estado'+i).value, descripcion:$('f_desc'+i).value, quien:QUIEN
+    });
+  }
+  if(!fichas.length){ toast('Ninguna ficha tiene valor.','mal'); return; }
+  $('lt_reg').disabled = true;
+  toast('Registrando '+fichas.length+' pago(s)…');
+  servidor('registrarLote', fichas).then(function(r){
+    D = r.panel; pintarNav();
+    var ok = r.resultados.filter(function(x){ return x.ok; });
+    var mal = r.resultados.filter(function(x){ return !x.ok; });
+    $('lt_res').innerHTML =
+      (ok.length ? '<div class="al al-ok"><b>'+ok.length+' pago(s) registrados</b>'+
+        ok.map(function(x){ return 'Fila '+x.n+' — '+esc(x.nombre)+' — '+esc(x.revision); }).join('<br>')+'</div>' : '')+
+      (mal.length ? '<div class="al al-mal"><b>'+mal.length+' no se registraron</b>'+
+        mal.map(function(x){ return esc(x.nombre)+': '+esc(x.error); }).join('<br>')+'</div>' : '');
+    toast(ok.length+' registrados, '+mal.length+' con problema.', mal.length?'mal':'ok');
+    $('lt_reg').disabled = false;
+  }).catch(function(e){ toast(e.message,'mal'); $('lt_reg').disabled=false; });
+}
+
+/* ---------------- ENTREGA DEL CARGO ---------------- */
+VISTAS.empalme = {
+  t: 'Entrega del cargo',
+  s: 'El acta de empalme entre quien entrega la caja y quien la recibe.',
+  render: function(){ return '<div id="em_cont">Revisando el estado de la caja…</div>'; },
+  after: function(){
+    servidor('datosEmpalme').then(function(e){
+      var pend = []
+        .concat(e.pendientes.alertas)
+        .concat(e.pendientes.avisos)
+        .concat(e.pendientes.dse      ? [e.pendientes.dse+' documento(s) soporte por conseguir'] : [])
+        .concat(e.pendientes.casos    ? [e.pendientes.casos+' caso(s) esperando decisión de la contadora'] : [])
+        .concat(e.pendientes.entregas ? [e.pendientes.entregas+' entrega(s) de efectivo sin confirmar'] : []);
+      $('em_cont').innerHTML =
+        '<div class="kpis">'+
+        '<div class="kpi am"><span>Saldo según el sistema</span><b>'+esc(e.saldoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Último arqueo</span><b>'+esc(e.contadoTxt)+'</b></div>'+
+        '<div class="kpi"><span>Relación</span><b>N.° '+esc(e.numero)+'</b></div>'+
+        '<div class="kpi"><span>Movimientos</span><b>'+e.movimientos+'</b></div></div>'+
+        (pend.length
+          ? '<div class="al al-av"><b>Se entrega con '+pend.length+' pendiente(s)</b>'+
+            'Quedan escritos en el acta para que quien recibe sepa qué hereda.'+
+            '<ul style="margin:6px 0 0;padding-left:18px">'+
+            pend.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('')+'</ul></div>'
+          : '<div class="al al-ok"><b>La caja se entrega al día</b>Sin pendientes.</div>')+
+        '<div class="grid g2">'+
+        '<div class="card"><h3>Quién entrega y quién recibe</h3>'+
+          '<label>Entrega la caja</label><input id="em_ent" value="'+esc(e.entrega)+'">'+
+          '<label style="margin-top:10px">Recibe la caja</label>'+
+          '<input id="em_rec" placeholder="Nombre completo">'+
+          '<div class="grid g2" style="margin-top:10px">'+
+          '<div><label>Cédula de quien recibe</label><input id="em_ced"></div>'+
+          '<div><label>Correo de quien recibe</label><input id="em_cor"></div></div>'+
+          '<label style="margin-top:10px">Fecha de la entrega</label>'+
+          '<input type="date" id="em_fecha" value="'+hoyISO()+'">'+
+        '</div>'+
+        '<div class="card"><h3>El conteo</h3>'+
+          '<p class="d">Cuente el efectivo delante de quien recibe y escriba el total.</p>'+
+          '<label>Efectivo contado y entregado</label>'+
+          '<input id="em_contado" inputmode="numeric" oninput="difEmpalme('+e.saldo+')" '+
+          'value="'+(e.contado||'')+'">'+
+          '<div id="em_dif" style="margin-top:10px"></div>'+
+          '<label style="margin-top:10px">Observaciones para el acta</label>'+
+          '<textarea id="em_obs" rows="3" placeholder="Lo que quien recibe debe saber"></textarea>'+
+        '</div></div>'+
+        '<div class="al al-inf"><b>Qué hace el botón</b>'+
+        'Genera el acta en PDF con las dos firmas, la guarda en 05 RELACIONES CERRADAS del mes, '+
+        'le pone fecha de retiro a quien entrega y abre la fila de quien recibe en la hoja Responsables.</div>'+
+        '<button class="btn dark" id="em_btn" onclick="generarEmpalme('+e.saldo+')" '+
+        'style="max-width:300px">Generar el acta de entrega</button>'+
+        '<div id="em_res" style="margin-top:12px"></div>'+
+        '<div class="card" style="margin-top:16px"><h3>Quién ha tenido la caja</h3>'+
+        '<div class="tw"><table><thead><tr><th>Nombre</th><th>Desde</th><th>Hasta</th>'+
+        '<th>Estado</th></tr></thead><tbody>'+
+        e.responsables.map(function(r){
+          var act = (r.estado||'').indexOf('ACTIVO') === 0;
+          return '<tr><td><b>'+esc(r.nombre)+'</b></td><td>'+esc(r.desde)+'</td>'+
+            '<td>'+esc(r.hasta)+'</td><td><span class="badge '+(act?'b-ok':'b-gr')+'">'+
+            esc(r.estado)+'</span></td></tr>';
+        }).join('')+'</tbody></table></div></div>';
+      difEmpalme(e.saldo);
+    }).catch(function(e){ $('em_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+function difEmpalme(saldo){
+  if(!$('em_dif')) return;
+  var c = num($('em_contado').value);
+  if(!c){ $('em_dif').innerHTML = '<div class="al al-av"><b>Falta el conteo</b>'+
+    'Sin el efectivo contado no se puede generar el acta.</div>'; return; }
+  var d = c - saldo;
+  $('em_dif').innerHTML = d === 0
+    ? '<div class="al al-ok"><b>✓ La caja cuadra</b>'+cop(c)+' contados contra '+cop(saldo)+' del sistema.</div>'
+    : '<div class="al al-mal"><b>'+(d>0?'Sobrante':'Faltante')+' de '+cop(Math.abs(d))+'</b>'+
+      'Contados '+cop(c)+' contra '+cop(saldo)+' del sistema. Explíquelo en las observaciones: '+
+      'queda escrito en el acta.</div>';
+}
+
+function generarEmpalme(saldo){
+  if(!($('em_rec').value||'').trim()){ toast('Escriba quién recibe la caja.','mal'); return; }
+  if(!num($('em_contado').value)){ toast('Escriba el efectivo contado.','mal'); return; }
+  $('em_btn').disabled = true;
+  toast('Generando el acta…');
+  servidor('generarEmpalme', {
+    entrega:$('em_ent').value, recibe:$('em_rec').value,
+    cedulaRecibe:$('em_ced').value, correoRecibe:$('em_cor').value,
+    fecha:$('em_fecha').value, contado:$('em_contado').value,
+    observaciones:$('em_obs').value
+  }).then(function(r){
+    D = r.panel; pintarNav();
+    $('em_res').innerHTML = '<div class="al al-ok"><b>Acta generada</b>'+
+      esc(r.entrega)+' entrega a '+esc(r.recibe)+'.'+
+      (r.diferencia ? ' Quedó registrada una diferencia de '+cop(Math.abs(r.diferencia))+'.' : ' La caja cuadró.')+
+      '<br><br><a href="'+r.url+'" target="_blank" rel="noopener"><b>Abrir el acta en PDF →</b></a>'+
+      '<br><br>Imprímala, fírmenla los dos y anéxela a la relación.</div>';
+    toast('Acta generada.','ok');
+    $('em_btn').disabled = false;
+  }).catch(function(e){ toast(e.message,'mal'); $('em_btn').disabled=false; });
+}
+
+/* ---------------- REVISAR ---------------- */
+var FILTRO = 'todos';
+VISTAS.revisar = {
+  t: 'Revisar la relación',
+  s: 'Fila por fila, con el detalle contable y fiscal de cada movimiento.',
+  render: function(){ return '<div id="rv_cont">Leyendo la relación…</div>'; },
+  after: function(){ cargarRevision(FILTRO); }
+};
+
+function cargarRevision(f){
+  FILTRO = f || 'todos';
+  if($('rv_tabla')) $('rv_tabla').innerHTML = 'Filtrando…';
+  servidor('datosRevision', FILTRO).then(function(r){
+    var c = r.conteos;
+    var bot = function(k, etiqueta, n){
+      return '<button class="'+(FILTRO===k?'on':'')+'" onclick="cargarRevision(\''+k+'\')">'+
+        etiqueta+' ('+n+')</button>';
+    };
+    $('rv_cont').innerHTML =
+      '<div class="al al-inf"><b>Relación N.° '+esc(r.cabecera.numero)+' · periodo '+
+      esc(r.cabecera.desde)+(r.cabecera.hasta?' a '+esc(r.cabecera.hasta):' — abierta')+'</b>'+
+      'Egresos '+esc(r.totalEgresos)+' · saldo final '+esc(r.cabecera.saldoFinal)+'</div>'+
+      '<div class="tabs">'+
+        bot('todos','Todos',c.todos)+ bot('alerta','Con alerta',c.alerta)+
+        bot('nodeducible','No deducibles',c.nodeducible)+ bot('pordefinir','Por definir',c.pordefinir)+
+        bot('sinsoporte','Sin soporte',c.sinsoporte)+ bot('efectivo','En efectivo',c.efectivo)+
+      '</div><div id="rv_tabla"></div>';
+    if(!r.filas.length){
+      $('rv_tabla').innerHTML = '<div class="al al-ok"><b>Ninguna fila en este filtro</b></div>'; return;
+    }
+    $('rv_tabla').innerHTML = r.filas.map(function(f){
+      var ok = f.revision && f.revision.indexOf('OK') === 0;
+      var ded = f.deducible === 'SÍ' ? 'b-ok' : f.deducible === 'NO' ? 'b-mal' : 'b-av';
+      return '<div class="card"><h3>Fila '+f.n+' · '+esc(f.fecha)+' · '+esc(f.egreso||f.ingreso)+
+        ' · '+esc(f.tercero||'sin tercero')+'</h3>'+
+        '<div class="row" style="margin-bottom:10px">'+
+          '<span class="badge '+(ok?'b-ok':'b-mal')+'">'+esc(f.revision||'—')+'</span>'+
+          '<span class="badge '+ded+'">Deducible: '+esc(f.deducible||'—')+'</span>'+
+          (f.plazo ? '<span class="badge '+(f.plazo==='VENCIDO'?'b-mal':'b-av')+'">DSE: '+esc(f.plazo)+'</span>' : '')+
+        '</div>'+
+        '<div class="tw"><table><tbody>'+
+        [['Descripción',f.descripcion],['Documento',f.soporte+' — '+f.tipoSoporte],
+         ['NIT o cédula',f.nit],['Medio de pago',f.medio],
+         ['Recibió el efectivo',f.recibio],['Estado del soporte',f.estadoSoporte],
+         ['Cuenta World Office',f.cuenta],['Retención',f.retencion],
+         ['Categoría',f.categoria],['Centro de costo',f.centro],
+         ['Nota',f.nota]].filter(function(x){ return x[1]; }).map(function(x){
+          return '<tr><td style="width:30%">'+esc(x[0])+'</td><td><b>'+esc(x[1])+'</b></td></tr>';
+        }).join('')+'</tbody></table></div>'+
+        '<div class="grid g2" style="margin-top:10px">'+
+        '<div><label>Dejar una nota en esta fila</label><input id="nt'+f.n+'"></div>'+
+        '<div style="display:flex;align-items:flex-end">'+
+        '<button class="btn ghost" onclick="anotar('+f.n+')">Guardar la nota</button></div></div>'+
+        '</div>';
+    }).join('');
+  }).catch(function(e){ $('rv_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+function anotar(n){
+  var v = ($('nt'+n).value||'').trim();
+  if(!v){ toast('Escriba la nota.','mal'); return; }
+  servidor('anotarFila', n, v).then(function(m){
+    toast(m,'ok'); $('nt'+n).value='';
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- APROBAR ---------------- */
+VISTAS.aprobar = {
+  t: 'Revisión de relaciones',
+  s: 'Las relaciones cerradas que esperan visto bueno.',
+  render: function(){ return '<div id="ap_cont">Consultando el historial…</div>'; },
+  after: function(){
+    servidor('relacionesParaAprobar').then(function(l){
+      if(!l.length){ $('ap_cont').innerHTML =
+        '<div class="al al-inf"><b>Todavía no hay relaciones cerradas</b>'+
+        'Aparecerán aquí cuando se entregue la primera.</div>'; return; }
+      var pend = l.filter(function(r){ return r.pendiente; });
+      var list = l.filter(function(r){ return !r.pendiente; });
+      var tarjeta = function(r){
+        return '<div class="card"><h3>Relación N.° '+esc(r.numero)+' · '+esc(r.responsable)+'</h3>'+
+          '<p class="d">Periodo '+esc(r.desde)+' a '+esc(r.hasta)+' · cerrada el '+esc(r.fecha)+'</p>'+
+          '<div class="tw"><table><tbody>'+
+          [['Saldo anterior',r.saldoAnterior],['Ingresos',r.ingresos],['Egresos',r.egresos],
+           ['Saldo final',r.saldoFinal],['Efectivo contado',r.contado||'Sin arqueo'],
+           ['Diferencia del arqueo',r.diferencia],['Movimientos',r.movimientos],
+           ['Sin soporte',r.sinSoporte],['Forma de entrega',r.entrega]]
+          .filter(function(x){ return x[1]; }).map(function(x){
+            return '<tr><td style="width:40%">'+esc(x[0])+'</td><td class="num"><b>'+esc(x[1])+'</b></td></tr>';
+          }).join('')+'</tbody></table></div>'+
+          (r.pdf ? '<p style="margin-top:10px"><a href="'+esc(r.pdf)+'" target="_blank" rel="noopener">'+
+            '<b>Abrir el PDF de la relación →</b></a></p>' : '')+
+          (r.carpeta ? '<p><a href="'+esc(r.carpeta)+'" target="_blank" rel="noopener">'+
+            'Ver los soportes del mes →</a></p>' : '')+
+          (r.observaciones ? '<div class="al al-av" style="margin-top:10px"><b>Observaciones</b>'+
+            esc(r.observaciones)+'</div>' : '')+
+          (r.pendiente
+            ? '<div class="grid g2" style="margin-top:12px">'+
+              '<div><label>Decisión</label><select id="ap_dec'+r.numero+'">'+
+                '<option>Aprobada</option>'+
+                '<option>Aprobada con observaciones</option>'+
+                '<option>Devuelta para corrección</option></select></div>'+
+              '<div><label>Observación</label><input id="ap_obs'+r.numero+'"></div></div>'+
+              '<button class="btn dark" onclick="aprobar(\''+esc(r.numero)+'\')" '+
+              'style="margin-top:12px;max-width:220px">Guardar la decisión</button>'
+            : '<div class="al al-ok" style="margin-top:10px"><b>'+esc(r.aprobadaPor)+'</b>'+
+              esc(r.fechaAprobacion)+'</div>')+
+          '</div>';
+      };
+      $('ap_cont').innerHTML =
+        (pend.length
+          ? '<div class="al al-av"><b>'+pend.length+' relación(es) esperando su visto bueno</b></div>'+
+            pend.map(tarjeta).join('')
+          : '<div class="al al-ok"><b>No hay relaciones pendientes de aprobar</b></div>')+
+        (list.length
+          ? '<div class="card" style="margin-top:8px"><h3>Ya revisadas</h3></div>'+
+            list.map(tarjeta).join('')
+          : '');
+    }).catch(function(e){ $('ap_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+  }
+};
+
+function aprobar(numero){
+  servidor('aprobarRelacion', numero,
+    $('ap_dec'+numero).value, $('ap_obs'+numero).value)
+    .then(function(m){ toast(m,'ok'); recargar().then(function(){ ir('aprobar'); }); })
+    .catch(function(e){ toast(e.message,'mal'); });
+}
+
+
+/* ---------------- QUIÉN REGISTRA ---------------- */
+VISTAS.quien = {
+  t: '¿Quién está registrando?',
+  s: 'Su nombre queda estampado en cada movimiento que guarde.',
+  render: function(){
+    return '<div class="card" style="max-width:540px">'+
+      '<h3>Antes de empezar</h3>'+
+      '<p class="d">La cuenta de Google puede ser compartida, pero el movimiento es de quien lo hace. '+
+      'Escoja su nombre: queda guardado en la fila, con fecha y hora.</p>'+
+      '<label>Soy</label>'+
+      '<select id="q_sel" onchange="otroQuien()">'+
+        '<option value=""></option>'+ opciones(D.quienes||[]) +
+        '<option value="__otro__">+ Mi nombre no está en la lista…</option></select>'+
+      '<div id="q_otro" class="hide" style="margin-top:10px">'+
+        '<label>Nombre completo</label><input id="q_nom" placeholder="Nombre y apellido"></div>'+
+      '<button class="btn dark" onclick="fijarQuien()" style="margin-top:14px">Entrar</button>'+
+      '<div class="al al-inf" style="margin-top:14px"><b>Por qué esto y no una contraseña</b>'+
+      'Una contraseña compartida entre varias personas no dice cuál de ellas registró. '+
+      'Este nombre sí: queda en la columna «Registrado por» de cada fila.</div>'+
+      '</div>';
+  }
+};
+
+function otroQuien(){
+  $('q_otro').classList.toggle('hide', $('q_sel').value !== '__otro__');
+}
+
+function fijarQuien(){
+  var v = $('q_sel').value;
+  if(v === '__otro__') v = ($('q_nom').value||'').trim();
+  if(!v){ toast('Escoja o escriba su nombre.','mal'); return; }
+  QUIEN = v;
+  try { window.localStorage.setItem('cm_quien', v); } catch(e){}
+  pintarQuien();
+  toast('Listo, ' + v + '. Sus movimientos quedan a su nombre.','ok');
+  ir('inicio');
+}
+
+function pintarQuien(){
+  var e = $('whoQ');
+  if(!e) return;
+  e.innerHTML = QUIEN
+    ? '<br><b style="color:#FFB41D">Registra: ' + esc(QUIEN) + '</b>'+
+      '<br><a onclick="cambiarQuien()" style="cursor:pointer;color:#9a948a;font-size:11px">cambiar</a>'
+    : '<br><a onclick="cambiarQuien()" style="cursor:pointer;color:#FFB41D;font-size:11px">definir quién registra</a>';
+}
+
+function cambiarQuien(){ abrirLogin(); }
+
+/* ---------- agregar valores a las listas sin salir de la pantalla ---------- */
+
+var CAMPOS = {
+  benef:  { sel:'g_benef',  caja:'nv_benef',  lista:'benef',   servidor:'beneficiario',
+            titulo:'Agregar a quien recibe el efectivo', ph:'Nombre completo' },
+  centro: { sel:'g_centro', caja:'nv_centro', lista:'centros', servidor:'centro',
+            titulo:'Agregar un centro de costo',        ph:'Nombre del centro de costo' }
+};
+
+function nuevoEn(cual){
+  var c = CAMPOS[cual];
+  var abrir = $(c.sel).value === '__nuevo__';
+  $(c.caja).classList.toggle('hide', !abrir);
+  if(abrir){
+    $(c.caja).innerHTML =
+      '<div class="al al-inf"><b>'+c.titulo+'</b>'+
+      '<input id="nv_txt_'+cual+'" placeholder="'+c.ph+'" style="margin:6px 0">'+
+      '<button class="btn xs dark" style="width:auto;padding:6px 12px" '+
+      'onclick="crearEn(\'' + cual + '\')">Guardar en la lista</button> '+
+      '<button class="btn xs ghost" style="width:auto;padding:6px 12px" '+
+      'onclick="cancelarEn(\'' + cual + '\')">Cancelar</button></div>';
+  }
+  if(typeof valPago === 'function') valPago();
+}
+
+function cancelarEn(cual){
+  var c = CAMPOS[cual];
+  $(c.sel).selectedIndex = 0;
+  $(c.caja).classList.add('hide');
+  if(typeof valPago === 'function') valPago();
+}
+
+function crearEn(cual){
+  var c = CAMPOS[cual];
+  var v = ($('nv_txt_'+cual).value||'').trim();
+  if(!v){ toast('Escriba el nombre.','mal'); return; }
+  toast('Guardando en la lista…');
+  servidor('agregarALista', c.servidor, v).then(function(r){
+    D[c.lista] = r.lista;
+    $(c.sel).innerHTML = opciones(r.lista) +
+      '<option value="__nuevo__">+ Agregar…</option>';
+    $(c.sel).value = r.valor;
+    $(c.caja).classList.add('hide');
+    toast(r.ya ? r.valor + ' ya estaba en la lista.' : r.valor + ' quedó en la lista.', 'ok');
+    if(typeof valPago === 'function') valPago();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+/* ---------------- ACCESOS ---------------- */
+VISTAS.accesos = {
+  t: 'Limpiar accesos al libro',
+  s: 'Quién puede abrir el libro por fuera de la plataforma. Para crear usuarios, vaya a Usuarios y claves.',
+  render: function(){ return '<div id="ac_cont">Consultando quién tiene acceso…</div>'; },
+  after: function(){ cargarAccesos(); }
+};
+
+function cargarAccesos(){
+  servidor('datosAccesos').then(function(a){
+    var selRol = function(correo, rol){
+      if(!a.puedeEditar || !correo) return esc(rol);
+      return '<select onchange="ponerRol(this.value, \''+esc(correo)+'\')" '+
+        'style="padding:4px 6px;font-size:12px">'+
+        ['—','Auxiliar','Contadora','Gerencia'].map(function(x){
+          return '<option'+(x===rol?' selected':'')+'>'+x+'</option>'; }).join('')+
+        '</select>';
+    };
+
+    var filas = a.gente.map(function(g){
+      var btn = '';
+      if(a.puedeEditar && !g.esDueno && g.correo && g.correo !== a.yo){
+        btn = g.tieneAcceso
+          ? '<button class="btn xs ghost" style="width:auto;padding:5px 10px" '+
+            'onclick="quitarAcc(\''+esc(g.correo)+'\',\''+esc(g.nombre)+'\')">Desactivar</button>'
+          : '<button class="btn xs dark" style="width:auto;padding:5px 10px" '+
+            'onclick="darAcc(\''+esc(g.correo)+'\',\''+esc(g.nombre)+'\')">Activar</button>';
+      } else if(g.esDueno) btn = '<span class="badge b-gr">Dueña</span>';
+      else if(g.correo === a.yo) btn = '<span class="badge b-gr">Usted</span>';
+      else if(!g.correo) btn = '<span class="badge b-av">Sin correo</span>';
+
+      return '<tr><td><b>'+esc(g.nombre)+'</b></td>'+
+        '<td>'+esc(g.correo||'—')+'</td>'+
+        '<td>'+selRol(g.correo, g.rol)+'</td>'+
+        '<td><span class="badge '+(g.tieneAcceso?'b-ok':'b-mal')+'">'+
+          (g.tieneAcceso?'Con acceso':'Sin acceso')+'</span></td>'+
+        '<td>'+esc(g.estado||'')+'</td>'+
+        '<td>'+btn+'</td></tr>';
+    }).join('');
+
+    $('ac_cont').innerHTML =
+      (a.enlacePublico
+        ? '<div class="al al-mal"><b>⚠ El libro está abierto por enlace</b>'+
+          'Cualquiera que tenga el link entra, así usted desactive personas aquí. '+
+          'Ciérrelo en Compartir → Cualquier persona con el enlace → Restringido.</div>'
+        : '<div class="al al-ok"><b>El libro no está abierto por enlace</b>'+
+          'Solo entra quien aparezca en esta lista.</div>')+
+
+      (a.puedeEditar ? '' :
+        '<div class="al al-av"><b>Solo lectura</b>Entró como '+esc(a.yo)+
+        '. Para dar o quitar accesos hay que entrar con el correo de la contadora.</div>')+
+
+      '<div class="card"><h3>Quién tiene acceso</h3>'+
+      '<p class="d">Desactivar le quita el acceso al libro y a la carpeta, y le pone fecha de retiro. '+
+      'No borra nada de lo que esa persona registró.</p>'+
+      '<div class="tw"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th>'+
+      '<th>Acceso</th><th>Estado</th><th></th></tr></thead><tbody>'+
+      (filas || '<tr><td colspan="6">Todavía no hay nadie en Responsables.</td></tr>')+
+      '</tbody></table></div></div>'+
+
+      (a.sueltos.length
+        ? '<div class="card"><h3>Tienen acceso pero no están en Responsables</h3>'+
+          '<p class="d">Entraron por un compartido anterior. Si no deben estar, quíteles el acceso.</p>'+
+          '<div class="tw"><table><thead><tr><th>Correo</th><th>Rol</th><th></th></tr></thead><tbody>'+
+          a.sueltos.map(function(s){
+            return '<tr><td>'+esc(s.correo)+'</td><td>'+esc(s.rol)+'</td><td>'+
+              (a.puedeEditar && s.correo !== a.yo && s.correo !== a.dueno
+                ? '<button class="btn xs ghost" style="width:auto;padding:5px 10px" '+
+                  'onclick="quitarAcc(\''+esc(s.correo)+'\',\''+esc(s.correo)+'\')">Quitar acceso</button>'
+                : '<span class="badge b-gr">—</span>')+'</td></tr>';
+          }).join('')+'</tbody></table></div></div>'
+        : '')+
+
+
+      '<div class="al al-av"><b>Esta pantalla ya no da acceso: solo lo quita</b>'+
+      'Quién entra a la plataforma se decide ahora en Usuarios y claves, con usuario y '+
+      'contraseña. Lo que queda aquí es la limpieza: estos correos pueden abrir el libro '+
+      'por fuera de la plataforma, sin pasar por ningún login. Quíteselo a todo el que no lo necesite.</div>';
+  }).catch(function(e){ $('ac_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+function quitarAcc(correo, nombre){
+  if(!window.confirm('¿Quitarle el acceso a ' + nombre + '?\n\n' +
+     'Deja de poder abrir el libro y la carpeta. Lo que ya registró se queda.')) return;
+  toast('Quitando el acceso…');
+  servidor('quitarAcceso', correo).then(function(){
+    toast('Acceso retirado a ' + nombre + '.','ok'); cargarAccesos();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function darAcc(correo, nombre){
+  toast('Dando acceso…');
+  servidor('darAcceso', { correo: correo, nombre: nombre }).then(function(){
+    toast('Acceso devuelto a ' + nombre + '.','ok'); cargarAccesos();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function nuevoAcceso(){
+  var n = ($('ac_nom').value||'').trim(), c = ($('ac_cor').value||'').trim();
+  if(!n || !c){ toast('Escriba el nombre y el correo.','mal'); return; }
+  toast('Dando acceso…');
+  servidor('darAcceso', {
+    nombre:n, correo:c, rol:$('ac_rol').value, cedula:$('ac_ced').value,
+    celular:$('ac_cel').value, desde:$('ac_desde').value
+  }).then(function(){
+    toast(n + ' ya tiene acceso.','ok');
+    recargar().then(function(){ ir('accesos'); });
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function ponerRol(rol, correo){
+  servidor('asignarRol', rol === '—' ? '' : rol, correo).then(function(){
+    toast('Rol actualizado.','ok'); recargar().then(cargarAccesos);
+  }).catch(function(e){ toast(e.message,'mal'); cargarAccesos(); });
+}
+
+/* ---------- la tarjeta de entrada ---------- */
+
+function abrirLogin(){
+  $('app').classList.add('hide');
+  $('login').classList.remove('hide');
+  $('lg_usr').value = D.correo || 'Sesión de Google';
+  $('lg_sel').innerHTML = '<option value=""></option>' + opciones(D.quienes||[], QUIEN) +
+    '<option value="__otro__">+ Mi nombre no está en la lista…</option>';
+  if(QUIEN) $('lg_sel').value = QUIEN;
+  var ROLES = [
+    { k:'auxiliar',  e:'👩‍💼', t:'Quien tiene la caja hoy',
+      d:'Registra pagos, ingresos y entregas. Sube soportes y hace el arqueo.' },
+    { k:'contadora', e:'📊', t:'Contadora',
+      d:'Revisa, audita y cierra. Ve el tablero y maneja los accesos.' },
+    { k:'gerencia',  e:'✅', t:'Gerencia',
+      d:'Aprueba relaciones y confirma el efectivo recibido.' }
+  ];
+  $('lg_roles').innerHTML = ROLES.map(function(x){
+    var mio = x.k === ROL;
+    return '<div style="display:block;width:100%;text-align:left;border-radius:8px;'+
+      'padding:9px 11px;margin-bottom:6px;font-size:12.5px;border:1px solid '+
+      (mio ? '#E09C00;background:#FFE7B0' : '#E2E0DA;background:#fff') + '">'+
+      '<b style="display:block;font-size:13px">'+x.e+' '+x.t+
+      (mio ? ' <span class="badge b-ok" style="font-size:10px">su rol</span>' : '')+'</b>'+
+      '<span style="color:#6B6761;font-size:11.5px">'+x.d+'</span></div>';
+  }).join('');
+}
+
+function lgOtro(){
+  $('lg_nom').classList.toggle('hide', $('lg_sel').value !== '__otro__');
+  if($('lg_sel').value === '__otro__') $('lg_nom').focus();
+}
+
+function entrarQuien(){
+  var v = $('lg_sel').value;
+  if(v === '__otro__') v = ($('lg_nom').value||'').trim();
+  if(!v){ toast('Escoja o escriba su nombre.','mal'); return; }
+  QUIEN = v;
+  try { window.localStorage.setItem('cm_quien', v); } catch(e){}
+  $('login').classList.add('hide');
+  $('app').classList.remove('hide');
+  pintarQuien();
+  ir('inicio');
+  toast('Bienvenida, ' + v + '. Sus movimientos quedan a su nombre.','ok');
+}
+
+
+/* ============================================================
+ *  ENTRADA CON USUARIO Y CONTRASEÑA
+ * ============================================================ */
+
+var TOKEN = '';
+try { TOKEN = window.sessionStorage.getItem('cm_token') || ''; } catch(e){}
+
+/* el servidor crudo: solo para entrar y salir */
+function crudo(fn){
+  var args = Array.prototype.slice.call(arguments,1);
+  return new Promise(function(ok,mal){
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(mal);
+    r[fn].apply(r,args);
+  });
+}
+
+/* todo lo demás pasa por la puerta única, con el token */
+function servidor(fn){
+  var args = Array.prototype.slice.call(arguments,1);
+  return new Promise(function(ok,mal){
+    google.script.run
+      .withSuccessHandler(ok)
+      .withFailureHandler(function(e){
+        if(String(e.message||'').indexOf('SIN_SESION') > -1){
+          TOKEN = '';
+          try { window.sessionStorage.removeItem('cm_token'); } catch(x){}
+          abrirLogin('Su sesión se cerró. Vuelva a entrar.');
+          mal(new Error('Sesión cerrada.'));
+          return;
+        }
+        mal(e);
+      })
+      .api(TOKEN, fn, args);
+  });
+}
+
+function arrancar(){
+  if(!TOKEN){ primeraPantalla(); return; }
+  servidor('datosWeb').then(function(d){
+    montarApp(d);
+  }).catch(function(){ primeraPantalla(); });
+}
+
+function primeraPantalla(){
+  crudo('hayUsuarios').then(function(hay){
+    $('cargando').classList.add('hide');
+    if(hay) abrirLogin('');
+    else    abrirPrimerUso();
+  }).catch(function(e){
+    $('cargaErr').innerHTML = 'No se pudo abrir el libro.<br><br>' + esc(e.message);
+  });
+}
+
+function montarApp(d){
+  D = d;
+  ROL = d.rol;
+  QUIEN = d.quien || '';
+  $('cargando').classList.add('hide');
+  $('login').classList.add('hide');
+  $('app').classList.remove('hide');
+  $('whoN').textContent = d.quien || d.usuario || '';
+  $('whoR').innerHTML = (ROL === 'contadora' ? 'Contadora · revisa y cierra'
+                       : ROL === 'gerencia'  ? 'Gerencia · aprueba'
+                       : 'Quien maneja la caja') +
+    '<br><a onclick="salir()" style="cursor:pointer;color:#FFB41D;font-size:11px">Cerrar sesión</a>' +
+    ' · <a onclick="ir(\'miclave\')" style="cursor:pointer;color:#9a948a;font-size:11px">Cambiar clave</a>';
+  pintarNav();
+  ir(d.debeCambiar ? 'miclave' : 'inicio');
+  if(d.debeCambiar) toast('Por seguridad, cambie la contraseña que le dieron.','av');
+}
+
+function abrirLogin(aviso){
+  $('cargando').classList.add('hide');
+  $('app').classList.add('hide');
+  $('login').classList.remove('hide');
+  $('login').innerHTML =
+    '<div class="loginbox">'+
+      '<div class="logo">SS</div>'+
+      '<h1>Caja Menor</h1>'+
+      '<p class="s">Social Solar S.A.S. · NIT 901.128.826-6</p>'+
+      (aviso ? '<div class="al al-av" style="margin-bottom:12px">'+esc(aviso)+'</div>' : '')+
+      '<div class="f"><label>Usuario</label>'+
+      '<input id="lg_usr" autocomplete="username" placeholder="nombre.apellido" '+
+      'onkeydown="if(event.key===\'Enter\')$(\'lg_cla\').focus()"></div>'+
+      '<div class="f"><label>Contraseña</label>'+
+      '<input id="lg_cla" type="password" autocomplete="current-password" placeholder="••••••••" '+
+      'onkeydown="if(event.key===\'Enter\')entrar()"></div>'+
+      '<button class="btn dark" id="lg_btn" onclick="entrar()">Ingresar</button>'+
+      '<div id="lg_msg"></div>'+
+      '<div class="demo">'+
+        '<p>Los tres roles</p>'+
+        '<div style="border:1px solid #E2E0DA;background:#fff;border-radius:8px;padding:9px 11px;margin-bottom:6px">'+
+          '<b style="display:block;font-size:13px">👩‍💼 Quien tiene la caja</b>'+
+          '<span style="color:#6B6761;font-size:11.5px">Registra pagos, ingresos y entregas. Sube soportes y hace el arqueo.</span></div>'+
+        '<div style="border:1px solid #E2E0DA;background:#fff;border-radius:8px;padding:9px 11px;margin-bottom:6px">'+
+          '<b style="display:block;font-size:13px">📊 Contadora</b>'+
+          '<span style="color:#6B6761;font-size:11.5px">Revisa, audita y cierra. Administra los usuarios.</span></div>'+
+        '<div style="border:1px solid #E2E0DA;background:#fff;border-radius:8px;padding:9px 11px">'+
+          '<b style="display:block;font-size:13px">✅ Gerencia</b>'+
+          '<span style="color:#6B6761;font-size:11.5px">Aprueba relaciones y confirma el efectivo recibido.</span></div>'+
+      '</div>'+
+      '<p style="font-size:11px;color:#6B6761;margin:14px 0 0;text-align:center">'+
+      '¿Olvidó su contraseña? La contadora se la restablece.</p>'+
+    '</div>';
+  setTimeout(function(){ try { $('lg_usr').focus(); } catch(e){} }, 120);
+}
+
+function entrar(){
+  var u = ($('lg_usr').value||'').trim(), c = $('lg_cla').value||'';
+  if(!u || !c){ msgLogin('Escriba usuario y contraseña.','al-av'); return; }
+  $('lg_btn').disabled = true;
+  msgLogin('Entrando…','al-inf');
+  crudo('iniciarSesion', u, c).then(function(s){
+    TOKEN = s.token;
+    try { window.sessionStorage.setItem('cm_token', s.token); } catch(e){}
+    return servidor('datosWeb');
+  }).then(function(d){
+    montarApp(d);
+    toast('Bienvenida, ' + (d.quien||'') + '.','ok');
+  }).catch(function(e){
+    msgLogin(e.message, 'al-mal');
+    $('lg_btn').disabled = false;
+    try { $('lg_cla').value=''; $('lg_cla').focus(); } catch(x){}
+  });
+}
+
+function msgLogin(t, clase){
+  var e = $('lg_msg');
+  if(e) e.innerHTML = '<div class="al '+clase+'" style="margin-top:12px">'+esc(t)+'</div>';
+}
+
+function salir(){
+  var t = TOKEN;
+  TOKEN = '';
+  try { window.sessionStorage.removeItem('cm_token'); } catch(e){}
+  crudo('cerrarSesion', t).catch(function(){});
+  abrirLogin('Cerró la sesión.');
+}
+
+function abrirPrimerUso(){
+  $('app').classList.add('hide');
+  $('login').classList.remove('hide');
+  $('login').innerHTML =
+    '<div class="loginbox">'+
+      '<div class="logo">SS</div>'+
+      '<h1>Primera vez</h1>'+
+      '<p class="s">Todavía no hay usuarios. Cree el de la contadora.</p>'+
+      '<div class="al al-av"><b>Hágalo ahora mismo</b>'+
+      'Mientras no exista, cualquiera que abra este enlace podría crearlo.</div>'+
+      '<div class="f"><label>Nombre completo</label><input id="pu_nom" placeholder="Angie Paola Céspedes Portela"></div>'+
+      '<div class="f"><label>Usuario</label><input id="pu_usr" placeholder="angie"></div>'+
+      '<div class="f"><label>Contraseña</label><input id="pu_cla" type="password" placeholder="mínimo 6 caracteres"></div>'+
+      '<div class="f"><label>Repita la contraseña</label><input id="pu_cl2" type="password" '+
+      'onkeydown="if(event.key===\'Enter\')crearAdmin()"></div>'+
+      '<button class="btn dark" id="pu_btn" onclick="crearAdmin()">Crear y entrar</button>'+
+      '<div id="lg_msg"></div>'+
+      '<p style="font-size:11px;color:#6B6761;margin:14px 0 0">'+
+      'Esta contraseña no la ve nadie: se guarda cifrada. Si se le olvida, se restablece, no se recupera.</p>'+
+    '</div>';
+}
+
+function crearAdmin(){
+  var n = ($('pu_nom').value||'').trim(), u = ($('pu_usr').value||'').trim();
+  var c = $('pu_cla').value||'', c2 = $('pu_cl2').value||'';
+  if(!n || !u || !c){ msgLogin('Llene los cuatro campos.','al-av'); return; }
+  if(c !== c2){ msgLogin('Las dos contraseñas no coinciden.','al-mal'); return; }
+  $('pu_btn').disabled = true;
+  msgLogin('Creando…','al-inf');
+  crudo('crearAdministradora', { nombre:n, usuario:u, clave:c }).then(function(s){
+    TOKEN = s.token;
+    try { window.sessionStorage.setItem('cm_token', s.token); } catch(e){}
+    return servidor('datosWeb');
+  }).then(function(d){
+    montarApp(d);
+    toast('Listo. Ya puede crear los demás usuarios en la pantalla Usuarios.','ok');
+  }).catch(function(e){
+    msgLogin(e.message,'al-mal');
+    $('pu_btn').disabled = false;
+  });
+}
+
+VISTAS.miclave = {
+  t: 'Cambiar mi contraseña',
+  s: 'Solo usted la conoce. Nadie puede verla, ni la contadora.',
+  render: function(){
+    return '<div class="card" style="max-width:480px">'+
+      '<h3>Su contraseña</h3>'+
+      '<label>Contraseña actual</label><input id="mc_vieja" type="password">'+
+      '<label style="margin-top:10px">Contraseña nueva</label>'+
+      '<input id="mc_nueva" type="password" placeholder="mínimo 6 caracteres">'+
+      '<label style="margin-top:10px">Repítala</label>'+
+      '<input id="mc_rep" type="password" onkeydown="if(event.key===\'Enter\')cambiarClave()">'+
+      '<button class="btn dark" onclick="cambiarClave()" style="margin-top:14px">Cambiar</button>'+
+      '<div id="mc_msg"></div></div>'+
+      '<div class="al al-inf"><b>Si se le olvida</b>'+
+      'No se puede recuperar, porque está cifrada. La contadora le pone una nueva desde la pantalla Usuarios.</div>';
+  }
+};
+
+function cambiarClave(){
+  var v = $('mc_vieja').value||'', n = $('mc_nueva').value||'', r = $('mc_rep').value||'';
+  if(!v || !n){ toast('Llene los campos.','mal'); return; }
+  if(n !== r){ toast('Las dos contraseñas nuevas no coinciden.','mal'); return; }
+  servidor('cambiarMiClave', D.usuario, v, n).then(function(){
+    $('mc_msg').innerHTML = '<div class="al al-ok" style="margin-top:12px">'+
+      '<b>Contraseña cambiada</b>De ahora en adelante entre con la nueva.</div>';
+    ['mc_vieja','mc_nueva','mc_rep'].forEach(function(i){ $(i).value=''; });
+    toast('Contraseña cambiada.','ok');
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+
+/* ============================================================
+ *  PANTALLA DE USUARIOS — solo la contadora
+ * ============================================================ */
+
+VISTAS.usuarios = {
+  t: 'Usuarios',
+  s: 'Quién entra a la plataforma, con qué clave y con qué rol.',
+  render: function(){ return '<div id="us_cont">Consultando…</div>'; },
+  after: function(){ cargarUsuarios(); }
+};
+
+function cargarUsuarios(){
+  servidor('listarUsuarios').then(function(l){
+    var filas = l.map(function(u){
+      var yo = u.usuario === D.usuario;
+      return '<tr>'+
+        '<td><b>'+esc(u.nombre)+'</b>'+(yo?' <span class="badge b-gr">usted</span>':'')+'</td>'+
+        '<td class="mono">'+esc(u.usuario)+'</td>'+
+        '<td><select onchange="rolUsuario(\''+esc(u.usuario)+'\', this.value)" '+
+          'style="padding:4px 6px;font-size:12px"'+(yo?' disabled':'')+'>'+
+          ['Auxiliar','Contadora','Gerencia'].map(function(x){
+            return '<option'+(x===u.rol?' selected':'')+'>'+x+'</option>'; }).join('')+
+          '</select></td>'+
+        '<td><span class="badge '+(u.activo?'b-ok':'b-mal')+'">'+
+          (u.activo?'Activo':'Desactivado')+'</span>'+
+          (u.debeCambiar?' <span class="badge b-av">clave temporal</span>':'')+'</td>'+
+        '<td>'+esc(u.ultimo)+'</td>'+
+        '<td>'+(yo ? '' :
+          '<button class="btn xs ghost" style="width:auto;padding:5px 9px" '+
+          'onclick="pedirClave(\''+esc(u.usuario)+'\',\''+esc(u.nombre)+'\')">Nueva clave</button> '+
+          (u.activo
+            ? '<button class="btn xs ghost" style="width:auto;padding:5px 9px" '+
+              'onclick="activar(\''+esc(u.usuario)+'\',false,\''+esc(u.nombre)+'\')">Desactivar</button>'
+            : '<button class="btn xs dark" style="width:auto;padding:5px 9px" '+
+              'onclick="activar(\''+esc(u.usuario)+'\',true,\''+esc(u.nombre)+'\')">Activar</button>'))+
+        '</td></tr>';
+    }).join('');
+
+    $('us_cont').innerHTML =
+      '<div class="card"><h3>Quién entra</h3>'+
+      '<p class="d">Desactivar corta la sesión al instante, aunque la persona la tenga abierta.</p>'+
+      '<div class="tw"><table><thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th>'+
+      '<th>Estado</th><th>Último ingreso</th><th></th></tr></thead><tbody>'+
+      filas+'</tbody></table></div></div>'+
+      '<div id="rc_zona"></div>'+
+
+      '<div class="card"><h3>Crear un usuario</h3>'+
+      '<p class="d">Usted pone la contraseña y la entrega. La casilla de abajo decide si la persona debe cambiarla.</p>'+
+      '<div class="grid g2">'+
+      '<div><label>Nombre completo</label><input id="nu_nom" placeholder="María Pérez"></div>'+
+      '<div><label>Usuario</label><input id="nu_usr" placeholder="maria">'+
+      '<div class="hint">Sin espacios ni tildes. Letras, números, punto o guion.</div></div>'+
+      '</div><div class="grid g2" style="margin-top:10px">'+
+      '<div><label>Contraseña</label><input id="nu_cla" placeholder="mínimo 6 caracteres"></div>'+
+      '<div><label>Rol</label><select id="nu_rol">'+
+        '<option>Auxiliar</option><option>Gerencia</option><option>Contadora</option>'+
+        '</select></div></div>'+
+      '<label class="ck" style="margin-top:12px">'+
+      '<input type="checkbox" id="nu_cambiar" checked> Pedirle que cambie la contraseña al entrar'+
+      '<span class="hint" style="margin:0 0 0 4px">— si la deja sin marcar, se queda la que usted puso y usted la conoce</span>'+
+      '</label>'+
+      '<button class="btn dark" onclick="nuevoUsuario()" style="margin-top:12px;max-width:220px">Crear</button>'+
+      '<div id="nu_msg"></div></div>'+
+
+      '<div class="al al-inf"><b>Las contraseñas no se pueden ver</b>'+
+      'Se guardan cifradas. Si alguien la olvida, usted le pone una nueva con el botón '+
+      '«Nueva clave» — no hay forma de leer la anterior, y eso también la protege a usted.</div>'+
+
+      '<div class="al al-av"><b>Esto reemplaza lo de compartir el libro</b>'+
+      'La plataforma ahora corre con su cuenta de Google, así que quien entra lo decide esta tabla. '+
+      'Revise que el libro NO siga abierto por enlace: si lo está, se puede llegar a los datos sin pasar por aquí.</div>';
+  }).catch(function(e){ $('us_cont').innerHTML='<div class="al al-mal">'+esc(e.message)+'</div>'; });
+}
+
+function nuevoUsuario(){
+  var d = { nombre:$('nu_nom').value, usuario:$('nu_usr').value,
+            clave:$('nu_cla').value, rol:$('nu_rol').value,
+            debeCambiar: $('nu_cambiar').checked };
+  servidor('crearUsuario', d).then(function(){
+    $('nu_msg').innerHTML = '<div class="al al-ok" style="margin-top:12px">'+
+      '<b>'+esc(d.usuario)+' creado</b>Entréguele el usuario y la contraseña. '+
+      (d.debeCambiar ? 'Al entrar le vamos a pedir que la cambie.'
+                     : 'Se queda con esa contraseña hasta que usted la cambie.')+'</div>';
+    toast('Usuario creado.','ok');
+    ['nu_nom','nu_usr','nu_cla'].forEach(function(i){ $(i).value=''; });
+    cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function rolUsuario(usuario, rol){
+  servidor('cambiarRolUsuario', usuario, rol).then(function(){
+    toast('Rol actualizado.','ok'); cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); cargarUsuarios(); });
+}
+
+function activar(usuario, activo, nombre){
+  if(!activo && !window.confirm('¿Desactivar a ' + nombre + '?\n\n' +
+     'No va a poder entrar, y si tiene la sesión abierta se le cierra. ' +
+     'Lo que ya registró se queda.')) return;
+  servidor('activarUsuario', usuario, activo).then(function(){
+    toast(nombre + (activo ? ' activado.' : ' desactivado.'),'ok'); cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+function pedirClave(usuario, nombre){
+  $('rc_zona').innerHTML =
+    '<div class="card" style="border-color:#FFB41D">'+
+    '<h3>Contraseña nueva para '+esc(nombre)+'</h3>'+
+    '<p class="d">Usted la pone y usted se la entrega. Mínimo 6 caracteres.</p>'+
+    '<div class="grid g2">'+
+    '<div><label>Contraseña nueva</label>'+
+    '<input id="rc_cla" placeholder="mínimo 6 caracteres" '+
+    'onkeydown="if(event.key===\'Enter\')guardarClave(\''+esc(usuario)+'\',\''+esc(nombre)+'\')"></div>'+
+    '<div style="display:flex;align-items:flex-end;padding-bottom:4px">'+
+    '<label class="ck"><input type="checkbox" id="rc_cambiar" checked> '+
+    'Pedirle que la cambie al entrar</label></div>'+
+    '</div>'+
+    '<div class="row" style="margin-top:12px">'+
+    '<button class="btn dark sm" onclick="guardarClave(\''+esc(usuario)+'\',\''+esc(nombre)+'\')">Guardar</button>'+
+    '<button class="btn ghost sm" onclick="cargarUsuarios()">Cancelar</button>'+
+    '</div></div>';
+  try { $('rc_cla').focus(); } catch(e){}
+}
+
+function guardarClave(usuario, nombre){
+  var c = $('rc_cla').value || '';
+  var pide = $('rc_cambiar').checked;
+  servidor('restablecerClave', usuario, c, pide).then(function(){
+    toast('Clave cambiada. Entréguesela a ' + nombre + '.','ok');
+    cargarUsuarios();
+  }).catch(function(e){ toast(e.message,'mal'); });
+}
+
+arrancar();
+
+
+/* el cajón del menú en el celular */
+function menu(){
+  var a = document.querySelector('aside'), v = document.getElementById('velo');
+  if(!a || !v) return;
+  var abierto = a.classList.toggle('abierto');
+  v.classList.toggle('abierto', abierto);
+}
+
+</script>
+</body>
+</html>

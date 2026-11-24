@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+:root{--am:#FFB41D;--am2:#E09C00;--ne:#1A1A1A;--cr:#FFF8E7;--cr2:#FFE7B0;
+ --bd:#E2E0DA;--sec:#6B6761;--ok:#1E7B34;--okbg:#E6F4EA;--mal:#B3261E;
+ --malbg:#FDECEA;--avi:#8A5A00;--avibg:#FFF1CC;--inf:#1F3864;--infbg:#EDF2FA}
+*{box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:var(--ne);
+ margin:0;padding:10px;background:#fff}
+h1{font-size:15px;margin:0 0 2px}
+.sub{color:var(--sec);font-size:11.5px;margin-bottom:10px}
+button{font:inherit;border:0;border-radius:8px;cursor:pointer;padding:9px 10px;
+ font-weight:bold;font-size:12.5px;width:100%;margin:3px 0}
+.am{background:var(--am);color:var(--ne)} .am:hover{background:var(--am2)}
+.ne{background:var(--ne);color:#fff} .cl{background:#eee;color:var(--ne)}
+button:disabled{opacity:.5;cursor:wait}
+button.mini{width:auto;padding:5px 9px;font-size:11px;margin:0 3px 0 0}
+label{display:block;font-size:10.5px;color:var(--sec);margin:7px 0 3px;
+ font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+input,select,textarea{width:100%;padding:6px 7px;border:1px solid var(--bd);
+ border-radius:6px;font-size:12.5px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--am);outline-offset:-1px}
+.kpi{display:flex;gap:6px;margin-bottom:9px}
+.kpi div{flex:1;background:var(--cr);border:1px solid var(--cr2);
+ border-radius:8px;padding:7px}
+.kpi b{display:block;font-size:14px} .kpi span{font-size:10px;color:var(--sec)}
+.al{border-radius:7px;padding:8px 10px;font-size:11.8px;margin:7px 0;border:1px solid;line-height:1.4}
+.al b{display:block;margin-bottom:2px}
+.al .nrm{display:block;font-size:10.5px;opacity:.85;margin-top:3px}
+.ok{background:var(--okbg);border-color:#bfe3c9;color:#145c27}
+.av{background:var(--avibg);border-color:#f0d89a;color:#6b4700}
+.mal{background:var(--malbg);border-color:#f3c7c3;color:#8c1d16}
+.inf{background:var(--infbg);border-color:#c9d8ef;color:var(--inf)}
+.dos{display:flex;gap:6px} .dos>div{flex:1}
+hr{border:0;border-top:1px solid var(--bd);margin:11px 0}
+.tabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:9px}
+.tabs button{width:auto;flex:1;min-width:62px;background:#f1f0ed;color:var(--sec);
+ font-size:11px;padding:6px 4px;margin:0}
+.tabs button.on{background:var(--ne);color:#fff}
+.hide{display:none!important}
+.card{border:1px solid var(--bd);border-radius:8px;padding:8px;margin:7px 0;background:var(--cr)}
+.card h3{font-size:12px;margin:0 0 4px}
+.fila{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;
+ border-bottom:1px solid var(--bd)}
+.den{display:flex;gap:5px;align-items:center;margin-bottom:3px}
+.den span{width:62px;font-size:11.5px;font-weight:bold;text-align:right}
+.den input{width:50px;text-align:center}
+.den b{flex:1;text-align:right;font-size:11.5px}
+.msg{font-size:11.8px;padding:8px;border-radius:7px;margin:7px 0;display:none;line-height:1.4}
+.barra{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin:6px 0;display:none}
+.barra div{height:100%;width:0;background:var(--am);transition:width .3s}
+a{color:#B57800}
+.pill{background:var(--mal);color:#fff;border-radius:9px;padding:0 5px;font-size:10px}
+</style>
+</head>
+<body>
+
+<h1>Caja menor</h1>
+<div class="sub" id="sub">Cargando…</div>
+
+<div class="kpi">
+  <div><span>Saldo en caja</span><b id="k_saldo">—</b></div>
+  <div><span>Filas libres</span><b id="k_libres">—</b></div>
+</div>
+<div id="semaforo"></div>
+
+<div class="tabs" id="tabs"></div>
+<div class="msg" id="msg"></div>
+<div class="barra" id="barra"><div id="avance"></div></div>
+
+<!-- ======================= INICIO ======================= -->
+<div id="t_inicio">
+  <button class="am" onclick="tab('pago')">💸 Registrar un pago</button>
+  <button class="cl" onclick="tab('ingreso')">💵 Registrar un ingreso</button>
+  <button class="cl" onclick="tab('entrega')">📤 Entregar efectivo</button>
+  <button class="cl" onclick="tab('banca')">🔎 ¿Puedo pagar en efectivo?</button>
+  <button class="cl" onclick="tab('links')">🔗 Pedir documentos <span id="p_pend"></span></button>
+  <button class="cl" onclick="tab('arqueo')">🧮 Arqueo</button>
+  <hr>
+  <button class="ne" onclick="google.script.run.abrirCierre()">📨 Entregar la relación</button>
+  <button class="cl" onclick="correr('revisarRelacion')">🔍 Revisar la relación</button>
+  <div id="casos_btn"></div>
+</div>
+
+<!-- ======================= PAGO ======================= -->
+<div id="t_pago" class="hide">
+  <label>Fecha del documento</label><input type="date" id="g_fecha">
+  <label>Valor pagado</label><input id="g_valor" inputmode="numeric" oninput="valPago()">
+
+  <hr>
+  <label>¿A quién se le entregó el efectivo?</label>
+  <select id="g_benef" onchange="valPago()"></select>
+  <div class="sub" style="margin:3px 0 0">Quien recibió la plata. Casi nunca es el mismo del documento.</div>
+
+  <label>¿A nombre de quién viene el documento?</label>
+  <input id="g_prov" placeholder="Vendedor o prestador" oninput="valPago()">
+  <label>NIT o cédula del vendedor</label>
+  <input id="g_nit" placeholder="901128826-6" oninput="valPago()">
+
+  <label>Descripción</label><input id="g_desc" placeholder="Qué se compró">
+  <label>Medio de pago</label><select id="g_medio" onchange="valPago()"></select>
+
+  <div class="dos">
+    <div><label>Categoría</label><select id="g_cat" onchange="valPago()"></select></div>
+    <div><label>Centro de costo</label><select id="g_centro"></select></div>
+  </div>
+  <label>Cuenta contable (World Office)</label><select id="g_cuenta"></select>
+  <label>Concepto de retención</label><select id="g_ret" onchange="valPago()"></select>
+
+  <hr>
+  <label>Tipo de soporte que trajo</label><select id="g_tipo" onchange="valPago()"></select>
+  <label>N.° de factura o documento</label><input id="g_sop" placeholder="FE-1866531">
+  <label>Estado del soporte</label><select id="g_estado" onchange="valPago()"></select>
+  <label>Nota para la contadora</label>
+  <textarea id="g_nota" rows="2" placeholder="Lo que ella necesita saber para decidir"></textarea>
+
+  <label>Foto del soporte</label>
+  <input type="file" id="g_file" accept="image/*,application/pdf">
+
+  <div id="g_val"></div>
+  <button class="am" id="g_btn" onclick="guardarPago()">Guardar el pago</button>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<!-- ======================= INGRESO ======================= -->
+<div id="t_ingreso" class="hide">
+  <label>Origen del dinero</label><select id="i_origen" onchange="valIng()"></select>
+  <label>Fecha</label><input type="date" id="i_fecha">
+  <label>Valor recibido</label><input id="i_valor" inputmode="numeric" oninput="valIng()">
+
+  <div id="i_cruce">
+    <hr>
+    <label>Cliente o pagador</label><input id="i_cliente" oninput="valIng()">
+    <div class="dos">
+      <div><label>N.° recibo de caja</label><input id="i_rc" oninput="valIng()"></div>
+      <div><label>Factura que cruza</label><input id="i_fv" oninput="valIng()"></div>
+    </div>
+    <label>¿Cruce aplicado en World Office?</label>
+    <select id="i_cruceap"><option>Pendiente</option><option>Sí</option><option>No aplica</option></select>
+  </div>
+
+  <label>N.° de soporte</label><input id="i_sop" placeholder="RC-0042 o N.° del retiro">
+  <label>Concepto</label><input id="i_desc">
+  <label>Centro de costo</label><select id="i_centro"></select>
+  <label>Soporte</label><input type="file" id="i_file" accept="image/*,application/pdf">
+
+  <div id="i_val"></div>
+  <button class="am" id="i_btn" onclick="guardarIngreso()">Guardar el ingreso</button>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<!-- ======================= ENTREGA ======================= -->
+<div id="t_entrega" class="hide">
+  <label>¿A dónde va el efectivo?</label>
+  <select id="e_destino" onchange="destEnt()"></select>
+  <div id="e_nueva" class="hide card">
+    <h3>Agregar una persona</h3>
+    <input id="e_pnombre" placeholder="Nombre completo">
+    <button class="am" onclick="addPersona()">Guardar en la lista</button>
+    <div class="sub">Queda disponible para las próximas entregas.</div>
+  </div>
+
+  <label>Valor entregado</label><input id="e_valor" inputmode="numeric" oninput="valEnt()">
+  <label>Concepto</label><input id="e_concepto" placeholder="Ej.: recaudo del 17/11">
+  <label>Centro de costo</label><select id="e_centro"></select>
+  <label>Soporte de la entrega</label>
+  <input type="file" id="e_file" accept="image/*,application/pdf">
+
+  <div id="e_val"></div>
+  <button class="am" id="e_btn" onclick="guardarEntrega()">Generar el comprobante</button>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<!-- ======================= BANCARIZACIÓN ======================= -->
+<div id="t_banca" class="hide">
+  <div class="al inf"><b>Antes de entregar la plata</b>
+    Mira cuánto efectivo se le ha pagado a ese tercero este año y si se le puede seguir pagando así.</div>
+  <label>Tercero</label>
+  <input id="b_nombre" list="b_lista" placeholder="Escriba o elija">
+  <datalist id="b_lista"></datalist>
+  <button class="am" onclick="consultar()">Consultar</button>
+  <div id="b_res"></div>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<!-- ======================= LINKS / WHATSAPP ======================= -->
+<div id="t_links" class="hide">
+  <div class="al av"><b>Pagos sin soporte válido</b>
+    El DSE se genera el mismo día o acumulado semanal. Fuera de plazo pierde el efecto fiscal.
+    <span class="nrm">Circular 004 num. 3 · Concepto DIAN 006942 de 2025</span></div>
+  <label>Link que se va a enviar</label>
+  <input id="l_link" value="https://forms.gle/ss-dse-proveedor">
+  <div id="l_lista"></div>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<!-- ======================= ARQUEO ======================= -->
+<div id="t_arqueo" class="hide">
+  <div class="sub">Cuente el efectivo y escriba cuántos hay de cada denominación.</div>
+  <div id="a_den"></div>
+  <hr>
+  <div class="fila"><b>Total contado</b><b id="a_total">$ 0</b></div>
+  <div class="fila"><span>Saldo según el sistema</span><b id="a_sistema">—</b></div>
+  <div class="fila"><span>Diferencia</span><b id="a_dif">—</b></div>
+  <label>Observaciones del arqueo</label>
+  <textarea id="a_obs" rows="2" placeholder="Si no cuadra, explique por qué"></textarea>
+  <div id="a_res"></div>
+  <button class="am" onclick="guardarArqueo()">Guardar el arqueo</button>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<!-- ======================= CASOS ======================= -->
+<div id="t_casos" class="hide">
+  <div class="al inf"><b>Casos por definir</b>
+    Lo que quien maneja la caja no pudo decidir solo. El pago ya se hizo: aquí se define el tratamiento fiscal.</div>
+  <div id="c_lista"></div>
+  <button class="cl" onclick="tab('inicio')">Volver</button>
+</div>
+
+<script>
+var D = null, PANT = 'inicio';
+var DEN = [100000,50000,20000,10000,5000,2000,1000,500,200,100];
+
+function $(i){ return document.getElementById(i); }
+function msg(t,c){ var m=$('msg'); m.textContent=t; m.className='msg '+(c||'inf');
+  m.style.display='block'; m.style.background = c==='mal'?'#FDECEA':c==='ok'?'#E6F4EA':'#EDF2FA';
+  m.style.color = c==='mal'?'#8c1d16':c==='ok'?'#145c27':'#1F3864'; }
+function limpiarMsg(){ $('msg').style.display='none'; }
+function barra(h,t){ $('barra').style.display=t?'block':'none';
+  $('avance').style.width = t?Math.round(100*h/t)+'%':'0'; }
+function cop(n){ return '$ ' + Math.round(Number(n)||0).toLocaleString('es-CO'); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function servidor(fn){
+  var args = Array.prototype.slice.call(arguments,1);
+  return new Promise(function(ok,mal){
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(mal);
+    r[fn].apply(r,args);
+  });
+}
+
+/* ---------- carga ---------- */
+function cargar(){
+  servidor('panelDatos').then(function(d){
+    D = d;
+    $('sub').innerHTML = 'Relación N.° ' + d.numero + ' · ' + esc(d.responsable);
+    $('k_saldo').textContent = d.saldoTxt;
+    $('k_libres').textContent = d.libres;
+    pintarSemaforo(d);
+    pintarTabs(d);
+    llenarListas(d);
+    $('p_pend').innerHTML = d.pendientes ? '<span class="pill">'+d.pendientes+'</span>' : '';
+    hoy('g_fecha'); hoy('i_fecha');
+  }).catch(function(e){ msg(e.message,'mal'); });
+}
+function hoy(id){
+  var d=new Date(), m=('0'+(d.getMonth()+1)).slice(-2), dd=('0'+d.getDate()).slice(-2);
+  if($(id)) $(id).value = d.getFullYear()+'-'+m+'-'+dd;
+}
+
+function pintarSemaforo(d){
+  var h='';
+  if(d.excedente>0) h='<div class="al mal"><b>⬆ Excedente de '+cop(d.excedente)+'</b>'+
+    'La caja está por encima del objetivo de '+cop(d.objetivo)+'. Hay que consignar hoy.</div>';
+  else if(d.reembolso>0) h='<div class="al mal"><b>⬇ Saldo por debajo del mínimo</b>'+
+    'Pida reembolso de '+cop(d.reembolso)+' al gerente.</div>';
+  else h='<div class="al ok"><b>✓ Saldo dentro del rango</b>'+d.saldoTxt+'</div>';
+  if(d.alertas && d.alertas !== 'Sin alertas')
+    h += '<div class="al av"><b>'+esc(d.alertas)+'</b>Revise la columna Revisión antes de cerrar.</div>';
+  $('semaforo').innerHTML = h;
+}
+
+function pintarTabs(d){
+  var t = '<button class="on" onclick="tab(\'inicio\')">Inicio</button>';
+  if(d.rol === 'contadora')
+    t += '<button onclick="tab(\'casos\')">Casos</button>';
+  t += '<button onclick="tab(\'banca\')">Terceros</button>';
+  $('tabs').innerHTML = t;
+  $('casos_btn').innerHTML = d.rol === 'contadora'
+    ? '<button class="cl" onclick="tab(\'casos\')">🙋 Casos por definir</button>' : '';
+}
+
+function opciones(id, lista, vacio){
+  if(!$(id)) return;
+  $(id).innerHTML = (vacio?'<option value=""></option>':'') +
+    lista.map(function(x){ return '<option>'+esc(x)+'</option>'; }).join('');
+}
+function llenarListas(d){
+  opciones('g_benef', d.benef);       opciones('g_medio', d.medios);
+  opciones('g_cat', d.categorias);    opciones('g_centro', d.centros);
+  opciones('g_cuenta', d.cuentas);    opciones('g_ret', d.retenciones);
+  opciones('g_tipo', d.soportes);     opciones('g_estado', d.estados);
+  opciones('i_origen', d.origenes);   opciones('i_centro', d.centros);
+  opciones('e_centro', d.centros);
+  pintarDestinos(d.destinos);
+  pintarDenominaciones();
+  valPago(); valIng(); valEnt(); destEnt();
+}
+
+/* ---------- navegación ---------- */
+function tab(p){
+  PANT = p; limpiarMsg();
+  ['inicio','pago','ingreso','entrega','banca','links','arqueo','casos'].forEach(function(x){
+    var el = $('t_'+x); if(el) el.classList.toggle('hide', x !== p);
+  });
+  document.querySelectorAll('#tabs button').forEach(function(b){
+    b.classList.toggle('on', b.textContent.toLowerCase().indexOf(p) > -1 ||
+      (p==='inicio' && b.textContent==='Inicio'));
+  });
+  if(p === 'links')  cargarPendientes();
+  if(p === 'casos')  cargarCasos();
+  if(p === 'banca')  cargarTerceros();
+  if(p === 'arqueo') sincronizarArqueo();
+  window.scrollTo(0,0);
+}
+
+/* ---------- validación del pago ---------- */
+function valPago(){
+  if(!D || !$('g_val')) return;
+  var v = Number(($('g_valor').value||'').replace(/\D/g,''));
+  var tipo = $('g_tipo').value||'', nit = ($('g_nit').value||'').replace(/\D/g,'');
+  var medio = $('g_medio').value||'', estado = $('g_estado').value||'';
+  var benef = $('g_benef').value||'', prov = ($('g_prov').value||'').trim();
+  var ret = $('g_ret').value||'';
+  var esEfectivo = medio.indexOf('Efectivo') === 0;
+  var h = '', bloquea = false;
+
+  if(!v) h += '<div class="al av"><b>Escriba el valor</b>Sin valor no se valida nada.</div>';
+  if(esEfectivo && v > D.saldo){ bloquea = true;
+    h += '<div class="al mal"><b>No alcanza el efectivo</b>En caja hay '+cop(D.saldo)+'.</div>'; }
+  if(v > D.topeGasto){ bloquea = true;
+    h += '<div class="al mal"><b>Supera el tope por gasto ('+cop(D.topeGasto)+')</b>Requiere autorización.</div>'; }
+  if(esEfectivo && v > D.topeEfectivo){ bloquea = true;
+    h += '<div class="al mal"><b>'+cop(v)+' en efectivo supera las 100 UVT</b>'+
+      'Va obligatoriamente por Bancolombia.<span class="nrm">Art. 771-5 par. 2 E.T.</span></div>'; }
+  else if(!esEfectivo && v)
+    h += '<div class="al ok"><b>Pago bancarizado</b>'+esc(medio)+' no cuenta contra el tope de efectivo.'+
+      '<span class="nrm">Oficio DIAN 100202208-0176/2023</span></div>';
+
+  if(nit && /^2{9,12}$/.test(nit)){ bloquea = true;
+    h += '<div class="al mal"><b>NIT genérico de consumidor final</b>No soporta nada: exija factura a nombre de Social Solar.</div>'; }
+
+  if(tipo.indexOf('papel') > -1){
+    if(v > D.topePOS){ bloquea = true;
+      h += '<div class="al mal"><b>POS en papel por '+cop(v)+'</b>Supera las 5 UVT ('+cop(D.topePOS)+'). Exija factura electrónica.</div>'; }
+    else h += '<div class="al mal"><b>El POS en papel no es deducible</b>Pida documento equivalente electrónico con los datos de Social Solar.</div>';
+  }
+
+  if(benef && benef.indexOf('directo') === -1 && prov)
+    h += '<div class="al inf"><b>Doble trazabilidad</b>El efectivo lo recibió '+esc(benef)+
+      ' y el soporte queda a nombre de '+esc(prov)+'.<span class="nrm">Circular 004 num. 4.E</span></div>';
+  if(benef && benef.indexOf('directo') === -1 && !prov)
+    h += '<div class="al av"><b>Falta el vendedor del documento</b>El DSE se le hace al vendedor, no a quien compró.</div>';
+
+  if(/no quiso|no se pudo/i.test(estado))
+    h += '<div class="al mal"><b>Queda NO DEDUCIBLE</b>El caso pasa a la contadora con su nota y entra al informe mensual.<span class="nrm">Circular 004 num. 4.G</span></div>';
+  if(/falta el dse/i.test(estado))
+    h += '<div class="al av"><b>Queda con reloj de plazo</b>'+D.plazoDSE+' días desde la operación.</div>';
+
+  if(ret.indexOf('No aplica') === 0 && v > 500000)
+    h += '<div class="al av"><b>¿Seguro que no hay retención?</b>Por '+cop(v)+' vale la pena revisar el concepto.</div>';
+
+  if(!h) h = '<div class="al ok"><b>Todo en orden</b>Cumple topes, medio de pago y soporte.</div>';
+  if(bloquea) h = '<div class="al mal"><b>⛔ No se puede guardar así</b>Corrija lo que está en rojo.</div>' + h;
+  $('g_val').innerHTML = h;
+  $('g_btn').disabled = bloquea;
+}
+
+/* ---------- validación del ingreso ---------- */
+function valIng(){
+  if(!D || !$('i_val')) return;
+  var o = $('i_origen').value||'', v = Number(($('i_valor').value||'').replace(/\D/g,''));
+  var esCliente = /cliente/i.test(o), esBanco = /banco/i.test(o);
+  $('i_cruce').classList.toggle('hide', !esCliente);
+
+  var h='', falta=false;
+  if(esCliente){
+    var p=[];
+    if(!($('i_cliente').value||'').trim()) p.push('el nombre del cliente');
+    if(!($('i_rc').value||'').trim())      p.push('el N.° de recibo de caja');
+    if(!($('i_fv').value||'').trim())      p.push('la factura que cruza');
+    if(p.length){ falta=true;
+      h += '<div class="al mal"><b>Falta '+p.join(', ')+'</b>'+
+        'Un recaudo sin recibo ni factura no se puede cruzar después.</div>'; }
+    else h += '<div class="al ok"><b>Recaudo completo</b>Queda listo para cruzar en World Office.</div>';
+  }
+  if(esBanco) h += '<div class="al inf"><b>Reposición de caja</b>'+
+    'Adjunte el comprobante del retiro. La fila también queda en la hoja Banco.</div>';
+  if(v && !esBanco && (D.saldo + v) > D.objetivo)
+    h += '<div class="al mal"><b>La caja quedaría en '+cop(D.saldo+v)+'</b>'+
+      'Por encima del objetivo de '+cop(D.objetivo)+'. Consigne el excedente hoy.</div>';
+  if(!h) h = '<div class="al inf"><b>Trazabilidad</b>Todo ingreso queda con su origen y su soporte.</div>';
+  $('i_val').innerHTML = h;
+  $('i_btn').disabled = falta;
+}
+
+/* ---------- entrega ---------- */
+function pintarDestinos(lista){
+  if(!$('e_destino')) return;
+  $('e_destino').innerHTML =
+    lista.map(function(x){ return '<option>'+esc(x)+'</option>'; }).join('') +
+    '<option value="__nueva__">+ Agregar una persona…</option>';
+}
+function destEnt(){
+  if(!$('e_destino')) return;
+  $('e_nueva').classList.toggle('hide', $('e_destino').value !== '__nueva__');
+  valEnt();
+}
+function addPersona(){
+  var n = ($('e_pnombre').value||'').trim();
+  if(!n){ msg('Escriba el nombre.','mal'); return; }
+  D.destinos.push(n);
+  pintarDestinos(D.destinos);
+  $('e_destino').value = n;
+  $('e_pnombre').value = '';
+  destEnt();
+  msg(n + ' quedó en la lista de destinos.','ok');
+}
+function valEnt(){
+  if(!D || !$('e_val')) return;
+  var v = Number(($('e_valor').value||'').replace(/\D/g,''));
+  var d = $('e_destino').value||'';
+  var h='', bloquea=false;
+  if(d === '__nueva__'){ bloquea = true;
+    h += '<div class="al av"><b>Elija o agregue una persona</b></div>'; }
+  if(v > D.saldo){ bloquea = true;
+    h += '<div class="al mal"><b>No alcanza</b>En caja hay '+cop(D.saldo)+'.</div>'; }
+  if(v && /banco|consignaci/i.test(d))
+    h += '<div class="al inf"><b>Consignación</b>Queda registrada en la hoja Banco para cruzarla contra el extracto.</div>';
+  else if(v)
+    h += '<div class="al av"><b>Queda por confirmar</b>Hasta que quien recibe confirme, la relación no se puede cerrar.</div>';
+  $('e_val').innerHTML = h;
+  $('e_btn').disabled = bloquea;
+}
+
+/* ---------- archivos ---------- */
+function leerArchivo(id){
+  var f = $(id) && $(id).files[0];
+  if(!f) return Promise.resolve(null);
+  return new Promise(function(ok,mal){
+    var r = new FileReader();
+    r.onload = function(){ ok({ nombre:f.name, tipo:f.type,
+      base64:String(r.result).split(',')[1] }); };
+    r.onerror = function(){ mal(new Error('No se pudo leer el archivo.')); };
+    r.readAsDataURL(f);
+  });
+}
+
+/* ---------- guardar ---------- */
+function guardarPago(){
+  $('g_btn').disabled = true; msg('Guardando…');
+  leerArchivo('g_file').then(function(a){
+    return servidor('guardarPago', {
+      fecha:$('g_fecha').value, valor:$('g_valor').value,
+      beneficiario:$('g_benef').value, proveedor:$('g_prov').value, nit:$('g_nit').value,
+      descripcion:$('g_desc').value, medio:$('g_medio').value,
+      categoria:$('g_cat').value, centro:$('g_centro').value,
+      cuenta:$('g_cuenta').value, retencion:$('g_ret').value,
+      tipoSoporte:$('g_tipo').value, soporte:$('g_sop').value,
+      estadoSoporte:$('g_estado').value, nota:$('g_nota').value, archivo:a
+    });
+  }).then(function(r){
+    D = r.panel; actualizar(r.panel);
+    msg('Fila '+r.n+' guardada · '+r.revision+' · Deducible: '+r.deducible,
+        r.revision.indexOf('OK')===0 ? 'ok' : 'mal');
+    ['g_valor','g_prov','g_nit','g_desc','g_sop','g_nota'].forEach(function(i){ $(i).value=''; });
+    $('g_file').value=''; valPago();
+  }).catch(function(e){ msg(e.message,'mal'); $('g_btn').disabled=false; });
+}
+
+function guardarIngreso(){
+  $('i_btn').disabled = true; msg('Guardando…');
+  leerArchivo('i_file').then(function(a){
+    return servidor('guardarIngreso', {
+      fecha:$('i_fecha').value, valor:$('i_valor').value, origen:$('i_origen').value,
+      cliente:$('i_cliente').value, reciboCaja:$('i_rc').value,
+      facturaCruza:$('i_fv').value, cruceAplicado:$('i_cruceap').value,
+      soporte:$('i_sop').value, descripcion:$('i_desc').value,
+      centro:$('i_centro').value, categoria:'Venta de contado (ingreso)',
+      tipoSoporte:'Factura electrónica', medio:'Efectivo (billetes y monedas)', archivo:a
+    });
+  }).then(function(r){
+    D = r.panel; actualizar(r.panel);
+    msg('Ingreso guardado en la fila '+r.n+'. '+r.revision, 'ok');
+    ['i_valor','i_cliente','i_rc','i_fv','i_sop','i_desc'].forEach(function(i){ $(i).value=''; });
+    $('i_file').value=''; valIng();
+  }).catch(function(e){ msg(e.message,'mal'); $('i_btn').disabled=false; });
+}
+
+function guardarEntrega(){
+  $('e_btn').disabled = true; msg('Generando el comprobante…');
+  leerArchivo('e_file').then(function(a){
+    return servidor('guardarEntrega', {
+      destino:$('e_destino').value, valor:$('e_valor').value,
+      concepto:$('e_concepto').value, centro:$('e_centro').value, archivo:a
+    });
+  }).then(function(r){
+    D = r.panel; actualizar(r.panel);
+    msg('Comprobante '+r.consecutivo+' generado.','ok');
+    $('e_valor').value=''; $('e_concepto').value=''; $('e_file').value=''; valEnt();
+  }).catch(function(e){ msg(e.message,'mal'); $('e_btn').disabled=false; });
+}
+
+function actualizar(d){
+  $('k_saldo').textContent = d.saldoTxt;
+  $('k_libres').textContent = d.libres;
+  $('p_pend').innerHTML = d.pendientes ? '<span class="pill">'+d.pendientes+'</span>' : '';
+  pintarSemaforo(d);
+  $('g_btn').disabled=false; $('i_btn').disabled=false; $('e_btn').disabled=false;
+}
+
+/* ---------- arqueo ---------- */
+function pintarDenominaciones(){
+  if(!$('a_den')) return;
+  $('a_den').innerHTML = DEN.map(function(d,i){
+    return '<div class="den"><span>'+cop(d)+'</span>'+
+      '<input type="number" min="0" id="d'+i+'" data-d="'+d+'" oninput="calcArqueo()">'+
+      '<b id="s'+i+'">—</b></div>';
+  }).join('');
+}
+function calcArqueo(){
+  var t=0;
+  DEN.forEach(function(d,i){
+    var q = Number($('d'+i).value)||0, v = q*d; t += v;
+    $('s'+i).textContent = v ? cop(v) : '—';
+  });
+  $('a_total').textContent = cop(t);
+  if(D){
+    var dif = t - D.saldo;
+    $('a_sistema').textContent = cop(D.saldo);
+    $('a_dif').textContent = (dif>0?'+ ':dif<0?'− ':'')+cop(Math.abs(dif));
+    $('a_dif').style.color = dif===0 ? '#1E7B34' : '#B3261E';
+  }
+}
+function sincronizarArqueo(){ calcArqueo(); }
+function guardarArqueo(){
+  var c = {};
+  DEN.forEach(function(d,i){ c[String(d)] = Number($('d'+i).value)||0; });
+  msg('Guardando el arqueo…');
+  servidor('guardarArqueo', c, $('a_obs').value).then(function(r){
+    D = r.panel; actualizar(r.panel);
+    var cl = r.estado === 'Cuadra' ? 'ok' : 'mal';
+    var h = '<div class="al '+cl+'"><b>'+r.estado+'</b>'+
+      'Contado '+r.totalTxt+' · sistema '+r.sistemaTxt+'</div>';
+    h += '<div class="card"><h3>Antes de cerrar</h3>' +
+      r.checklist.map(function(x){
+        return '<div class="fila"><span>'+esc(x.texto)+'</span><b style="color:'+
+          (x.estado==='OK'?'#1E7B34':'#B3261E')+'">'+esc(x.estado)+'</b></div>';
+      }).join('') + '</div>';
+    $('a_res').innerHTML = h;
+    msg('Arqueo guardado.','ok');
+  }).catch(function(e){ msg(e.message,'mal'); });
+}
+
+/* ---------- pendientes y WhatsApp ---------- */
+function cargarPendientes(){
+  $('l_lista').innerHTML = '<div class="sub">Buscando…</div>';
+  servidor('listaPendientes').then(function(l){
+    if(!l.length){ $('l_lista').innerHTML =
+      '<div class="al ok"><b>No hay pendientes</b>Todos los pagos tienen soporte.</div>'; return; }
+    $('l_lista').innerHTML = l.map(function(p){
+      var venc = p.plazo === 'VENCIDO';
+      return '<div class="card"><h3>'+esc(p.proveedor||'Sin nombre')+'</h3>'+
+        '<div class="sub">'+esc(p.fecha)+' · '+p.valorTxt+' · '+esc(p.estado)+'</div>'+
+        '<div class="al '+(venc?'mal':'av')+'" style="margin:5px 0"><b>'+
+          (venc?'DSE VENCIDO':'Vence en '+esc(p.plazo))+'</b>'+
+          (venc?'Ya no tiene efecto fiscal: márquelo como no deducible.':'')+'</div>'+
+        '<label>Celular</label><input id="cel'+p.fila+'" inputmode="numeric" placeholder="3001234567">'+
+        '<button class="am" onclick="wa('+p.fila+',\''+esc(p.proveedor)+'\',\''+
+          p.valorTxt+'\',\''+esc(p.fecha)+'\')">📲 Abrir WhatsApp</button></div>';
+    }).join('');
+  }).catch(function(e){ msg(e.message,'mal'); });
+}
+function wa(fila, nombre, valor, fecha){
+  var cel = ($('cel'+fila).value||'').replace(/\D/g,'');
+  servidor('linkWhatsApp', cel, nombre, valor, fecha, $('l_link').value)
+    .then(function(url){
+      var a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.textContent = 'Abrir el chat de ' + nombre;
+      a.style.cssText = 'display:block;margin:6px 0;font-weight:bold';
+      $('l_lista').insertBefore(a, $('l_lista').firstChild);
+      msg('Listo: oprima el enlace que quedó arriba.','ok');
+    }).catch(function(e){ msg(e.message,'mal'); });
+}
+
+/* ---------- bancarización ---------- */
+function cargarTerceros(){
+  servidor('listaTercerosBanca').then(function(l){
+    $('b_lista').innerHTML = l.map(function(x){ return '<option value="'+esc(x)+'">'; }).join('');
+  }).catch(function(){});
+}
+function consultar(){
+  var n = ($('b_nombre').value||'').trim();
+  if(!n){ msg('Escriba el nombre del tercero.','mal'); return; }
+  msg('Consultando…');
+  servidor('consultaTercero', n).then(function(r){
+    if(!r){ $('b_res').innerHTML=''; return; }
+    var cl = r.veredicto.indexOf('SÍ')===0 ? 'ok' : 'mal';
+    $('b_res').innerHTML = '<div class="al '+cl+'"><b>'+esc(r.tercero)+'</b>'+
+      'Efectivo '+esc(r.efectivo)+' · Banco '+esc(r.banco)+' · '+esc(r.porcentaje)+' de las 100 UVT'+
+      '<div style="font-size:14px;font-weight:bold;margin-top:6px">'+esc(r.veredicto)+'</div></div>';
+    limpiarMsg();
+  }).catch(function(e){ msg(e.message,'mal'); });
+}
+
+/* ---------- casos ---------- */
+function cargarCasos(){
+  $('c_lista').innerHTML = '<div class="sub">Buscando…</div>';
+  servidor('listaCasos').then(function(l){
+    if(!l.length){ $('c_lista').innerHTML =
+      '<div class="al ok"><b>No hay casos abiertos</b></div>'; return; }
+    $('c_lista').innerHTML = l.map(function(c){
+      if(c.resuelto === 'Resuelto') return '';
+      return '<div class="card"><h3>Caso '+c.n+' · '+esc(c.fecha)+' · '+c.valor+'</h3>'+
+        '<div class="sub">Recibió: '+esc(c.beneficiario)+'<br>Vendedor: '+esc(c.vendedor)+
+          ' ('+esc(c.id)+')<br>'+esc(c.estado)+'</div>'+
+        '<div class="al av" style="margin:5px 0"><b>Nota de quien pagó</b>'+esc(c.nota)+'</div>'+
+        '<label>Decisión</label><select id="dec'+c.n+'">'+
+          '<option>Generar DSE con la cédula — deducible</option>'+
+          '<option>Marcar NO DEDUCIBLE e informar en el mensual</option>'+
+          '<option>Exigir factura electrónica al establecimiento</option>'+
+          '<option>Devolver: falta información para decidir</option></select>'+
+        '<label>Instrucción para la causación</label><input id="ins'+c.n+'">'+
+        '<button class="am" onclick="decidir('+c.n+')">Guardar decisión</button></div>';
+    }).join('');
+  }).catch(function(e){ msg(e.message,'mal'); });
+}
+function decidir(n){
+  servidor('guardarDecision', n, $('dec'+n).value, $('ins'+n).value)
+    .then(function(){ msg('Decisión guardada.','ok'); cargarCasos(); })
+    .catch(function(e){ msg(e.message,'mal'); });
+}
+
+function correr(fn){ msg('Procesando…'); servidor(fn).then(function(){ limpiarMsg(); })
+  .catch(function(e){ msg(e.message,'mal'); }); }
+
+cargar();
+</script>
+</body>
+</html>
