@@ -174,16 +174,16 @@ function guardarPago(d) {
         nombreArchivo_(d.fecha, d.proveedor, d.soporte));
     }
 
-  escribirRelacion_(rel, fila, [
-    aFecha_(d.fecha) || '', txt_(d.soporte, 40),
-    txt_(d.proveedor, 120).toUpperCase(), txt_(d.nit, 20),
-    txt_(d.descripcion, 200), txt_(d.categoria, 60), txt_(d.centro, 60),
-    txt_(d.tipoSoporte, 60), txt_(d.medio, 60),
-    '', valor, '',
-    txt_(d.beneficiario, 60), txt_(d.estadoSoporte, 80),
-    txt_(d.cuenta, 60), txt_(d.retencion, 60), '',
-    txt_(d.nota, 300), '', '', '', '', '', ''
-  ]);
+    rel.getRange(fila, 2, 1, N_COLS - 1).setValues([[
+      aFecha_(d.fecha) || '', txt_(d.soporte, 40),
+      txt_(d.proveedor, 120).toUpperCase(), txt_(d.nit, 20),
+      txt_(d.descripcion, 200), txt_(d.categoria, 60), txt_(d.centro, 60),
+      txt_(d.tipoSoporte, 60), txt_(d.medio, 60),
+      '', valor, '',
+      txt_(d.beneficiario, 60), txt_(d.estadoSoporte, 80),
+      txt_(d.cuenta, 60), txt_(d.retencion, 60), '',
+      txt_(d.nota, 300), '', '', '', '', '', ''
+    ]]);
 
     sellar_(rel, fila, d.quien);
     if (urlSoporte) enlazar_(rel, fila, 3, txt_(d.soporte, 40) || 'Ver soporte', urlSoporte);
@@ -230,15 +230,15 @@ function guardarIngreso(d) {
         nombreArchivo_(d.fecha, d.cliente || d.origen, d.reciboCaja || d.soporte));
     }
 
-  escribirRelacion_(rel, fila, [
-    aFecha_(d.fecha) || '', txt_(d.soporte, 40),
-    txt_(d.cliente, 120).toUpperCase(), txt_(d.nit, 20),
-    txt_(d.descripcion, 200), txt_(d.categoria, 60), txt_(d.centro, 60),
-    txt_(d.tipoSoporte, 60), txt_(d.medio, 60),
-    valor, '', '', '', '', '', '', '', '', '',
-    txt_(d.origen, 60), txt_(d.cliente, 120), txt_(d.reciboCaja, 40),
-    txt_(d.facturaCruza, 40), txt_(d.cruceAplicado, 20) || 'Pendiente'
-  ]);
+    rel.getRange(fila, 2, 1, N_COLS - 1).setValues([[
+      aFecha_(d.fecha) || '', txt_(d.soporte, 40),
+      txt_(d.cliente, 120).toUpperCase(), txt_(d.nit, 20),
+      txt_(d.descripcion, 200), txt_(d.categoria, 60), txt_(d.centro, 60),
+      txt_(d.tipoSoporte, 60), txt_(d.medio, 60),
+      valor, '', '', '', '', '', '', '',
+      txt_(d.origen, 60), txt_(d.cliente, 120), txt_(d.reciboCaja, 40),
+      txt_(d.facturaCruza, 40), txt_(d.cruceAplicado, 20) || 'Pendiente'
+    ]]);
 
     sellar_(rel, fila, d.quien);
     if (urlSoporte) enlazar_(rel, fila, 3, txt_(d.soporte, 40) || 'Ver soporte', urlSoporte);
@@ -295,15 +295,15 @@ function guardarEntrega(d) {
     const libres = filasLibres_(rel);
     if (libres.length) {
       const fila = libres[0];
-    escribirRelacion_(rel, fila, [
-      soloFecha_(ahora), consecutivo, txt_(d.destino, 120).toUpperCase(), '',
-      txt_(d.concepto, 200) || 'Entrega de efectivo',
-      'Entrega de efectivo', txt_(d.centro, 60) || 'Administración',
-      'Formato interno (entrega de efectivo)', 'Efectivo (billetes y monedas)',
-      '', valor, '', txt_(d.destino, 60), 'Ya tiene soporte válido',
-      '110510 · Caja menor', 'No aplica (cuantía menor)', '',
-      'Entrega de efectivo ' + consecutivo, '', '', '', '', '', ''
-    ]);
+      rel.getRange(fila, 2, 1, N_COLS - 1).setValues([[
+        soloFecha_(ahora), consecutivo, txt_(d.destino, 120).toUpperCase(), '',
+        txt_(d.concepto, 200) || 'Entrega de efectivo',
+        'Entrega de efectivo', txt_(d.centro, 60) || 'Administración',
+        'Formato interno (entrega de efectivo)', 'Efectivo (billetes y monedas)',
+        '', valor, '', txt_(d.destino, 60), 'Ya tiene soporte válido',
+        '110510 · Caja menor', 'No aplica (cuantía menor)', '',
+        'Entrega de efectivo ' + consecutivo, '', '', '', '', '', ''
+      ]]);
       sellar_(rel, fila, d.quien);
       if (urlSoporte) enlazar_(rel, fila, 3, consecutivo, urlSoporte);
     }
@@ -1087,37 +1087,29 @@ function agregarResponsable(d) {
   return datosParams();
 }
 
-function datosUbicacion(rol) {
+function datosUbicacion() {
   const libro = libro_();
   const mes = carpetaDelMes_(new Date());
-  const l = function (titulo, nota, nombre, url, ver) {
-    return { titulo: titulo, nota: nota, nombre: nombre, url: url, ver: ver || 'contadora' };
+  const l = function (titulo, nota, nombre, url) {
+    return { titulo: titulo, nota: nota, nombre: nombre, url: url };
   };
 
   let urlApp = '';
   try { urlApp = ScriptApp.getService().getUrl() || ''; } catch (e) { }
 
-  /* cada enlace dice quién lo puede ver. El auxiliar no ve el libro:
-     por ahí se llega a todo y se edita, que es justo lo que no queremos. */
-  const TODOS = 'contadora gerencia auxiliar';
-  const CTD   = 'contadora';
-  const CTD_GER = 'contadora gerencia';
-
   const fijos = [
-    l('LA PLATAFORMA', 'Esta misma página. Guárdela en favoritos.', 'Abrir la caja menor', urlApp, TODOS),
-    l('El libro', 'Relación, arqueo, tablero e histórico.', libro.getName(), libro.getUrl(), CTD_GER),
+    l('LA PLATAFORMA', 'Esta misma página. Guárdela en favoritos.', 'Abrir la caja menor', urlApp),
+    l('El libro', 'Relación, arqueo, tablero e histórico.', libro.getName(), libro.getUrl()),
     l('Carpeta raíz', 'De aquí cuelga todo lo demás.',
-      'CAJA MENOR', DriveApp.getFolderById(CARPETA_RAIZ).getUrl(), CTD),
+      'CAJA MENOR', DriveApp.getFolderById(CARPETA_RAIZ).getUrl()),
     l('Plantillas y políticas', 'El libro, las circulares y el manual.',
-      '00 PLANTILLAS Y POLÍTICAS', DriveApp.getFolderById(CARPETA_PLANTILLAS).getUrl(), CTD),
+      '00 PLANTILLAS Y POLÍTICAS', DriveApp.getFolderById(CARPETA_PLANTILLAS).getUrl()),
     l('Carpetas por año', 'Todos los meses, con sus soportes.',
-      '2026', DriveApp.getFolderById(CARPETA_ANIOS).getUrl(), TODOS),
-    l('El mes en curso', 'Aquí caen los soportes de este mes.', mes.getName(), mes.getUrl(), TODOS),
+      '2026', DriveApp.getFolderById(CARPETA_ANIOS).getUrl()),
+    l('El mes en curso', 'Aquí caen los soportes de este mes.', mes.getName(), mes.getUrl()),
     l('Respaldos', 'El .zip de cada mes cuando se genera.',
-      '99 RESPALDOS', DriveApp.getFolderById(CARPETA_RESP).getUrl(), CTD)
-  ].filter(function (x) {
-    return x.ver.indexOf(String(rol || 'auxiliar').toLowerCase()) > -1;
-  });
+      '99 RESPALDOS', DriveApp.getFolderById(CARPETA_RESP).getUrl())
+  ];
 
   /* lo que haya hoy en la carpeta de plantillas: manual, circulares, lo que sea */
   const docs = [];
@@ -1231,16 +1223,16 @@ function guardarPagoDesdeLote_(d) {
     const valor = entero_(d.valor);
     if (!(valor > 0)) throw new Error('Falta el valor.');
 
-  escribirRelacion_(rel, fila, [
-    aFecha_(d.fecha) || '', txt_(d.soporte, 40),
-    txt_(d.proveedor, 120).toUpperCase(), txt_(d.nit, 20),
-    txt_(d.descripcion, 200), txt_(d.categoria, 60), txt_(d.centro, 60),
-    txt_(d.tipoSoporte, 60), txt_(d.medio, 60),
-    '', valor, '',
-    txt_(d.beneficiario, 60), txt_(d.estadoSoporte, 80),
-    txt_(d.cuenta, 60), txt_(d.retencion, 60), '',
-    txt_(d.nota, 300), '', '', '', '', '', ''
-  ]);
+    rel.getRange(fila, 2, 1, N_COLS - 1).setValues([[
+      aFecha_(d.fecha) || '', txt_(d.soporte, 40),
+      txt_(d.proveedor, 120).toUpperCase(), txt_(d.nit, 20),
+      txt_(d.descripcion, 200), txt_(d.categoria, 60), txt_(d.centro, 60),
+      txt_(d.tipoSoporte, 60), txt_(d.medio, 60),
+      '', valor, '',
+      txt_(d.beneficiario, 60), txt_(d.estadoSoporte, 80),
+      txt_(d.cuenta, 60), txt_(d.retencion, 60), '',
+      txt_(d.nota, 300), '', '', '', '', '', ''
+    ]]);
     sellar_(rel, fila, d.quien);
     if (d.urlYaSubido) enlazar_(rel, fila, 3, txt_(d.soporte, 40) || 'Ver soporte', d.urlYaSubido);
     if (d.nit || d.proveedor) guardarTercero_(d);
@@ -1966,7 +1958,6 @@ function api(token, nombreFuncion, args) {
   const a = Array.isArray(args) ? args.slice() : [];
 
   if (fn === 'cambiarMiClave') a[0] = s.usuario;
-  if (fn === 'datosUbicacion') a[0] = s.rol;   /* el rol lo pone el servidor, no la página */
   if (['guardarPago', 'guardarIngreso', 'guardarEntrega'].indexOf(fn) > -1 &&
       a[0] && typeof a[0] === 'object') a[0].quien = s.nombre;
   if (fn === 'registrarLote' && Array.isArray(a[0]))
@@ -1982,101 +1973,4 @@ function api(token, nombreFuncion, args) {
     if (r.panel) { r.panel.rol = rolWeb; r.panel.quien = s.nombre; r.panel.usuario = s.usuario; }
   }
   return r;
-}
-
-
-/**
- * Escribe una fila de la Relación SIN pisar las fórmulas que ya tiene.
- * Las columnas Revisión, Plazo DSE y ¿Deducible? son fórmulas: si se les
- * mete un valor, se borran y la hoja deja de avisar lo que falta.
- * Aquí se leen antes y se vuelven a poner, así nadie tiene que acordarse
- * de cuáles son ni de en qué orden quedaron.
- */
-function escribirRelacion_(rel, fila, valores) {
-  const rango = rel.getRange(fila, 2, 1, valores.length);
-  const formulas = rango.getFormulas()[0];
-  const v = valores.slice();
-  for (var i = 0; i < v.length; i++) {
-    if (formulas[i]) v[i] = formulas[i];   /* tenía fórmula: se respeta */
-  }
-  rango.setValues([v]);
-}
-
-
-/* ================================================================
- *  LIMPIAR LOS MOVIMIENTOS DE PRUEBA DE LA RELACIÓN EN CURSO
- *  Se corre desde el editor, una sola vez.
- *  No toca Movimientos ni Historial: ahí no llegó nada, porque la
- *  relación nunca se cerró.
- * ================================================================ */
-
-/** Busca una fila que todavía conserve sus fórmulas, para usarla de molde. */
-function filaMolde_(rel) {
-  for (var f = FILA_FIN; f >= FILA_INI; f--) {
-    var fs = rel.getRange(f, 2, 1, N_COLS - 1).getFormulas()[0];
-    if (fs.filter(String).length >= 2) return f;
-  }
-  return 0;
-}
-
-/** Dice qué se va a borrar, SIN borrar nada. Córrala primero. */
-function revisarAntesDeLimpiar() {
-  var rel = hoja_(H_REL);
-  var molde = filaMolde_(rel);
-  if (!molde) { Logger.log('OJO: ninguna fila conserva fórmulas. No limpie: avíseme.'); return; }
-
-  var formulas = rel.getRange(molde, 2, 1, N_COLS - 1).getFormulas()[0];
-  var conDatos = [];
-  for (var f = FILA_INI; f <= FILA_FIN; f++) {
-    if (f === molde) continue;
-    var v = rel.getRange(f, 2, 1, N_COLS - 1).getValues()[0];
-    var hay = false;
-    for (var i = 0; i < v.length; i++) {
-      if (!formulas[i] && String(v[i]).trim() !== '') { hay = true; break; }
-    }
-    if (hay) conDatos.push({ fila: f, n: f - FILA_INI + 1,
-                             tercero: String(v[2] || ''), valor: v[10] || v[9] || '' });
-  }
-
-  Logger.log('Fila molde (conserva fórmulas): ' + molde);
-  Logger.log('Movimientos que se borrarían: ' + conDatos.length);
-  conDatos.forEach(function (c) {
-    Logger.log('  Fila ' + c.n + ' (hoja ' + c.fila + ') · ' + c.tercero + ' · ' + c.valor);
-  });
-
-  var ter = hoja_(H_TER).getRange(2, 1, 60, 2).getValues().filter(function (r) { return r[0] || r[1]; });
-  var cas = hoja_(H_CAS).getRange(5, 1, 40, 1).getValues().filter(function (r) { return r[0]; });
-  Logger.log('Terceros guardados por las pruebas: ' + ter.length);
-  ter.forEach(function (r) { Logger.log('  ' + r[0] + ' · ' + r[1]); });
-  Logger.log('Casos abiertos: ' + cas.length);
-  Logger.log('--- Esto fue solo un informe. No se borró nada. ---');
-}
-
-/** Borra los movimientos y devuelve las fórmulas. Córrala después de revisar. */
-function limpiarPruebasDeLaRelacion() {
-  var rel = hoja_(H_REL);
-  var molde = filaMolde_(rel);
-  if (!molde) throw new Error('Ninguna fila conserva fórmulas. No sigo sin revisar primero.');
-
-  var formulas = rel.getRange(molde, 2, 1, N_COLS - 1).getFormulas()[0];
-  var vacia = formulas.map(function (fx) { return fx || ''; });
-  var n = 0;
-
-  for (var f = FILA_INI; f <= FILA_FIN; f++) {
-    if (f === molde) continue;
-    var v = rel.getRange(f, 2, 1, N_COLS - 1).getValues()[0];
-    var hay = false;
-    for (var i = 0; i < v.length; i++) {
-      if (!formulas[i] && String(v[i]).trim() !== '') { hay = true; break; }
-    }
-    if (!hay) continue;
-    rel.getRange(f, 2, 1, N_COLS - 1).setValues([vacia]);   /* limpia y repone fórmulas */
-    rel.getRange(f, COL_QUIEN, 1, 2).clearContent();        /* quita el sello */
-    n++;
-  }
-  SpreadsheetApp.flush();
-  Logger.log('Listo. Movimientos borrados: ' + n);
-  Logger.log('Las fórmulas de Revisión, Plazo DSE y ¿Deducible? quedaron repuestas.');
-  Logger.log('Terceros y Casos NO se tocaron: revíselos a mano si quedaron datos de prueba.');
-  return n;
 }

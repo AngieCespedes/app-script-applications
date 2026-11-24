@@ -1366,7 +1366,7 @@ function addResp(){
 /* ---------------- ENLACES ---------------- */
 VISTAS.datos = {
   t: 'Enlaces y carpetas',
-  s: 'Todo lo de la caja menor, en un solo sitio. Cada quien ve lo que le corresponde.',
+  s: 'Todo lo de la caja menor, en un solo sitio. Se actualiza solo.',
   render: function(){ return '<div id="u_cont">Consultando Drive…</div>'; },
   after: function(){
     servidor('datosUbicacion').then(function(u){
@@ -1384,16 +1384,6 @@ VISTAS.datos = {
         '<p class="d">Cada uno abre en una pestaña nueva. Son los mismos del manual.</p>'+
         '<div class="tw"><table><thead><tr><th>Qué es</th><th>Enlace</th></tr></thead><tbody>'+
         u.fijos.map(fila).join('')+'</tbody></table></div></div>'+
-
-      (ROL !== 'contadora'
-        ? '<div class="al al-inf"><b>Por qué no aparecen todos los enlaces</b>'+
-          'El libro y las carpetas de archivo los administra la contadora. '+
-          (ROL === 'auxiliar'
-            ? 'Usted registra todo por esta plataforma: los soportes se archivan solos en la carpeta del mes, '+
-              'sin que le toque abrir el libro.'
-            : 'Usted entra al libro en modo lectura, para consultar sin riesgo de mover una fórmula.')+
-          '</div>'
-        : '')+
 
         (u.documentos.length
           ? '<div class="card"><h3>Documentos y políticas</h3>'+
