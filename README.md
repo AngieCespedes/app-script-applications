@@ -26,6 +26,26 @@ Cada app migrada tiene un `MIGRACION.md` con lo que cambió.
 
 Ambas corren con el despliegue en «Who has access: Anyone», así que el control de acceso del portal es solo ese usuario y contraseña.
 
+El portal interno tiene además la pestaña **Pagos** (roles TESORERIA y ADMINISTRADOR), que es la única vista de la hoja
+`11 PAGOS Y SOPORTES`. Ahí van todos los pagos, los que salen de una orden y los que no (nómina, PSE, impuestos), uno por
+transacción y por tercero:
+
+- Tabla filtrable por mes, tercero, tipo y búsqueda libre, con cuatro estados (todos, falta completar, no salieron del
+  banco, sin mandar el soporte). Los filtros corren en el navegador y el panel de resumen se recalcula con lo que quede
+  en pantalla.
+- **Completar** llena desde el portal lo que al pago le falte (identificación, comprobante de egreso, soporte). Un campo
+  vacío nunca borra lo que ya estaba en la hoja.
+- **Enviar soporte** manda el PDF adjunto por correo: el script lo baja de Drive con su propio permiso, así que el
+  proveedor no necesita acceso a Drive. Los contactos se **leen** del maestro `02`; esa hoja nunca se modifica desde aquí.
+- **Excel / PDF** bajan el informe de lo que se tenga filtrado, armado en la carpeta `INFORMES DE PAGOS` de la app.
+
+La validación contra el extracto no vive en el portal sino en la hoja: menú ☀️ Social Solar › Extracto del banco ›
+**Actualizar y revisar pagos**, que cruza la hoja `13 EXTRACTO BANCOS` contra la `11` por valor, tipo y fecha (±6 días),
+crea las filas de los pagos que el banco debitó y no estaban, y marca los registrados que el banco nunca debitó.
+
+El manual para quien usa el sistema (no para quien lo programa) está en Drive:
+[MANUAL — PROVEEDORES, ÓRDENES Y PAGOS](https://docs.google.com/document/d/1t67GeXRnX-WUX2cs8PlHKU_ToAAzDfH2q9nM4ulc2Bw/edit).
+
 ## Originales (no se publican desde aquí)
 
 | App | Hoja original | Script original | Código en el repo |
@@ -55,5 +75,11 @@ scripts/publicar.sh <app> push                 # sube el código (HEAD)
 scripts/publicar.sh <app> release "<nota>"     # versión + despliegue web (misma URL) + etiqueta git
 node scripts/migrar-legado.js <origen> apps/<app> <config.json>   # traer otra app vieja al repo
 ```
+
+`publicar.sh` necesita `clasp` autenticado con la cuenta dueña del script. Mientras eso no esté configurado, `proveedores`
+se ha venido publicando desde el editor web de Apps Script, pero **bajando los archivos de este repositorio** (los `.gs` y
+el `.html` se traen de `raw.githubusercontent.com` y se pegan en los modelos del editor), de modo que el proyecto queda
+idéntico al repo y un `push` posterior no borra nada. Es un parche, no el camino bueno: la regla de CLAUDE.md sigue siendo
+no editar a mano en el editor web.
 
 Al agregar una app nueva, agregar su fila a la tabla de arriba.
