@@ -856,9 +856,7 @@ if(!r.ok){ alert(r.mensaje); return; }
 var url = formato==='pdf' ? r.pdf : r.excel;
 abrirModal('Informe listo',
 '<div class="caja cok"><b>'+r.n+' pagos</b> por <b>'+esc(r.totalTexto)+'</b>.<br>'+esc(tituloFiltro())+'</div>'+
-'<a class="btn" target="_blank" href="'+esc(url)+'" style="display:block;width:100%;margin-top:12px;text-align:center;box-sizing:border-box">⬇ Descargar en '+(formato==='pdf'?'PDF':'Excel')+'</a>'+
-'<a class="btn sec" target="_blank" href="'+esc(r.hoja)+'" style="display:block;width:100%;margin-top:8px;text-align:center;box-sizing:border-box">Abrirlo en Google Sheets</a>'+
-'<div style="font-size:12px;color:#5A6670;margin-top:10px">El informe queda guardado en la carpeta <b>INFORMES DE PAGOS</b> de la app. Cada descarga lo vuelve a armar sobre el mismo archivo, así no se llena el Drive.</div>');
+'<a class="btn" target="_blank" href="'+esc(url)+'" style="display:block;width:100%;margin-top:12px;text-align:center;box-sizing:border-box">⬇ Descargar en '+(formato==='pdf'?'PDF':'Excel')+'</a>');
 }).api('ocInformePagos', SES, f.map(function(p){ return p.numero; }), tituloFiltro());
 }
 function pagoDe(num){
