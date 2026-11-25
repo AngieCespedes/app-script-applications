@@ -32,6 +32,12 @@ a{color:#0F3B5C}
 label{display:block;font-size:12.5px;font-weight:600;color:#3D4A54;margin-bottom:5px}
 input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d6dbe0;border-radius:7px;font-size:14px;font-family:inherit;background:#fff}
 textarea{height:70px;resize:vertical}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{background:#F4F6F8;color:#5A6670;text-align:left;font-size:10.5px;letter-spacing:.4px;padding:9px 12px;border-bottom:1px solid #E4E9ED;white-space:nowrap}
+.tbl td{padding:9px 12px;border-bottom:1px solid #EEF1F4;vertical-align:top}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl .num{text-align:right}
+.mini{font-size:11px;color:#8A94A0;margin-top:2px}
 .g{margin-bottom:12px}
 .row{display:flex;gap:12px;flex-wrap:wrap}
 .row>div{flex:1;min-width:150px}
@@ -171,7 +177,7 @@ for(var i=0;i<ts.length;i++) ts[i].className = 'tab';
 if($('tab_'+id)) $('tab_'+id).className = 'tab on';
 if(id === 'nueva')         pantallaNueva();
 else if(id === 'usuarios') pantallaUsuarios();
-else if(id === 'pagos')    pantallaPagos('todos');
+else if(id === 'pagos')    pantallaPagos();
 else                       cargarLista(id);
 }
 /* ================= GUÍAS ================= */
@@ -691,14 +697,52 @@ abrirModal('Listo', '<div class="caja cok">Su contraseña quedó cambiada.</div>
 }).api('ocCambiarMiContrasena', SES, $('pA').value, $('pN').value);
 }
 /* ================= PAGOS ================= */
-var PAGOS = [], PFILTRO = 'todos', PTIPOS = ['PROVEEDOR','NOMINA','PSE'], PENVIO = null;
-function pantallaPagos(filtro){
-PFILTRO = filtro || 'todos';
+var PAGOS = [], PTIPOS = ['PROVEEDOR','NOMINA','PSE'], PENVIO = null, PRES = null, PPUEDE = false;
+var PF = { estado:'todos', mes:'', tipo:'', q:'' };
+var MESES = ['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function pantallaPagos(){
 $('wrap').innerHTML = '<div class="cargando">Cargando los pagos…</div>';
 google.script.run.withSuccessHandler(function(r){
 if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude cargar los pagos.')+'</div>'; return; }
-PAGOS = r.filas; PTIPOS = r.tipos || PTIPOS;
-var s = r.resumen;
+PAGOS = r.filas; PRES = r.resumen; PTIPOS = r.tipos || PTIPOS; PPUEDE = !!r.puedePagar;
+pintarPagos();
+}).api('ocPagos', SES, 'todos');
+}
+function mesDe(f){ var p = String(f||'').split('/'); return p.length===3 ? p[1]+'/'+p[2] : ''; }
+function mesNombre(m){ var p = m.split('/'); return (MESES[Number(p[0])]||m)+' '+p[1]; }
+function mesesDePagos(){
+var vistos = {}, lista = [];
+for(var i=0;i<PAGOS.length;i++){ var m = mesDe(PAGOS[i].fecha); if(m && !vistos[m]){ vistos[m]=1; lista.push(m); } }
+lista.sort(function(a,b){ var x=a.split('/'), y=b.split('/'); return (y[1]+y[0]) > (x[1]+x[0]) ? 1 : -1; });
+return lista;
+}
+function tercerosDePagos(){
+var vistos = {}, lista = [];
+for(var i=0;i<PAGOS.length;i++){ var t = PAGOS[i].proveedor; if(t && !vistos[t]){ vistos[t]=1; lista.push(t); } }
+lista.sort();
+return lista;
+}
+function pagosFiltrados(){
+var q = PF.q.toLowerCase();
+return PAGOS.filter(function(p){
+if(PF.estado==='incompletos' && p.completo) return false;
+if(PF.estado==='nosalio'     && !p.noSalio) return false;
+if(PF.estado==='sinaviso'    && !(p.tipo==='PROVEEDOR' && p.soporte && !p.aviso)) return false;
+if(PF.mes  && mesDe(p.fecha) !== PF.mes)  return false;
+if(PF.tipo && p.tipo !== PF.tipo) return false;
+if(q && (p.proveedor+' '+p.nit+' '+p.numero+' '+p.observa+' '+p.orden+' '+p.banco).toLowerCase().indexOf(q) < 0) return false;
+return true;
+});
+}
+function pintarPagos(){
+var s = PRES;
+var ops = function(lista, sel, todos){
+return '<option value="">'+todos+'</option>'+lista.map(function(x){
+return '<option value="'+esc(x[0])+'"'+(sel===x[0]?' selected':'')+'>'+esc(x[1])+'</option>'; }).join('');
+};
+var mes = mesesDePagos().map(function(m){ return [m, mesNombre(m)]; });
+var ter = tercerosDePagos().map(function(t){ return [t, t]; });
+var tip = PTIPOS.map(function(t){ return [t, t]; });
 var h = pintarGuia('pagos')+
 '<div class="kpis">'+
 kpi(s.total,'pagos registrados')+
@@ -708,43 +752,83 @@ kpi(s.noSalieron,'no salieron del banco', s.noSalieron? '#B00020':'')+
 kpi(s.sinAviso,'sin mandarle el soporte', s.sinAviso? '#8A6D1F':'')+
 '</div>';
 if(s.noSalieron>0) h += '<div class="caja cno" style="margin-bottom:14px"><b>'+pesos(s.valorNoSalio)+'</b> está registrado aquí pero no aparece en el extracto del banco. Revise cada uno antes de darlo por pagado.</div>';
-h += '<div class="card" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">'+
-filtroPago('todos','Todos',s.total)+
-filtroPago('incompletos','Falta completar',s.incompletos)+
-filtroPago('nosalio','No salieron del banco',s.noSalieron)+
-filtroPago('sinaviso','Sin mandar el soporte',s.sinAviso)+
+h += '<div class="card">'+
+'<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">'+
+chipPago('todos','Todos',s.total)+
+chipPago('incompletos','Falta completar',s.incompletos)+
+chipPago('nosalio','No salieron del banco',s.noSalieron)+
+chipPago('sinaviso','Sin mandar el soporte',s.sinAviso)+
 '<span style="flex:1"></span>'+
-(r.puedePagar? '<button class="btn" onclick="pantallaNuevoPago()">+ Registrar un pago</button>':'')+
-'</div>';
-if(!r.filas.length) h += '<div class="card"><div class="vacio">Nada por aquí. 👍</div></div>';
-else for(var i=0;i<r.filas.length;i++) h += tarjetaPago(r.filas[i]);
-$('wrap').innerHTML = h + '<div style="height:24px"></div>';
-}).api('ocPagos', SES, PFILTRO);
-}
-function filtroPago(id,txt,n){
-return '<span class="lnk" style="padding:5px 11px;border-radius:13px;border:1px solid '+(PFILTRO===id?'#16394F':'#D7DDE2')+
-';background:'+(PFILTRO===id?'#16394F':'#fff')+';color:'+(PFILTRO===id?'#fff':'#5A6670')+
-';font-size:12.5px" onclick="pantallaPagos(\''+id+'\')">'+esc(txt)+' ('+n+')</span>';
-}
-function tarjetaPago(p){
-var borde = p.noSalio? '#F3B5B5' : (p.completo? '#E4E9ED' : '#EBD9A8');
-var sello = p.noSalio? '<span class="pill" style="background:#FDECEC;color:#B00020">NO SALIÓ DEL BANCO</span>' :
-(p.completo? '' : '<span class="pill" style="background:#FFF4D6;color:#8A6D1F">FALTA COMPLETAR</span>');
-return '<div class="card" style="border-color:'+borde+'">'+
-'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between">'+
-'<div><b style="font-size:15px">Pago N° '+esc(p.numero)+'</b> · '+esc(p.fecha)+
-'<div style="font-size:13px;color:#5A6670;margin-top:2px">'+esc(p.proveedor||'(sin nombre)')+(p.nit? ' · NIT '+esc(p.nit):'')+'</div></div>'+
-'<div style="text-align:right"><b style="font-size:16px">'+pesos(p.valor)+'</b>'+
-'<div style="font-size:12px;color:#5A6670">'+esc(p.tipo)+(p.orden? ' · '+esc(p.orden):'')+'</div></div>'+
+(PPUEDE? '<button class="btn" onclick="pantallaNuevoPago()">+ Registrar un pago</button>':'')+
 '</div>'+
-(sello? '<div style="margin-top:8px">'+sello+'</div>':'')+
-(p.falta.length? '<div style="font-size:12.5px;color:#8A6D1F;margin-top:6px">Le falta: '+esc(p.falta.join(', '))+'</div>':'')+
-(p.aviso? '<div style="font-size:12px;color:#2E6B2E;margin-top:6px">Soporte enviado el '+esc(p.aviso)+'</div>':'')+
-'<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">'+
-(p.soporte? '<a class="btn sec" target="_blank" href="'+esc(p.soporte)+'">Ver soporte</a>':'')+
-'<button class="btn sec" onclick="verPago(\''+esc(p.numero)+'\')">'+(p.completo?'Editar':'Completar')+'</button>'+
-(p.soporte? '<button class="btn" onclick="verEnviar(\''+esc(p.numero)+'\')">Enviar soporte</button>':'')+
-'</div></div>';
+'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">'+
+'<div style="flex:1 1 150px;min-width:150px"><label style="font-size:11px;color:#5A6670">Mes</label>'+
+'<select id="fMes" onchange="filtrarPagos()">'+ops(mes,PF.mes,'Todos los meses')+'</select></div>'+
+'<div style="flex:2 1 230px;min-width:200px"><label style="font-size:11px;color:#5A6670">Tercero</label>'+
+'<select id="fTer" onchange="filtrarPagos()">'+ops(ter,PF.q,'Todos los terceros')+'</select></div>'+
+'<div style="flex:1 1 140px;min-width:130px"><label style="font-size:11px;color:#5A6670">Tipo</label>'+
+'<select id="fTipo" onchange="filtrarPagos()">'+ops(tip,PF.tipo,'Todos los tipos')+'</select></div>'+
+'<div style="flex:2 1 200px;min-width:180px"><label style="font-size:11px;color:#5A6670">Buscar</label>'+
+'<input id="fQ" value="'+esc(PF.q)+'" placeholder="nombre, NIT, factura, N° de pago…" oninput="filtrarPagos()"></div>'+
+'<button class="btn sec" style="height:40px" onclick="limpiarPagos()">Limpiar</button>'+
+'</div></div>'+
+'<div id="tablaPagos"></div>';
+$('wrap').innerHTML = h + '<div style="height:24px"></div>';
+pintarTablaPagos();
+}
+function chipPago(id,txt,n){
+var on = PF.estado===id;
+return '<span class="lnk" style="padding:5px 11px;border-radius:13px;border:1px solid '+(on?'#16394F':'#D7DDE2')+
+';background:'+(on?'#16394F':'#fff')+';color:'+(on?'#fff':'#5A6670')+
+';font-size:12.5px" onclick="estadoPago(\''+id+'\')">'+esc(txt)+' ('+n+')</span>';
+}
+function estadoPago(id){ PF.estado = id; pintarPagos(); }
+function limpiarPagos(){ PF = { estado:'todos', mes:'', tipo:'', q:'' }; pintarPagos(); }
+function filtrarPagos(){
+if($('fMes'))  PF.mes  = $('fMes').value;
+if($('fTipo')) PF.tipo = $('fTipo').value;
+var ter = $('fTer') ? $('fTer').value : '';
+if(ter) { PF.q = ter; if($('fQ')) $('fQ').value = ter; }
+else if($('fQ')) PF.q = $('fQ').value;
+pintarTablaPagos();
+}
+function pintarTablaPagos(){
+var f = pagosFiltrados(), total = 0;
+for(var i=0;i<f.length;i++) total += f[i].valor;
+var h = '<div class="card" style="padding:0;overflow:hidden">'+
+'<div style="padding:11px 16px;border-bottom:1px solid #E4E9ED;font-size:12.5px;color:#5A6670">'+
+'Mostrando <b style="color:#1F2933">'+f.length+'</b> de '+PAGOS.length+' pagos · <b style="color:#1F2933">'+pesos(total)+'</b></div>';
+if(!f.length) h += '<div class="vacio" style="padding:26px">Ningún pago cumple con ese filtro.</div>';
+else {
+h += '<div style="overflow-x:auto"><table class="tbl"><thead><tr>'+
+'<th>N°</th><th>FECHA</th><th>TERCERO</th><th>TIPO</th><th class="num">VALOR</th>'+
+'<th>COMPROBANTE</th><th>SOPORTE</th><th>ESTADO</th><th></th></tr></thead><tbody>'+
+f.map(filaPago).join('')+
+'</tbody></table></div>';
+}
+$('tablaPagos').innerHTML = h + '</div>';
+}
+function filaPago(p){
+var est = p.noSalio
+? '<span class="pill" style="background:#FDECEC;color:#B00020">NO SALIÓ</span>'
+: (p.completo
+   ? '<span class="pill" style="background:#EAF3EA;color:#2E6B2E">COMPLETO</span>'
+   : '<span class="pill" style="background:#FFF4D6;color:#8A6D1F">FALTA COMPLETAR</span>');
+return '<tr'+(p.noSalio? ' style="background:#FFF7F7"':(p.completo?'':' style="background:#FFFCF3"'))+'>'+
+'<td><b>'+esc(p.numero)+'</b></td>'+
+'<td style="white-space:nowrap">'+esc(p.fecha)+'</td>'+
+'<td>'+esc(p.proveedor||'(sin nombre)')+
+(p.nit? '<div class="mini">NIT '+esc(p.nit)+'</div>':'<div class="mini" style="color:#8A6D1F">sin identificación</div>')+
+(p.observa? '<div class="mini">'+esc(p.observa.substring(0,60))+'</div>':'')+'</td>'+
+'<td style="white-space:nowrap">'+esc(p.tipo)+(p.orden? '<div class="mini">'+esc(p.orden)+'</div>':'')+'</td>'+
+'<td class="num" style="white-space:nowrap"><b>'+pesos(p.valor)+'</b>'+(p.banco? '<div class="mini">'+esc(p.banco)+'</div>':'')+'</td>'+
+'<td>'+(p.comprobante? esc(p.comprobante) : '<span style="color:#8A6D1F">—</span>')+'</td>'+
+'<td>'+(p.soporte? '<a target="_blank" href="'+esc(p.soporte)+'">Ver</a>' : '<span style="color:#8A6D1F">—</span>')+'</td>'+
+'<td>'+est+(p.aviso? '<div class="mini" style="color:#2E6B2E">enviado</div>':'')+'</td>'+
+'<td style="white-space:nowrap">'+
+'<button class="btn sec" style="padding:5px 9px;font-size:12px" onclick="verPago(\''+esc(p.numero)+'\')">'+(p.completo?'Editar':'Completar')+'</button>'+
+(p.soporte? ' <button class="btn" style="padding:5px 9px;font-size:12px" onclick="verEnviar(\''+esc(p.numero)+'\')">Enviar</button>':'')+
+'</td></tr>';
 }
 function pagoDe(num){
 for(var i=0;i<PAGOS.length;i++) if(String(PAGOS[i].numero)===String(num)) return PAGOS[i];
@@ -775,7 +859,7 @@ $('pcBtn').disabled = true; $('pcBtn').textContent = 'Guardando…';
 leerArchivo($('pcArch'), function(arch){
 google.script.run.withSuccessHandler(function(r){
 if(!r.ok){ $('pcBtn').disabled=false; $('pcBtn').textContent='Guardar'; alert(r.mensaje); return; }
-cerrarModal(); pantallaPagos(PFILTRO);
+cerrarModal(); pantallaPagos();
 }).api('ocCompletarPago', SES, num, {
 nit: $('pcNit').value, proveedor: $('pcProv').value, tipo: $('pcTipo').value,
 comprobante: $('pcCE').value, banco: $('pcBanco').value,
@@ -806,7 +890,7 @@ leerArchivo($('npArch'), function(arch){
 google.script.run.withSuccessHandler(function(r){
 $('npBtn').disabled = false; $('npBtn').textContent = 'Registrar el pago';
 if(!r.ok){ alert(r.mensaje); return; }
-cerrarModal(); pantallaPagos(PFILTRO);
+cerrarModal(); pantallaPagos();
 }).api('ocPagoDirecto', SES, {
 fecha: $('npFecha').value, nit: $('npNit').value, proveedor: $('npProv').value,
 tipo: $('npTipo').value, valor: Number(limpio($('npValor').value)),
@@ -869,7 +953,7 @@ if(!r.ok){ alert(r.mensaje); return; }
 abrirModal('Soporte enviado',
 '<div class="caja cok">El correo salió para <b>'+esc(r.correo)+'</b> con el PDF adjunto.'+
 (r.produccion? '' : '<br><br>Como el sistema está en modo prueba, le llegó a usted y no al destinatario.')+'</div>'+
-'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();pantallaPagos(PFILTRO)">Cerrar</button>');
+'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();pantallaPagos()">Cerrar</button>');
 }).api('ocEnviarSoporte', SES, num, { correo: c, asunto: $('eAsunto').value, mensaje: $('eTexto').value });
 }
 function prepararWhatsapp(){
