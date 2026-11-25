@@ -771,6 +771,11 @@ chipPago('sinaviso','Sin mandar el soporte',s.sinAviso)+
 '<div style="flex:2 1 200px;min-width:180px"><label style="font-size:11px;color:#5A6670">Buscar</label>'+
 '<input id="fQ" value="'+esc(PF.q)+'" placeholder="nombre, NIT, factura, N° de pago…" oninput="filtrarPagos()"></div>'+
 '<button class="btn sec" style="height:40px" onclick="limpiarPagos()">Limpiar</button>'+
+'</div>'+
+'<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid #EEF1F4">'+
+'<span style="font-size:12.5px;color:#5A6670">Descargar lo que está viendo:</span>'+
+'<button class="btn sec" id="btnXls" onclick="bajarInforme(\'excel\')">Excel</button>'+
+'<button class="btn sec" id="btnPdf" onclick="bajarInforme(\'pdf\')">PDF</button>'+
 '</div></div>'+
 '<div id="tablaPagos"></div>';
 $('wrap').innerHTML = h + '<div style="height:24px"></div>';
@@ -829,6 +834,32 @@ return '<tr'+(p.noSalio? ' style="background:#FFF7F7"':(p.completo?'':' style="b
 '<button class="btn sec" style="padding:5px 9px;font-size:12px" onclick="verPago(\''+esc(p.numero)+'\')">'+(p.completo?'Editar':'Completar')+'</button>'+
 (p.soporte? ' <button class="btn" style="padding:5px 9px;font-size:12px" onclick="verEnviar(\''+esc(p.numero)+'\')">Enviar</button>':'')+
 '</td></tr>';
+}
+function tituloFiltro(){
+var t = [];
+if(PF.estado==='incompletos') t.push('Solo los que falta completar');
+if(PF.estado==='nosalio')     t.push('Solo los que no salieron del banco');
+if(PF.estado==='sinaviso')    t.push('Solo los que falta mandarle al proveedor');
+if(PF.mes)  t.push('Mes: '+mesNombre(PF.mes));
+if(PF.tipo) t.push('Tipo: '+PF.tipo);
+if(PF.q)    t.push('Búsqueda: '+PF.q);
+return t.length? t.join('  ·  ') : 'Todos los pagos';
+}
+function bajarInforme(formato){
+var f = pagosFiltrados();
+if(!f.length){ alert('No hay pagos en pantalla para descargar.'); return; }
+var b = $(formato==='pdf'?'btnPdf':'btnXls'), txt = b.textContent;
+b.disabled = true; b.textContent = 'Armando…';
+google.script.run.withSuccessHandler(function(r){
+b.disabled = false; b.textContent = txt;
+if(!r.ok){ alert(r.mensaje); return; }
+var url = formato==='pdf' ? r.pdf : r.excel;
+abrirModal('Informe listo',
+'<div class="caja cok"><b>'+r.n+' pagos</b> por <b>'+esc(r.totalTexto)+'</b>.<br>'+esc(tituloFiltro())+'</div>'+
+'<a class="btn" target="_blank" href="'+esc(url)+'" style="display:block;width:100%;margin-top:12px;text-align:center;box-sizing:border-box">⬇ Descargar en '+(formato==='pdf'?'PDF':'Excel')+'</a>'+
+'<a class="btn sec" target="_blank" href="'+esc(r.hoja)+'" style="display:block;width:100%;margin-top:8px;text-align:center;box-sizing:border-box">Abrirlo en Google Sheets</a>'+
+'<div style="font-size:12px;color:#5A6670;margin-top:10px">El informe queda guardado en la carpeta <b>INFORMES DE PAGOS</b> de la app. Cada descarga lo vuelve a armar sobre el mismo archivo, así no se llena el Drive.</div>');
+}).api('ocInformePagos', SES, f.map(function(p){ return p.numero; }), tituloFiltro());
 }
 function pagoDe(num){
 for(var i=0;i<PAGOS.length;i++) if(String(PAGOS[i].numero)===String(num)) return PAGOS[i];
