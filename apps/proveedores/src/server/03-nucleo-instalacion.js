@@ -43,7 +43,14 @@ var Instalacion_ = (function () {
 
 function menuInstalarApp() {
   var h = Instalacion_.instalar();
+  var migracion = '';
+  try {
+    migracion = gpMigrar_();
+  } catch (e) {
+    migracion = 'NO SE PUDO MIGRAR: ' + e.message;
+  }
   SpreadsheetApp.getUi().alert('Instalación', 'Configurados: ' + h.join(', ') + '.\nModo: ' + Config_.modo() +
+    (migracion ? '\n\nEstructura:\n' + migracion : '\n\nLa estructura ya estaba al día.') +
     '\n\nSi la app usaba activadores (formularios, horarios), créelos de nuevo desde su menú: no se copian con el libro.',
   SpreadsheetApp.getUi().ButtonSet.OK);
 }

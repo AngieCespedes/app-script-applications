@@ -113,14 +113,21 @@ function ocContextoDe_(u) {
     rol: u.rol,
     area: u.area,
     puede: {
-      solicitar: ocPuede_(u.rol, 'solicitar'),
-      aprobar:   ocPuede_(u.rol, 'aprobar'),
-      pagar:     ocPuede_(u.rol, 'pagar'),
-      facturar:  ocPuede_(u.rol, 'facturar'),
-      causar:    ocPuede_(u.rol, 'causar'),
-      vertodo:   ocPuede_(u.rol, 'vertodo'),
-      usuarios:  ocPuede_(u.rol, 'usuarios')
-    }
+      solicitar:    ocPuede_(u.rol, 'solicitar'),
+      aprobar:      ocPuede_(u.rol, 'aprobar'),
+      pagar:        ocPuede_(u.rol, 'pagar'),
+      facturar:     ocPuede_(u.rol, 'facturar'),
+      causar:       ocPuede_(u.rol, 'causar'),
+      almacen:      ocPuede_(u.rol, 'almacen'),
+      proveedores:  ocPuede_(u.rol, 'proveedores'),
+      verproveedor: ocPuede_(u.rol, 'verproveedor'),
+      verpagos:     ocPuede_(u.rol, 'verpagos'),
+      verequipo:    ocPuede_(u.rol, 'verequipo'),
+      informes:     ocPuede_(u.rol, 'informes'),
+      vertodo:      ocPuede_(u.rol, 'vertodo'),
+      usuarios:     ocPuede_(u.rol, 'usuarios')
+    },
+    videos: OC_VIDEOS.carpeta
   };
 }
 

@@ -38,6 +38,35 @@ textarea{height:70px;resize:vertical}
 .tbl tbody tr:last-child td{border-bottom:none}
 .tbl .num{text-align:right}
 .mini{font-size:11px;color:#8A94A0;margin-top:2px}
+/* --- gestor de proveedores, informes y boton de mejoras --- */
+.panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-bottom:13px}
+.cajita{background:#fff;border:1px solid #E4E9ED;border-left:4px solid #0F3B5C;border-radius:8px;padding:10px 12px}
+.cajita .n{font-size:22px;font-weight:700;line-height:1.1;color:#1a1a1a}
+.cajita .t{font-size:10.5px;color:#5A6670;text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+.cajita.malo{border-left-color:#B03A3A}.cajita.ojo{border-left-color:#C8862F}.cajita.bien{border-left-color:#1C6640}
+.barra{background:#fff;border:1px solid #E4E9ED;border-radius:8px;padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.barra input,.barra select{padding:7px 9px;border:1px solid #CFD118;border-color:#CFD6DC;border-radius:6px;font-family:inherit;font-size:13px}
+.chip{display:inline-block;padding:2px 8px;border-radius:11px;font-size:11px;font-weight:700;margin:1px 4px 1px 0;background:#ECEFF2;color:#53606B;white-space:nowrap}
+.chip.bien{background:#E2F4EA;color:#1C6640}.chip.malo{background:#FBE6E6;color:#8F2B2B}
+.chip.ojo{background:#FCF0DC;color:#7A5316}.chip.inf{background:#E4EEF6;color:#1B4E74}
+.rej{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.campo{margin-top:9px}
+.campo label{display:block;font-size:11.5px;color:#5A6670;margin-bottom:3px}
+.campo input,.campo textarea,.campo select{width:100%;padding:8px 9px;border:1px solid #CFD6DC;border-radius:6px;font-family:inherit;font-size:13px;box-sizing:border-box}
+.campo input.falta{border-color:#C8862F;background:#FFFBF3}
+.acc{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.hist{display:flex;gap:10px;border-top:1px solid #EEF1F4;padding:8px 0;font-size:13px}
+.hist .f{color:#5A6670;white-space:nowrap;min-width:90px;font-size:12px}
+.nota{background:#FDF6E8;border-left:4px solid #C8862F;padding:9px 12px;font-size:12.5px;border-radius:0 6px 6px 0;margin:9px 0;line-height:1.55}
+.pista{font-size:12px;color:#5A6670;margin-top:6px;line-height:1.55}
+.sub{font-size:12px;color:#5A6670}
+.btn.chico{padding:7px 12px;font-size:12.5px;font-weight:600}
+.btn.claro{background:#fff;color:#0F3B5C;border:1px solid #9FC0DA}
+.btn.wa{background:#1F7A4D}
+.btn.rojo{background:#B03A3A}
+.btnmejora{position:fixed;right:16px;bottom:16px;z-index:40;background:#B03A3A;color:#fff;border:0;border-radius:24px;
+padding:11px 17px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.btnmejora:hover{background:#C44848}
 .g{margin-bottom:12px}
 .row{display:flex;gap:12px;flex-wrap:wrap}
 .row>div{flex:1;min-width:150px}
@@ -141,26 +170,33 @@ $('app').innerHTML =
 '<div class="yo">'+esc(CTX.nombre)+' · '+esc(CTX.area)+'</div></div>'+
 '<div class="der">'+
 '<span class="pill inf">'+esc(CTX.rol)+'</span>'+
+'<a class="lnk" href="'+(CTX.videos||'#')+'" target="_blank">Cómo se usa (videos)</a>'+
 '<span class="lnk" onclick="verCambiarClave()">Cambiar mi contraseña</span>'+
 '<span class="lnk" onclick="salir()">Salir</span>'+
 '</div>'+
 '</div><div class="rayita"></div>'+
 '<div class="tabs" id="tabs"></div>'+
-'<div class="wrap" id="wrap"><div class="cargando">Un momento…</div></div>';
+'<div class="wrap" id="wrap"><div class="cargando">Un momento…</div></div>'+
+'<button class="btnmejora" onclick="verMejora()" title="Reportar una falla o proponer una mejora">'+
+'Algo falló o se me ocurre algo</button>';
 pintarTabs();
 }
 function listaTabs(){
 var t = [];
-if(CTX.puede.solicitar) t.push(['nueva','Nueva orden']);
-if(CTX.puede.aprobar)   t.push(['aprobar','Por aprobar']);
-if(CTX.puede.pagar)     t.push(['pagar','Por pagar']);
-if(CTX.puede.pagar)     t.push(['pagos','Pagos']);
-if(CTX.puede.facturar)  t.push(['facturar','Mercancía y factura']);
-if(CTX.puede.causar)    t.push(['causar','Por causar']);
+if(CTX.puede.solicitar)   t.push(['nueva','Nueva orden']);
+if(CTX.puede.aprobar)     t.push(['aprobar','Por aprobar']);
+if(CTX.puede.pagar)       t.push(['pagar','Por pagar']);
+if(CTX.puede.pagar)       t.push(['pagos','Pagos']);
+else if(CTX.puede.verpagos) t.push(['pagos','Pagos (solo ver)']);
+if(CTX.puede.facturar)    t.push(['facturar','Mercancía y factura']);
+if(CTX.puede.causar)      t.push(['causar','Por causar']);
+if(CTX.puede.proveedores) t.push(['gestor','Gestor de proveedores']);
+else if(CTX.puede.verproveedor) t.push(['gestor','Proveedores']);
+if(CTX.puede.proveedores) t.push(['gestion','Mi gestión']);
 t.push(['legalizar','Sin legalizar']);
-if(CTX.puede.solicitar) t.push(['mias','Mis órdenes']);
-t.push(['todas', CTX.puede.vertodo ? 'Todas' : 'Las de mi área']);
-if(CTX.puede.usuarios)  t.push(['usuarios','Usuarios']);
+if(CTX.puede.solicitar)   t.push(['mias','Mis órdenes']);
+t.push(['todas', CTX.puede.vertodo ? 'Todas' : (CTX.puede.verequipo ? 'Las de mi área' : 'Las mías')]);
+if(CTX.puede.usuarios)    t.push(['usuarios','Usuarios']);
 return t;
 }
 function pintarTabs(){
@@ -178,6 +214,8 @@ if($('tab_'+id)) $('tab_'+id).className = 'tab on';
 if(id === 'nueva')         pantallaNueva();
 else if(id === 'usuarios') pantallaUsuarios();
 else if(id === 'pagos')    pantallaPagos();
+else if(id === 'gestor')   pantallaGestor();
+else if(id === 'gestion')  pantallaGestion();
 else                       cargarLista(id);
 }
 /* ================= GUÍAS ================= */
@@ -235,7 +273,14 @@ usuarios: ['Usted administra quién entra',
 'El <b>rol</b> define qué puede hacer. El <b>área</b> define qué alcanza a ver.',
 'Para cambiarle la contraseña a alguien, escríbala encima y guarde.',
 'Para quitarle el acceso, póngalo en <b>INACTIVO</b>. Sus órdenes quedan con su nombre.'],
-'Ingeniería y Sistema de gestión solo ven las órdenes de su propia área. Administración, Compras, Gerencia, Tesorería y Contabilidad ven todas.']
+'Cada quien ve solo las órdenes que pidió. El líder de un área ve todas las de su área. Compras, Gerencia, Tesorería y Contabilidad ven todas.'],
+gestor: ['Qué hace usted aquí',
+['La tabla muestra, por proveedor, <b>qué tiene y qué le falta</b>: chulo verde si ya está, «Completar» si no.',
+'Abra el proveedor y verá sus <b>documentos</b>, para ver o descargar, y la <b>clave del PDF</b> de la certificación bancaria.',
+'Complete el <b>contacto</b> y la <b>negociación</b>: cupo, plazo, descuento y asesor. Lo que deje vacío no borra lo que ya estaba.',
+'Pídale lo que falta por <b>correo o WhatsApp</b>. El mensaje sale armado con lo que le falta a ese proveedor.',
+'Marque <b>«llegó bien»</b> o <b>«no abre, volver a pedir»</b> cuando responda.'],
+'Si a los 5 días no contesta, el proveedor se pone en rojo. En «Mi gestión» ve cuántas solicitudes ha hecho y en cuánto le contestan.']
 };
 function pintarGuia(id){
 var g = GUIAS[id];
@@ -1095,6 +1140,406 @@ var cel = limpio($('waCel').value);
 if(!cel) return;
 google.script.run.api('ocMarcarWhatsapp', SES, PENVIO.pago.numero, cel);
 }
+/* ================= GESTOR DE PROVEEDORES ================= */
+var PROV = [], PRESU = null, GPUEDE = false, GABIERTO = null;
+var GF = { falta:'', seguimiento:'', texto:'' };
+var GREQ = ['RUT','Cert. bancaria','Asesor comercial','Negociacion','Correo estado de cuenta'];
+
+function pantallaGestor(){
+$('wrap').innerHTML = '<div class="cargando">Cargando los proveedores…</div>';
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude cargar los proveedores.')+'</div>'; return; }
+PROV = r.filas; PRESU = r.resumen; GPUEDE = !!r.puedeEditar; GABIERTO = null;
+pintarGestor();
+}).api('ocProveedores', SES, GF);
+}
+function filtrarGestor(k, v){ GF[k] = v; pantallaGestor(); }
+function pintarGestor(){
+var r = PRESU || {};
+var h = guia('gestor');
+h += '<div class="panel">'
+  + cajita(r.total||0, 'Proveedores', '')
+  + cajita(r.sinRut||0, 'Sin RUT al día', 'malo')
+  + cajita(r.sinCert||0, 'Sin cert. bancaria', 'malo')
+  + cajita(r.sinNegociacion||0, 'Sin negociación', 'ojo')
+  + cajita(r.vencidas||0, 'Solicitudes vencidas', 'malo')
+  + cajita(r.completos||0, 'Completos', 'bien')
+  + '</div>';
+
+h += '<div class="barra">'
+  + '<input id="gq" placeholder="Buscar por NIT o nombre" value="'+esc(GF.texto)+'" oninput="GF.texto=this.value">'
+  + '<button class="btn chico" onclick="pantallaGestor()">Buscar</button>'
+  + '<select onchange="filtrarGestor(\'falta\', this.value)"><option value="">Qué le falta: todos</option>'
+  + GREQ.map(function(x){ return '<option'+(GF.falta===x?' selected':'')+'>'+esc(x)+'</option>'; }).join('')
+  + '</select>'
+  + '<select onchange="filtrarGestor(\'seguimiento\', this.value)"><option value="">Seguimiento: todos</option>'
+  + ['Sin pedir','Pedido, esperando','Vencida','Llego malo','Contesto'].map(function(x){
+      return '<option'+(GF.seguimiento===x?' selected':'')+'>'+esc(x)+'</option>'; }).join('')
+  + '</select>'
+  + '<button class="btn claro chico" onclick="GF={falta:\'\',seguimiento:\'\',texto:\'\'};pantallaGestor()">Limpiar</button>'
+  + botonInforme('proveedores')
+  + '</div>';
+
+if(!PROV.length){ $('wrap').innerHTML = h + '<div class="vacio">Ningún proveedor con ese filtro.</div>'; return; }
+
+h += '<table class="tbl"><colgroup><col style="width:8%"><col style="width:20%"><col style="width:8%">'
+  + '<col style="width:10%"><col style="width:8%"><col style="width:9%"><col style="width:8%">'
+  + '<col style="width:10%"><col style="width:9%"><col style="width:10%"></colgroup>'
+  + '<tr><th>NIT</th><th>Proveedor</th><th>Nos factura</th><th class="num">Compras 2026</th>'
+  + '<th>RUT</th><th>Cert. banc.</th><th>Asesor</th><th>Negociación</th>'
+  + '<th>Correo edo. cta</th><th>Edos. cuenta</th></tr>';
+PROV.forEach(function(p){
+var s = p.seguimiento || {};
+h += '<tr><td>'+esc(p.nit)+'</td>'
+  + '<td><a href="#" onclick="verProveedor(\''+esc(p.nit)+'\');return false">'+esc(p.nombre)+'</a>'
+  + (s.estado && s.estado !== 'Sin pedir'
+      ? '<div style="margin-top:3px">'+chipSeg(s)+'</div>' : '')
+  + '</td>'
+  + '<td>'+(p.esDocSoporte ? '<span class="chip ojo">Doc. soporte</span>' : '<span class="chip inf">Factura elec.</span>')+'</td>'
+  + '<td class="num">'+pesos(p.compras)+'</td>'
+  + celdaReq(p,'RUT') + celdaReq(p,'Cert. bancaria') + celdaReq(p,'Asesor comercial')
+  + celdaReq(p,'Negociacion') + celdaReq(p,'Correo estado de cuenta')
+  + '<td><a href="#" onclick="verProveedor(\''+esc(p.nit)+'\');return false">'
+  + '<span class="chip ojo">Ver</span></a></td></tr>';
+});
+$('wrap').innerHTML = h + '</table>';
+}
+function celdaReq(p, req){
+var falta = (p.faltantes||[]).indexOf(req) >= 0;
+if(!falta) return '<td style="color:#1C6640;font-weight:700;font-size:16px">&#10003;</td>';
+return '<td><a href="#" onclick="verProveedor(\''+esc(p.nit)+'\');return false">'
+  + '<span class="chip ojo">Completar</span></a></td>';
+}
+function chipSeg(s){
+var c = s.estado === 'Contesto' ? 'bien' : (s.estado === 'Pedido, esperando' ? 'ojo' : 'malo');
+return '<span class="chip '+c+'">'+esc(s.estado)
+  + (s.estado === 'Sin pedir' || s.estado === 'Contesto' ? '' : ' · '+s.dias+' días')+'</span>';
+}
+
+function verProveedor(nit){
+$('wrap').innerHTML = '<div class="cargando">Abriendo…</div>';
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude abrir el proveedor.')+'</div>'; return; }
+GABIERTO = r; pintarProveedor();
+}).api('ocProveedor', SES, nit);
+}
+function pintarProveedor(){
+var p = GABIERTO.proveedor, s = p.seguimiento || {}, puede = GABIERTO.puedeEditar;
+var h = '<p><a href="#" onclick="pantallaGestor();return false">← Volver a la lista</a></p>';
+h += '<div class="caja"><h2>'+esc(p.nombre)+'</h2>'
+  + '<div class="sub">NIT '+esc(p.nit)+' · compras 2026 '+pesos(p.compras)+' · última compra '+esc(p.ultCompra||'—')+'</div>'
+  + '<div style="margin-top:7px">'+chipSeg(s)
+  + (p.faltantes||[]).map(function(x){ return '<span class="chip ojo">Falta '+esc(x)+'</span>'; }).join('')+'</div>';
+
+/* --- tributario --- */
+var resp = String(p.responsabilidades||'').split('\n').filter(function(x){ return x.trim(); });
+var gran = resp.join(' ').toLowerCase().indexOf('gran contribuyente') >= 0;
+var iva = resp.join(' ').toLowerCase().indexOf('ventas') >= 0;
+h += '<h3>Cómo nos factura y qué responsabilidades tiene</h3>'
+  + '<div>'+(p.esDocSoporte ? '<span class="chip ojo">DOCUMENTO SOPORTE</span>' : '<span class="chip inf">FACTURADOR ELECTRÓNICO</span>')
+  + (p.regimen ? '<span class="chip">'+esc(p.regimen)+'</span>' : '')
+  + (gran ? '<span class="chip inf">Gran contribuyente</span>' : '')+'</div>';
+h += '<div class="nota">' + (p.esDocSoporte
+  ? '<b>No nos factura.</b> Social Solar le genera el documento soporte. La orden hay que marcarla así.'
+  : '<b>Nos factura electrónicamente.</b> La factura llega a la DIAN y hay que radicarla.')
+  + (resp.length ? (iva ? ' Es responsable de IVA, así que la factura debe traer IVA discriminado.'
+                        : ' No es responsable de IVA: si la factura trae IVA, hay que devolverla.')
+                 : ' <b>Todavía no tenemos el RUT</b>, así que no se sabe qué retención aplica. Pídaselo antes de pasar la orden.')
+  + (gran ? ' Es gran contribuyente, lo que cambia qué retenciones se le practican.' : '')
+  + '</div>';
+if(resp.length) h += '<div>'+resp.map(function(x){ return '<span class="chip">'+esc(x.trim())+'</span>'; }).join('')+'</div>';
+
+/* --- documentos --- */
+h += '<h3>Documentos que ha enviado el proveedor</h3><table class="tbl">'
+  + '<tr><th>Documento o dato</th><th>Estado</th><th>Detalle</th><th>Acciones</th></tr>'
+  + filaDoc('RUT 2026', p.rutArchivo, p.fechaRegistro ? 'Recibido el '+esc(p.fechaRegistro) : '', puede)
+  + filaDoc('Certificación bancaria', p.certArchivo,
+      (p.cuentaInscrita?esc(p.cuentaInscrita)+' · ':'')+(p.clavePdf?'clave del PDF: '+esc(p.clavePdf):''), puede)
+  + filaDato('Ciudad y régimen', p.ciudad, p.ciudad ? esc(p.ciudad)+' · '+esc(p.regimen) : '', puede)
+  + '</table>';
+if(puede) h += '<div class="acc">'+botonSol('documentos','Enviar enlace de registro')+'</div>';
+
+/* --- contacto y negociacion --- */
+h += '<h3>Contacto</h3><div class="rej">'
+  + campo('celular','Celular',p.celular,puede) + campo('fijo','Teléfono fijo',p.fijo,puede)
+  + campo('correoFac','Correo de facturas',p.correoFac,puede)
+  + campo('correoEdoCta','Correo para estados de cuenta',p.correoEdoCta,puede)
+  + campo('correoSoportes','Correo para soportes de pago',p.correoSoportes,puede)
+  + campo('asesor','Asesor comercial',p.asesor,puede)
+  + campo('celAsesor','Celular del asesor',p.celAsesor,puede)
+  + campo('correoAsesor','Correo del asesor',p.correoAsesor,puede)
+  + '</div>';
+h += '<h3>Negociación</h3><div class="rej">'
+  + campo('creditoHoy','¿Nos factura a crédito hoy?',p.creditoHoy,puede)
+  + campo('tenemosCupo','¿Tenemos cupo de crédito?',p.tenemosCupo,puede)
+  + campo('cupo','Cupo aprobado',p.cupo,puede) + campo('plazo','Plazo (días)',p.plazo,puede)
+  + campo('dcto','¿Descuento por pronto pago?',p.dcto,puede)
+  + campo('pctDcto','% descuento',p.pctDcto,puede) + campo('diasDcto','Días para el descuento',p.diasDcto,puede)
+  + campo('correoCredito','Correo para solicitar crédito',p.correoCredito,puede)
+  + '</div>'
+  + '<div class="campo"><label>Documentos que exigen para dar crédito</label>'
+  + '<input id="g_docsCredito" value="'+esc(p.docsCredito)+'"'+(puede?'':' readonly')+'></div>'
+  + '<div class="campo"><label>Observaciones</label>'
+  + '<input id="g_observaciones" value="'+esc(p.observaciones)+'"'+(puede?'':' readonly')+'></div>';
+if(puede) h += '<div class="acc"><button class="btn" onclick="guardarProveedor()">Guardar lo que completé</button></div>';
+else h += '<div class="nota">Su rol consulta esta ficha, pero no la modifica.</div>';
+
+/* --- pedirle al proveedor --- */
+if(puede){
+h += '<h3>Pedirle al proveedor</h3>'
+  + '<div class="acc">'+botonSol('documentos','Pedir documentos')+'</div>'
+  + '<div class="acc">'+botonSol('estadocuenta','Pedir estado de cuenta')+'</div>'
+  + '<div class="acc">'+botonSol('credito','Solicitar cupo de crédito')+'</div>'
+  + '<div class="acc">'+botonSol('otra','Otra solicitud')+'</div>'
+  + '<div class="pista">«Otra solicitud» es para lo que no cabe en los botones: las referencias de una '
+  + 'factura, una ficha técnica, un certificado de garantía, una reposición.</div>';
+}
+
+/* --- estados de cuenta --- */
+h += '<h3>Estados de cuenta recibidos</h3>';
+var E = GABIERTO.estados || [];
+if(!E.length) h += '<div class="pista">Todavía no se le ha pedido ninguno.</div>';
+else {
+h += '<table class="tbl"><tr><th>Corte</th><th>Recibido</th><th class="num">Según ellos</th>'
+  + '<th class="num">Según nosotros</th><th>Diferencia</th><th>Archivo</th></tr>';
+E.forEach(function(e){
+h += '<tr><td>'+esc(e.corte)+'</td><td>'+esc(e.recibido)+'</td>'
+  + '<td class="num">'+pesos(e.saldoProveedor)+'</td><td class="num">'+pesos(e.saldoNuestro)+'</td>'
+  + '<td><span class="chip '+(Number(e.diferencia)===0?'bien':'malo')+'">'
+  + (Number(e.diferencia)===0?'Cuadró':pesos(Math.abs(e.diferencia)))+'</span></td>'
+  + '<td>'+(e.archivo ? '<button class="btn claro chico" onclick="abrirArchivo(\''+esc(e.archivo)+'\')">Ver o descargar</button>' : '—')+'</td></tr>';
+});
+h += '</table>';
+}
+if(puede) h += '<div class="acc"><button class="btn claro" onclick="verSubirEstado()">Subir el que ya llegó</button></div>';
+
+/* --- trazabilidad --- */
+h += '<h3>Trazabilidad — qué se le ha pedido</h3>';
+var S = GABIERTO.solicitudes || [];
+if(!S.length) h += '<div class="pista">Todavía no se le ha pedido nada.</div>';
+else S.forEach(function(x){
+var venc = String(x.estado).toUpperCase() !== 'CONTESTADA' && Number(x.dias) >= 5;
+h += '<div class="hist"><div class="f">'+esc(x.fecha)+'</div><div>'
+  + '<b>'+esc(x.medio)+'</b> — '+esc(x.quePidio)
+  + '<div class="sub">a '+esc(x.destino)+' · '+esc(x.estado)+' · <b>'
+  + (String(x.estado).toUpperCase()==='CONTESTADA' ? 'contestó en '+x.dias+' días' : 'hace '+x.dias+' días')+'</b></div>'
+  + (venc ? '<div class="nota">Lleva <b>'+x.dias+' días</b> sin contestar. Hay que volver a pedírselo.</div>' : '')
+  + (puede && String(x.estado).toUpperCase()!=='CONTESTADA'
+      ? '<div class="acc"><button class="btn claro chico" onclick="cerrarSol('+x.numero+',\'BIEN\')">Llegó bien</button>'
+        + '<button class="btn claro chico" onclick="cerrarSol('+x.numero+',\'MALO\')">No abre, volver a pedir</button></div>' : '')
+  + '</div></div>';
+});
+$('wrap').innerHTML = h + '</div>';
+}
+function campo(k, etiqueta, valor, puede){
+var vacio = (valor === '' || valor === null || valor === undefined);
+return '<div class="campo"><label>'+esc(etiqueta)+'</label>'
+  + '<input id="g_'+k+'" value="'+esc(valor)+'"'+(puede?'':' readonly')
+  + (vacio && puede ? ' class="falta"' : '')+'></div>';
+}
+function filaDoc(nombre, enlace, detalle, puede){
+if(enlace) return '<tr><td>'+esc(nombre)+'</td><td><span class="chip bien">&#10003; Recibido</span></td>'
+  + '<td>'+detalle+'</td><td><button class="btn claro chico" onclick="abrirArchivo(\''+esc(enlace)+'\')">Ver o descargar</button></td></tr>';
+return '<tr><td>'+esc(nombre)+'</td><td><span class="chip ojo">Completar</span></td><td>—</td>'
+  + '<td>'+(puede?'<button class="btn chico" onclick="verSolicitud(\'documentos\',\'CORREO\')">Enviar enlace</button>':'—')+'</td></tr>';
+}
+function filaDato(nombre, valor, detalle, puede){
+if(valor) return '<tr><td>'+esc(nombre)+'</td><td><span class="chip bien">&#10003; Está</span></td>'
+  + '<td>'+detalle+'</td><td>—</td></tr>';
+return '<tr><td>'+esc(nombre)+'</td><td><span class="chip ojo">Completar</span></td><td>—</td>'
+  + '<td>'+(puede?'<button class="btn chico" onclick="verSolicitud(\'documentos\',\'CORREO\')">Enviar enlace</button>':'—')+'</td></tr>';
+}
+function botonSol(tipo, etiqueta){
+return '<button class="btn" onclick="verSolicitud(\''+tipo+'\',\'CORREO\')">📧 '+esc(etiqueta)+'</button>'
+  + '<button class="btn wa" onclick="verSolicitud(\''+tipo+'\',\'WHATSAPP\')">💬 '+esc(etiqueta)+'</button>';
+}
+function guardarProveedor(){
+var d = {};
+['celular','fijo','correoFac','correoEdoCta','correoSoportes','asesor','celAsesor','correoAsesor',
+ 'creditoHoy','tenemosCupo','cupo','plazo','dcto','pctDcto','diasDcto','correoCredito',
+ 'docsCredito','observaciones'].forEach(function(k){ if($('g_'+k)) d[k] = $('g_'+k).value; });
+google.script.run.withSuccessHandler(function(r){
+aviso(r && r.ok, (r&&r.mensaje)||'No se pudo guardar.');
+if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
+}).api('ocGuardarProveedor', SES, GABIERTO.proveedor.nit, d);
+}
+
+/* ---- armar y enviar una solicitud ---- */
+var SOL = null;
+function verSolicitud(tipo, medio){
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ aviso(false, (r&&r.mensaje)||'No pude armar la solicitud.'); return; }
+SOL = r;
+var falta = !r.destino;
+var h = '';
+if(falta) h += '<div class="nota">No hay '+(medio==='CORREO'?'correo':'celular')
+  + ' registrado para esto. Complételo en la ficha y vuelva a intentar.</div>';
+h += '<div class="campo"><label>'+(medio==='CORREO'?'Para':'Celular')+'</label>'
+  + '<input id="s_destino" value="'+esc(r.destino)+'"></div>';
+if(medio === 'CORREO') h += '<div class="campo"><label>Asunto</label><input id="s_asunto" value="'+esc(r.asunto)+'"></div>';
+h += '<div class="campo"><label>¿Qué está pidiendo? — así queda en la trazabilidad</label>'
+  + '<input id="s_que" value="'+esc(r.quePidio)+'" placeholder="Ej: Referencias de la factura FE-4471"></div>'
+  + '<div class="campo"><label>Mensaje — puede editarlo antes de enviar</label>'
+  + '<textarea id="s_texto" rows="12">'+esc(r.texto)+'</textarea></div>'
+  + '<div class="nota">Al enviar queda registrado: fecha, medio, a quién y qué se pidió. '
+  + 'Si a los 5 días no contesta, el proveedor se pone en rojo para volver a pedirle.</div>'
+  + '<div class="acc"><button class="btn"'+(falta?' disabled':'')+' onclick="enviarSolicitud(\''+medio+'\')">'
+  + (medio==='CORREO'?'Enviar el correo y registrar':'Registrar y abrir WhatsApp')+'</button>'
+  + '<button class="btn claro" onclick="cerrarModal()">Cancelar</button></div>';
+abrirModal((medio==='CORREO'?'📧 Correo a ':'💬 WhatsApp a ')+r.proveedor.nombre, h);
+}).api('ocArmarSolicitud', SES, GABIERTO.proveedor.nit, tipo, medio);
+}
+function enviarSolicitud(medio){
+var d = { nit: GABIERTO.proveedor.nit, medio: medio,
+          destino: $('s_destino').value, quePidio: $('s_que').value,
+          texto: $('s_texto').value, asunto: $('s_asunto') ? $('s_asunto').value : '' };
+if(!d.quePidio.trim()){ aviso(false,'Escriba qué está pidiendo.'); return; }
+google.script.run.withSuccessHandler(function(r){
+cerrarModal();
+aviso(r && r.ok, (r&&r.mensaje)||'No se pudo registrar.');
+if(r && r.ok){
+if(medio === 'WHATSAPP'){
+var n = String(d.destino).replace(/\D/g,''); if(n.length===10) n = '57'+n;
+window.open('https://wa.me/'+n+'?text='+encodeURIComponent(d.texto), '_blank');
+}
+verProveedor(GABIERTO.proveedor.nit);
+}
+}).api('ocEnviarSolicitud', SES, d);
+}
+function cerrarSol(numero, resultado){
+var nota = resultado === 'MALO' ? 'El archivo no se pudo abrir' : '';
+google.script.run.withSuccessHandler(function(r){
+aviso(r && r.ok, (r&&r.mensaje)||'No se pudo cerrar.');
+if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
+}).api('ocCerrarSolicitud', SES, numero, resultado, nota);
+}
+function verSubirEstado(){
+abrirModal('Subir un estado de cuenta',
+'<div class="campo"><label>Corte (dd/mm/aaaa)</label><input id="e_corte" placeholder="31/10/2026"></div>'
++ '<div class="campo"><label>Saldo que reporta el proveedor</label><input id="e_saldo" placeholder="0"></div>'
++ '<div class="campo"><label>Archivo del estado de cuenta</label><input type="file" id="e_arch" accept=".pdf,.xlsx,.xls,image/*"></div>'
++ '<div class="campo"><label>Observaciones</label><input id="e_obs"></div>'
++ '<div class="nota">El saldo que escriba se compara contra el saldo nuestro, que sale de las órdenes: '
++ 'lo facturado menos lo pagado. Si no coincide, queda la diferencia a la vista.</div>'
++ '<div class="acc"><button class="btn" onclick="subirEstado()">Guardar</button>'
++ '<button class="btn claro" onclick="cerrarModal()">Cancelar</button></div>');
+}
+function subirEstado(){
+var d = { nit: GABIERTO.proveedor.nit, corte: $('e_corte').value,
+          saldoProveedor: $('e_saldo').value, observaciones: $('e_obs').value };
+conArchivo($('e_arch'), function(archivo){
+google.script.run.withSuccessHandler(function(r){
+cerrarModal();
+aviso(r && r.ok, (r&&r.mensaje)||'No se pudo guardar.');
+if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
+}).api('ocSubirEstadoCuenta', SES, d, archivo);
+});
+}
+function abrirArchivo(enlace){
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ aviso(false,(r&&r.mensaje)||'No se pudo abrir.'); return; }
+abrirModal(r.nombre,
+'<div class="acc"><a class="btn" href="'+r.ver+'" target="_blank">Ver</a>'
++ '<a class="btn claro" href="'+r.descargar+'" target="_blank">Descargar</a></div>'
++ '<div class="pista">Se abre solo este archivo, en modo lectura. La carpeta no se comparte.</div>');
+}).api('ocEnlaceArchivo', SES, enlace);
+}
+
+/* ================= MI GESTIÓN ================= */
+function pantallaGestion(){
+$('wrap').innerHTML = '<div class="cargando">Calculando…</div>';
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude calcular.')+'</div>'; return; }
+var h = '<div class="panel">'
+  + cajita(r.enviadas, 'Solicitudes enviadas', '')
+  + cajita(r.contestadas, 'Contestadas', 'bien')
+  + cajita(r.vencidas, 'Sin contestar +5 días', 'malo')
+  + cajita(r.promedio + ' d', 'Días promedio en contestar', '')
+  + '</div>'
+  + '<div class="nota">Una solicitud cuenta como <b>contestada</b> cuando la información ya quedó '
+  + 'completa en el sistema, no cuando el proveedor dijo que la iba a mandar. Así el indicador mide '
+  + 'resultado y no correos enviados.</div>'
+  + '<div class="barra">'+botonInforme('solicitudes')+'</div>';
+if(!r.pendientes.length) h += '<div class="vacio">No hay solicitudes vencidas.</div>';
+else {
+h += '<h3>Hay que volver a pedir</h3><table class="tbl">'
+  + '<tr><th>Proveedor</th><th>Qué se pidió</th><th>Se pidió el</th><th>Días</th><th></th></tr>';
+r.pendientes.forEach(function(s){
+h += '<tr><td>'+esc(s.proveedor)+'</td><td>'+esc(s.quePidio)+'</td><td>'+esc(s.fecha)+'</td>'
+  + '<td><span class="chip malo">'+s.dias+'</span></td>'
+  + '<td><button class="btn chico" onclick="verProveedor(\''+esc(s.nit)+'\')">Volver a pedir</button></td></tr>';
+});
+h += '</table>';
+}
+$('wrap').innerHTML = h;
+}).api('ocGestionSolicitudes', SES);
+}
+
+/* ================= INFORMES ================= */
+function botonInforme(que){
+return '<button class="btn claro chico" onclick="bajarInformeRol(\''+que+'\')">Descargar Excel o PDF</button>';
+}
+function bajarInformeRol(que){
+abrirModal('Preparando el informe', '<div class="cargando">Un momento…</div>');
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ cerrarModal(); aviso(false,(r&&r.mensaje)||'No se pudo armar el informe.'); return; }
+abrirModal(r.titulo,
+'<div class="pista">'+r.n+' registros. Es lo mismo que usted ve en pantalla, nada más.</div>'
++ '<div class="acc"><a class="btn" href="'+r.excel+'" target="_blank">Descargar en Excel</a>'
++ '<a class="btn claro" href="'+r.pdf+'" target="_blank">Descargar en PDF</a></div>');
+}).api('ocInforme', SES, que, { filtro: TAB });
+}
+
+/* ================= BOTÓN ROJO: MEJORAS Y FALLAS ================= */
+function verMejora(){
+abrirModal('Reportar una falla o proponer una mejora',
+'<div class="campo"><label>¿Qué es?</label><select id="m_tipo">'
++ '<option value="FALLA">Algo falló</option>'
++ '<option value="MEJORA">Se me ocurre una mejora</option>'
++ '<option value="DUDA">Tengo una duda</option></select></div>'
++ '<div class="campo"><label>En una línea: qué pasó o qué mejoraría</label><input id="m_titulo"></div>'
++ '<div class="campo"><label>Cuente qué estaba haciendo justo antes: en qué pestaña estaba y qué botón oprimió</label>'
++ '<textarea id="m_detalle" rows="5"></textarea></div>'
++ '<div class="campo"><label>Pantallazo — sin la imagen casi nunca se puede saber qué pasó</label>'
++ '<input type="file" id="m_img" accept="image/*"></div>'
++ '<div class="acc"><button class="btn" onclick="enviarMejora()">Enviar</button>'
++ '<button class="btn claro" onclick="cerrarModal()">Cancelar</button></div>');
+}
+function enviarMejora(){
+var d = { tipo: $('m_tipo').value, titulo: $('m_titulo').value,
+          detalle: $('m_detalle').value, pantalla: TAB };
+conArchivo($('m_img'), function(img){
+google.script.run.withSuccessHandler(function(r){
+cerrarModal();
+aviso(r && r.ok, (r&&r.mensaje)||'No se pudo enviar.');
+}).api('mjReportar', SES, d, img);
+});
+}
+
+/* ---- utilidades compartidas ---- */
+function conArchivo(input, seguir){
+if(!input || !input.files || !input.files.length){ seguir(null); return; }
+var f = input.files[0];
+var lector = new FileReader();
+lector.onload = function(){
+seguir({ nombre: f.name, tipo: f.type, datos: lector.result.split(',')[1] });
+};
+lector.readAsDataURL(f);
+}
+function cajita(n, t, c){
+return '<div class="cajita '+(c||'')+'"><div class="n">'+esc(n)+'</div><div class="t">'+esc(t)+'</div></div>';
+}
+function aviso(ok, mensaje){
+abrirModal(ok ? 'Listo' : 'Ojo', '<p>'+esc(mensaje)+'</p>'
+  + '<div class="acc"><button class="btn" onclick="cerrarModal()">Entendido</button></div>');
+}
+function guia(id){
+var g = GUIAS[id];
+if(!g) return '';
+return '<div class="guia"><b>'+esc(g[0])+'</b><ol><li>'+g[1].join('</li><li>')+'</li></ol>'
+  + (g[2] ? '<div class="pista">'+g[2]+'</div>' : '')+'</div>';
+}
+
 /* ================= MODAL ================= */
 function abrirModal(titulo, html){
 $('modal').innerHTML =
