@@ -99,7 +99,7 @@ function ocTextoSoporte_(p, corto) {
     return 'Buen dia. SOCIAL SOLAR S.A.S. le informa que el ' + p.fecha +
            ' se realizo el pago por ' + ocPesos_(p.valor) +
            (p.comprobante ? ', comprobante de egreso ' + p.comprobante : '') +
-           '. El soporte va adjunto al correo. Gracias.';
+           '. Le adjuntamos el soporte del pago. Gracias.';
   }
   return 'Buen dia, ' + quien + '.\n\n' +
          'SOCIAL SOLAR S.A.S., NIT 901.128.826-6, les informa que se realizo el siguiente pago:\n\n' +

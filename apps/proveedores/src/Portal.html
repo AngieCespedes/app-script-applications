@@ -983,7 +983,7 @@ abrirModal('Enviar el soporte del pago N° '+p.numero,
 '<label>Mensaje</label><textarea id="eTexto" style="height:190px">'+esc(r.mensaje)+'</textarea>'+
 '<div class="caja cok" style="margin-top:10px;font-size:12.5px">El PDF va <b>adjunto</b> al correo. El proveedor no necesita acceso a Drive. El maestro de proveedores <b>no se modifica</b>.</div>'+
 '<button class="btn" id="eBtn" style="width:100%;margin-top:12px" onclick="enviarSoporte(\''+esc(p.numero)+'\')">Enviar el correo con el soporte</button>'+
-'<button class="btn sec" style="width:100%;margin-top:8px" onclick="prepararWhatsapp()">Avisar por WhatsApp (solo texto, sin adjunto)</button>');
+'<button class="btn sec" style="width:100%;margin-top:8px" onclick="prepararWhatsapp()">Mandar por WhatsApp (el PDF se adjunta a mano)</button>');
 }
 function cambioDestino(){
 var prov = $('dProv').checked;
@@ -1015,20 +1015,29 @@ var interno = $('dInt') && $('dInt').checked;
 var lista = (PENVIO.contactos.celulares)||[];
 var cel = (!interno && lista.length) ? lista[0].celular : '';
 WA_INT = interno;
-abrirModal('Avisar por WhatsApp — pago N° '+PENVIO.pago.numero,
-'<div class="caja cav" style="margin-bottom:12px">WhatsApp solo deja mandar texto: <b>el PDF no se puede adjuntar</b>. '+
-(interno? 'Como es alguien de la empresa, al mensaje se le agrega el enlace del soporte en Drive.'
-        : 'Al proveedor va solo el aviso, sin enlace: el soporte se le manda por correo.')+'</div>'+
+abrirModal('Mandar el soporte por WhatsApp — pago N° '+PENVIO.pago.numero,
+'<div class="caja cav" style="margin-bottom:12px">WhatsApp no deja adjuntar el PDF desde aquí: solo recibe texto. '+
+'Por eso va en dos pasos — primero se baja el soporte al computador y después se abre el chat para adjuntarlo a mano. '+
+'<b>Si lo que quiere es que el PDF salga solo, use el correo</b>, que sí lo manda adjunto.</div>'+
+'<div style="font-weight:bold;font-size:13px;margin-bottom:6px">1. Baje el soporte</div>'+
+'<a class="btn sec" target="_blank" style="width:100%;display:block;text-align:center;box-sizing:border-box" href="'+esc(descargaDrive(PENVIO.pago.soporte))+'">⬇ Bajar el PDF del pago N° '+esc(PENVIO.pago.numero)+'</a>'+
+'<div style="font-weight:bold;font-size:13px;margin:16px 0 6px">2. Abra el chat y adjúntelo</div>'+
 '<label>Celular (solo números, sin el 57)</label><input id="waCel" value="'+esc(cel)+'" inputmode="numeric" oninput="armarWa()">'+
-'<label>Mensaje</label><textarea id="waTxt" style="height:150px" oninput="armarWa()">'+esc(textoWa(interno))+'</textarea>'+
-'<a class="btn" id="waLink" target="_blank" style="width:100%;margin-top:14px;display:block;text-align:center;box-sizing:border-box" href="#" onclick="marcarWa()">💬 Abrir WhatsApp</a>');
+'<label>Mensaje</label><textarea id="waTxt" style="height:130px" oninput="armarWa()">'+esc(textoWa())+'</textarea>'+
+'<a class="btn" id="waLink" target="_blank" style="width:100%;margin-top:14px;display:block;text-align:center;box-sizing:border-box" href="#" onclick="marcarWa()">💬 Abrir WhatsApp</a>'+
+'<div style="font-size:12px;color:#5A6670;margin-top:10px">Ya en el chat, oprima el clip y adjunte el PDF que acabó de bajar. El mensaje le queda escrito.</div>');
 armarWa();
 }
 var WA_INT = false;
-function textoWa(interno){
-var t = PENVIO.whatsapp;
-if(interno && PENVIO.pago.soporte) t += '\n\nSoporte: ' + PENVIO.pago.soporte;
-return t;
+/* Enlace de descarga directa del soporte, para poder adjuntarlo a mano. */
+function descargaDrive(link){
+var m = String(link||'').match(/[-\w]{25,}/);
+return m ? 'https://drive.google.com/uc?export=download&id='+m[0] : String(link||'#');
+}
+/* En el mensaje no va ningún enlace: el proveedor no tiene acceso a Drive
+   y el soporte se adjunta a mano o se manda por correo. */
+function textoWa(){
+return PENVIO.whatsapp;
 }
 function armarWa(){
 var cel = limpio($('waCel').value);
