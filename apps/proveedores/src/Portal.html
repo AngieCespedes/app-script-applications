@@ -377,7 +377,13 @@ $('prov').innerHTML = '<div class="caja cav">Buscando…</div>';
 google.script.run.withSuccessHandler(function(r){
 PROV = r;
 if(!r.encontrado){
-$('prov').innerHTML = '<div class="caja cno"><b>No está en la base de proveedores.</b><br>'+esc(r.mensaje)+'</div>';
+$('prov').innerHTML = '<div class="caja cav"><span class="pill bad">PROVEEDOR NUEVO</span> '+
+'<b>Este NIT no está en la base de datos.</b><br>'+
+'Puede crear la orden igual. Escriba el nombre del proveedor y compras le pedirá el RUT y la certificación bancaria.'+
+'<div class="campo" style="margin-top:9px"><label>Nombre o razón social del proveedor</label>'+
+'<input id="provNuevo" type="text" placeholder="Como aparece en la cotización"></div>'+
+'<div class="pista">Tesorería no le podrá pagar hasta que el proveedor envíe sus documentos.</div></div>';
+recalcular();
 return;
 }
 if(r.vigente){
@@ -427,7 +433,9 @@ fr.onload = function(){ cb({ nombre: f.name, tipo: f.type, datos: fr.result.spli
 fr.readAsDataURL(f);
 }
 function enviarOrden(){
-if(!PROV || !PROV.encontrado){ alert('Primero busque el proveedor por el NIT.'); return; }
+if(!PROV || !PROV.ok){ alert('Primero busque el proveedor por el NIT.'); return; }
+if(!PROV.encontrado && !($('provNuevo') && $('provNuevo').value.trim())){
+alert('Escriba el nombre del proveedor nuevo para poder crear la orden.'); return; }
 if(!$('desc').value.trim()){ alert('Escriba qué se va a comprar.'); return; }
 if(!$('centro').value || $('centro').value === '__NUEVO__'){
 alert('Escoja el centro de costo. Si el proyecto no está en la lista, créelo con «+ Crear un centro de costo nuevo».');
@@ -444,7 +452,9 @@ abrirModal('Orden creada',
 (r.aviso? '<div class="caja cno">'+esc(r.aviso)+'</div>':'')+
 '<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();irA(\'nueva\')">Crear otra</button>');
 }).api('ocCrearOrden', SES, {
-nit: PROV.nit, descripcion: $('desc').value, centro: $('centro').value,
+nit: PROV.nit,
+proveedor: (!PROV.encontrado && $('provNuevo')) ? $('provNuevo').value.trim() : '',
+descripcion: $('desc').value, centro: $('centro').value,
 area: $('area').value, concepto: $('concepto').value,
 base: Number(limpio($('base').value)), iva: Number(limpio($('iva').value)),
 declarante: $('decl').checked, fechaNecesidad: $('fnec').value,

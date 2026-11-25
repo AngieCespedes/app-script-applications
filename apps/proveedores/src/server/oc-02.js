@@ -64,7 +64,21 @@ function ocBuscarProveedor_(ses, nit) {
     };
   }
   return { ok: true, encontrado: false, nit: n,
-           mensaje: 'Ese NIT no esta en la base de proveedores. Hay que registrarlo primero con el link de proveedores.' };
+           mensaje: 'Ese NIT no esta en la base de proveedores. Puede crear la orden igual, escribiendo el nombre del proveedor.' };
+}
+
+/* Que se le avisa a quien crea la orden, segun como este el proveedor. */
+function ocAvisoProveedor_(prov, nuevo) {
+  if (nuevo) {
+    return 'La orden quedo creada, pero este proveedor no esta en la base de datos: ' +
+           'faltan el RUT y la certificacion bancaria. Compras se los va a pedir. ' +
+           'Tesoreria no debe pagarle hasta que lleguen.';
+  }
+  if (!prov.vigente) {
+    return 'Ojo: el proveedor tiene ' + prov.estadoRut +
+           '. La orden se creo, pero no se puede pagar hasta que actualice sus documentos.';
+  }
+  return '';
 }
 
 /* ---------- retenciones ---------- */
@@ -172,8 +186,15 @@ function ocCrearOrden_(ses, d, cotizacion) {
   if (!u || !ocPuede_(u, 'solicitar')) return { ok: false, mensaje: 'No tiene permiso para crear ordenes.' };
 
   var prov = ocBuscarProveedor_(ses, d.nit);
-  if (!prov.encontrado) return { ok: false, mensaje: prov.mensaje };
+  if (!prov.ok) return prov;
   if (!String(d.centro || '').trim()) return { ok: false, mensaje: 'Escoja el centro de costo.' };
+
+  /* El proveedor puede no estar en el maestro todavia: se deja crear la orden,
+     pero queda marcada para que compras le pida los documentos. */
+  var nuevo = !prov.encontrado;
+  if (nuevo && !String(d.proveedor || '').trim()) {
+    return { ok: false, mensaje: 'Ese NIT no esta en la base. Escriba el nombre del proveedor para poder crear la orden.' };
+  }
 
   var lock = LockService.getScriptLock();
   try { lock.waitLock(20000); } catch (e) { return { ok: false, mensaje: 'El sistema esta ocupado, intente otra vez.' }; }
@@ -194,6 +215,10 @@ function ocCrearOrden_(ses, d, cotizacion) {
     hoja.getRange(fila, 6).setValue(d.area || u.area);
     hoja.getRange(fila, 7).setValue(d.centro || '');
     hoja.getRange(fila, 8).setValue("'" + prov.nit);
+    if (nuevo) {
+      hoja.getRange(fila, 9).setValue(String(d.proveedor).trim());
+      hoja.getRange(fila, 10).setValue(OC_PROV_SIN_REGISTRAR);
+    }
     hoja.getRange(fila, 11).setValue(d.descripcion || '');
     hoja.getRange(fila, 12).setValue(d.concepto || '');
     hoja.getRange(fila, 13).setValue(ocNum_(d.base));
@@ -203,11 +228,15 @@ function ocCrearOrden_(ses, d, cotizacion) {
     hoja.getRange(fila, 18).setValue(r.reteica);
     hoja.getRange(fila, 20).setValue(link);
     hoja.getRange(fila, 21).setValue('SOLICITADA');
-    if (d.observaciones) hoja.getRange(fila, 40).setValue(d.observaciones);
+    var nota = String(d.observaciones || '');
+    if (nuevo) {
+      nota = (nota ? nota + ' | ' : '') + OC_PROV_SIN_REGISTRAR +
+             '. Nombre escrito por ' + u.nombre + ' al crear la orden.';
+    }
+    if (nota) hoja.getRange(fila, 40).setValue(nota);
 
     SpreadsheetApp.flush();
-    return { ok: true, numero: numero, neto: r.neto, aviso: prov.vigente ? '' :
-      'Ojo: el proveedor tiene ' + prov.estadoRut + '. La orden se creo, pero no se puede pagar hasta que actualice sus documentos.' };
+    return { ok: true, numero: numero, neto: r.neto, aviso: ocAvisoProveedor_(prov, nuevo) };
   } finally {
     lock.releaseLock();
   }
