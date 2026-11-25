@@ -67,6 +67,19 @@ var OC_PERMISOS = {
   'SOLICITANTE':       ['solicitar', 'informes']
 };
 
+/**
+ * Contrasenas a la vista.
+ * true  = se quedan tal como esten escritas en la hoja 07, para poder
+ *         consultarlas. Es lo que pidio la duena.
+ * false = la primera vez que la persona entra, su clave se cifra sola y ya
+ *         nadie la puede leer, ni siquiera la duena.
+ *
+ * OJO: con esto en true, cualquiera que pueda abrir el libro lee todas las
+ * claves y puede entrar como cualquier persona. Mientras el libro siga
+ * compartido «con el enlace», eso incluye a cualquiera que tenga el enlace.
+ */
+var OC_CLAVES_A_LA_VISTA = true;
+
 /* Hoja 07: columnas. A..J venian de antes; de la K en adelante son nuevas.
    OC_USU_PERM es donde empieza una columna por permiso. */
 var OC_USU_CED   = 11;   /* CEDULA */

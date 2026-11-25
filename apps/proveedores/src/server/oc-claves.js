@@ -39,7 +39,12 @@ var ClavesOC_ = (function () {
       ok = igual_(hash_(String(escrita), partes[1]), partes[2]);
     } else {
       ok = g !== '' && igual_(g, String(escrita));
-      if (ok && fila) ocHoja_(OC_H_USU).getRange(fila, 3).setValue(cifrar(escrita));
+      /* Con OC_CLAVES_A_LA_VISTA en true la clave se queda como esta en la hoja,
+         para que la duena la pueda consultar. Si se pone en false, la primera
+         vez que la persona entre con ella se cifra sola. */
+      if (ok && fila && !OC_CLAVES_A_LA_VISTA) {
+        ocHoja_(OC_H_USU).getRange(fila, 3).setValue(cifrar(escrita));
+      }
     }
     if (!ok) cache.put(llave, String(Number(cache.get(llave) || 0) + 1), 900);
     return ok;

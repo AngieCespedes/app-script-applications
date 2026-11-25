@@ -188,7 +188,7 @@ function ocCambiarMiContrasena_(ses, actual, nueva) {
   if (!ClavesOC_.verificar(hoja.getRange(u.fila, 3).getValue(), String(actual), u.usuario, u.fila)) {
     return { ok: false, mensaje: 'La contrasena actual no coincide.' };
   }
-  hoja.getRange(u.fila, 3).setValue(ClavesOC_.cifrar(String(nueva)));
+  hoja.getRange(u.fila, 3).setValue(OC_CLAVES_A_LA_VISTA ? String(nueva) : ClavesOC_.cifrar(String(nueva)));
   return { ok: true, ses: u.usuario + OC_SEP + String(nueva) };
 }
 
@@ -247,7 +247,9 @@ function ocNuevaClave_(ses, usuario) {
   if (!fila) return { ok: false, mensaje: 'No encontre ese usuario.' };
 
   var clave = ocClaveAlAzar_();
-  t.hoja.getRange(fila, 3).setValue(ClavesOC_.cifrar(clave));
+  /* Con las claves a la vista se escribe tal cual, para que la duena la pueda
+     volver a consultar en la hoja 07. Si no, se guarda cifrada. */
+  t.hoja.getRange(fila, 3).setValue(OC_CLAVES_A_LA_VISTA ? clave : ClavesOC_.cifrar(clave));
   SpreadsheetApp.flush();
 
   return { ok: true, usuario: busca, clave: clave,
@@ -338,7 +340,7 @@ function ocGuardarUsuario_(ses, d) {
     if (renombra) ocRenombrarEnOrdenes_(ant, usu);
     if (String(d.contrasena || '') !== '') {
       if (String(d.contrasena).length < 6) return { ok: false, mensaje: 'La contrasena debe tener al menos 6 caracteres.' };
-      hoja.getRange(fila, 3).setValue(ClavesOC_.cifrar(String(d.contrasena)));
+      hoja.getRange(fila, 3).setValue(OC_CLAVES_A_LA_VISTA ? String(d.contrasena) : ClavesOC_.cifrar(String(d.contrasena)));
     }
     hoja.getRange(fila, 4).setValue(String(d.rol).toUpperCase());
     hoja.getRange(fila, 5).setValue(String(d.area || ''));
