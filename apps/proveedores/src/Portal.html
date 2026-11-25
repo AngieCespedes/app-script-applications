@@ -1006,7 +1006,9 @@ if(!r.ok){ alert(r.mensaje); return; }
 abrirModal('Soporte enviado',
 '<div class="caja cok">El correo salió para <b>'+esc(r.correo)+'</b> con el PDF adjunto.'+
 (r.produccion? '' : '<br><br>Como el sistema está en modo prueba, le llegó a usted y no al destinatario.')+'</div>'+
-'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();pantallaPagos()">Cerrar</button>');
+'<div style="font-size:12.5px;color:#5A6670;margin-top:12px">¿Le avisa también por WhatsApp? El PDF ya le fue por correo; por el chat va solo el aviso.</div>'+
+'<button class="btn sec" style="width:100%;margin-top:8px" onclick="prepararWhatsapp()">💬 Avisarle por WhatsApp</button>'+
+'<button class="btn" style="width:100%;margin-top:8px" onclick="cerrarModal();pantallaPagos()">Cerrar</button>');
 }).api('ocEnviarSoporte', SES, num, { correo: c, asunto: $('eAsunto').value, mensaje: $('eTexto').value });
 }
 function prepararWhatsapp(){
@@ -1016,17 +1018,20 @@ var lista = (PENVIO.contactos.celulares)||[];
 var cel = (!interno && lista.length) ? lista[0].celular : '';
 WA_INT = interno;
 abrirModal('Mandar el soporte por WhatsApp — pago N° '+PENVIO.pago.numero,
-'<div class="caja cav" style="margin-bottom:12px">WhatsApp no deja adjuntar el PDF desde aquí: solo recibe texto. '+
-'Por eso va en dos pasos — primero se baja el soporte al computador y después se abre el chat para adjuntarlo a mano. '+
-'<b>Si lo que quiere es que el PDF salga solo, use el correo</b>, que sí lo manda adjunto.</div>'+
-'<div style="font-weight:bold;font-size:13px;margin-bottom:6px">1. Baje el soporte</div>'+
-'<a class="btn sec" target="_blank" style="width:100%;display:block;text-align:center;box-sizing:border-box" href="'+esc(descargaDrive(PENVIO.pago.soporte))+'">⬇ Bajar el PDF del pago N° '+esc(PENVIO.pago.numero)+'</a>'+
-'<div style="font-weight:bold;font-size:13px;margin:16px 0 6px">2. Abra el chat y adjúntelo</div>'+
+'<div class="caja cav" style="margin-bottom:12px">El botón baja el PDF y abre el chat al tiempo: usted solo lo arrastra o lo adjunta con el clip. '+
+'WhatsApp no recibe archivos desde fuera del API de Meta, así que el adjunto tiene que ponerlo usted. '+
+'<b>Si quiere que el PDF salga solo, use el correo.</b></div>'+
 '<label>Celular (solo números, sin el 57)</label><input id="waCel" value="'+esc(cel)+'" inputmode="numeric" oninput="armarWa()">'+
 '<label>Mensaje</label><textarea id="waTxt" style="height:130px" oninput="armarWa()">'+esc(textoWa())+'</textarea>'+
-'<a class="btn" id="waLink" target="_blank" style="width:100%;margin-top:14px;display:block;text-align:center;box-sizing:border-box" href="#" onclick="marcarWa()">💬 Abrir WhatsApp</a>'+
-'<div style="font-size:12px;color:#5A6670;margin-top:10px">Ya en el chat, oprima el clip y adjunte el PDF que acabó de bajar. El mensaje le queda escrito.</div>');
+'<a class="btn" id="waLink" target="_blank" style="width:100%;margin-top:14px;display:block;text-align:center;box-sizing:border-box" href="#" onclick="bajarYabrirWa()">⬇💬 Bajar el PDF y abrir WhatsApp</a>'+
+'<a class="btn sec" id="waPdf" target="_blank" style="width:100%;margin-top:8px;display:block;text-align:center;box-sizing:border-box" href="'+esc(descargaDrive(PENVIO.pago.soporte))+'">Solo bajar el PDF</a>'+
+'<div style="font-size:12px;color:#5A6670;margin-top:10px">Si el navegador bloquea una de las dos ventanas, use el botón de abajo para bajar el PDF y vuelva a oprimir el de arriba.</div>');
 armarWa();
+}
+/* Un solo clic: dispara la descarga del PDF y deja que el enlace abra el chat. */
+function bajarYabrirWa(){
+marcarWa();
+try { window.open(descargaDrive(PENVIO.pago.soporte), '_blank'); } catch(e) {}
 }
 var WA_INT = false;
 /* Enlace de descarga directa del soporte, para poder adjuntarlo a mano. */
