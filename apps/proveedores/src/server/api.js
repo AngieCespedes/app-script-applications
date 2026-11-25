@@ -18,6 +18,7 @@ var Rutas_ = {
   ocEntrar: { tipo: 'web', fn: function () { return ocEntrar_.apply(null, arguments); } },
   ocMarcarWhatsapp: { tipo: 'web', fn: function () { return ocMarcarWhatsapp_.apply(null, arguments); } },
   ocGuardarUsuario: { tipo: 'web', fn: function () { return ocGuardarUsuario_.apply(null, arguments); } },
+  ocInformePagos: { tipo: 'web', fn: function () { return ocInformePagos_.apply(null, arguments); } },
   ocListas: { tipo: 'web', fn: function () { return ocListas_.apply(null, arguments); } },
   ocMensajeProveedor: { tipo: 'web', fn: function () { return ocMensajeProveedor_.apply(null, arguments); } },
   ocOrdenes: { tipo: 'web', fn: function () { return ocOrdenes_.apply(null, arguments); } },
