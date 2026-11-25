@@ -148,6 +148,7 @@ var t = [];
 if(CTX.puede.solicitar) t.push(['nueva','Nueva orden']);
 if(CTX.puede.aprobar)   t.push(['aprobar','Por aprobar']);
 if(CTX.puede.pagar)     t.push(['pagar','Por pagar']);
+if(CTX.puede.pagar)     t.push(['pagos','Pagos']);
 if(CTX.puede.facturar)  t.push(['facturar','Mercancía y factura']);
 if(CTX.puede.causar)    t.push(['causar','Por causar']);
 t.push(['legalizar','Sin legalizar']);
@@ -170,6 +171,7 @@ for(var i=0;i<ts.length;i++) ts[i].className = 'tab';
 if($('tab_'+id)) $('tab_'+id).className = 'tab on';
 if(id === 'nueva')         pantallaNueva();
 else if(id === 'usuarios') pantallaUsuarios();
+else if(id === 'pagos')    pantallaPagos('todos');
 else                       cargarLista(id);
 }
 /* ================= GUÍAS ================= */
@@ -215,6 +217,13 @@ mias: ['Las órdenes que usted pidió',
 'Usted no puede editar nada de aquí: es solo consulta.'],
 ''],
 todas: ['', [], ''],
+pagos: ['Todos los pagos de la empresa, en una sola hoja',
+['Aquí están <b>todos</b> los pagos: los que salen de una orden de compra y los que no (nómina, PSE, impuestos).',
+'Cada pago se sube <b>uno por uno, por tercero</b>, con su propio soporte. Así queda la trazabilidad y se le puede mandar al proveedor.',
+'Los que dicen <b>Falta completar</b> están incompletos: les hace falta la identificación, el comprobante de egreso o el soporte. Ábralos y complételos.',
+'Los que dicen <b>No salió del banco</b> aparecieron registrados aquí pero no están en el extracto. Hay que rehacer el pago o corregir el registro.',
+'Con <b>Enviar soporte</b> le llega al proveedor el PDF adjunto al correo. No necesita acceso a Drive.'],
+'La validación contra el extracto se actualiza desde la hoja, con el botón «Actualizar y revisar pagos» del menú Social Solar.'],
 usuarios: ['Usted administra quién entra',
 ['Para agregar a alguien: nombre, usuario, contraseña, rol y área.',
 'El <b>rol</b> define qué puede hacer. El <b>área</b> define qué alcanza a ver.',
@@ -680,6 +689,218 @@ SES = r.ses;
 cerrarModal();
 abrirModal('Listo', '<div class="caja cok">Su contraseña quedó cambiada.</div>');
 }).api('ocCambiarMiContrasena', SES, $('pA').value, $('pN').value);
+}
+/* ================= PAGOS ================= */
+var PAGOS = [], PFILTRO = 'todos', PTIPOS = ['PROVEEDOR','NOMINA','PSE'], PENVIO = null;
+function pantallaPagos(filtro){
+PFILTRO = filtro || 'todos';
+$('wrap').innerHTML = '<div class="cargando">Cargando los pagos…</div>';
+google.script.run.withSuccessHandler(function(r){
+if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude cargar los pagos.')+'</div>'; return; }
+PAGOS = r.filas; PTIPOS = r.tipos || PTIPOS;
+var s = r.resumen;
+var h = pintarGuia('pagos')+
+'<div class="kpis">'+
+kpi(s.total,'pagos registrados')+
+kpiTxt(pesos(s.valor),'valor total')+
+kpi(s.incompletos,'falta completar', s.incompletos? '#8A6D1F':'')+
+kpi(s.noSalieron,'no salieron del banco', s.noSalieron? '#B00020':'')+
+kpi(s.sinAviso,'sin mandarle el soporte', s.sinAviso? '#8A6D1F':'')+
+'</div>';
+if(s.noSalieron>0) h += '<div class="caja cno" style="margin-bottom:14px"><b>'+pesos(s.valorNoSalio)+'</b> está registrado aquí pero no aparece en el extracto del banco. Revise cada uno antes de darlo por pagado.</div>';
+h += '<div class="card" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">'+
+filtroPago('todos','Todos',s.total)+
+filtroPago('incompletos','Falta completar',s.incompletos)+
+filtroPago('nosalio','No salieron del banco',s.noSalieron)+
+filtroPago('sinaviso','Sin mandar el soporte',s.sinAviso)+
+'<span style="flex:1"></span>'+
+(r.puedePagar? '<button class="btn" onclick="pantallaNuevoPago()">+ Registrar un pago</button>':'')+
+'</div>';
+if(!r.filas.length) h += '<div class="card"><div class="vacio">Nada por aquí. 👍</div></div>';
+else for(var i=0;i<r.filas.length;i++) h += tarjetaPago(r.filas[i]);
+$('wrap').innerHTML = h + '<div style="height:24px"></div>';
+}).api('ocPagos', SES, PFILTRO);
+}
+function filtroPago(id,txt,n){
+return '<span class="lnk" style="padding:5px 11px;border-radius:13px;border:1px solid '+(PFILTRO===id?'#16394F':'#D7DDE2')+
+';background:'+(PFILTRO===id?'#16394F':'#fff')+';color:'+(PFILTRO===id?'#fff':'#5A6670')+
+';font-size:12.5px" onclick="pantallaPagos(\''+id+'\')">'+esc(txt)+' ('+n+')</span>';
+}
+function tarjetaPago(p){
+var borde = p.noSalio? '#F3B5B5' : (p.completo? '#E4E9ED' : '#EBD9A8');
+var sello = p.noSalio? '<span class="pill" style="background:#FDECEC;color:#B00020">NO SALIÓ DEL BANCO</span>' :
+(p.completo? '' : '<span class="pill" style="background:#FFF4D6;color:#8A6D1F">FALTA COMPLETAR</span>');
+return '<div class="card" style="border-color:'+borde+'">'+
+'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between">'+
+'<div><b style="font-size:15px">Pago N° '+esc(p.numero)+'</b> · '+esc(p.fecha)+
+'<div style="font-size:13px;color:#5A6670;margin-top:2px">'+esc(p.proveedor||'(sin nombre)')+(p.nit? ' · NIT '+esc(p.nit):'')+'</div></div>'+
+'<div style="text-align:right"><b style="font-size:16px">'+pesos(p.valor)+'</b>'+
+'<div style="font-size:12px;color:#5A6670">'+esc(p.tipo)+(p.orden? ' · '+esc(p.orden):'')+'</div></div>'+
+'</div>'+
+(sello? '<div style="margin-top:8px">'+sello+'</div>':'')+
+(p.falta.length? '<div style="font-size:12.5px;color:#8A6D1F;margin-top:6px">Le falta: '+esc(p.falta.join(', '))+'</div>':'')+
+(p.aviso? '<div style="font-size:12px;color:#2E6B2E;margin-top:6px">Soporte enviado el '+esc(p.aviso)+'</div>':'')+
+'<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">'+
+(p.soporte? '<a class="btn sec" target="_blank" href="'+esc(p.soporte)+'">Ver soporte</a>':'')+
+'<button class="btn sec" onclick="verPago(\''+esc(p.numero)+'\')">'+(p.completo?'Editar':'Completar')+'</button>'+
+(p.soporte? '<button class="btn" onclick="verEnviar(\''+esc(p.numero)+'\')">Enviar soporte</button>':'')+
+'</div></div>';
+}
+function pagoDe(num){
+for(var i=0;i<PAGOS.length;i++) if(String(PAGOS[i].numero)===String(num)) return PAGOS[i];
+return null;
+}
+function selTipo(sel){
+return PTIPOS.map(function(t){ return '<option'+(t===sel?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
+}
+/* ---- completar o editar ---- */
+function verPago(num){
+var p = pagoDe(num);
+if(!p) return;
+abrirModal('Pago N° '+p.numero,
+'<div class="caja cav" style="margin-bottom:12px">Lo que dice el soporte del banco no se edita: <b>'+esc(p.fecha)+'</b> · <b>'+pesos(p.valor)+'</b>'+(p.banco? ' · '+esc(p.banco):'')+'</div>'+
+(p.observa? '<div style="font-size:12.5px;color:#5A6670;margin-bottom:10px">'+esc(p.observa)+'</div>':'')+
+'<label>Identificación (NIT o cédula)</label><input id="pcNit" value="'+esc(p.nit)+'" placeholder="sin puntos ni guiones">'+
+'<label>A nombre de quién</label><input id="pcProv" value="'+esc(p.proveedor)+'">'+
+'<label>Tipo de pago</label><select id="pcTipo">'+selTipo(p.tipo)+'</select>'+
+'<label>N° del comprobante de egreso</label><input id="pcCE" value="'+esc(p.comprobante)+'" placeholder="con cuál se cruzó en World Office">'+
+'<label>Banco o medio</label><input id="pcBanco" value="'+esc(p.banco)+'">'+
+'<label>N° de orden de compra (si tiene)</label><input id="pcOrden" value="'+esc(p.orden)+'">'+
+'<label>Observaciones</label><input id="pcObs" value="'+esc(p.observa)+'">'+
+(p.soporte? '' : '<label>Soporte del pago (PDF)</label><input type="file" id="pcArch" accept="application/pdf,image/*">')+
+'<button class="btn" id="pcBtn" style="width:100%;margin-top:14px" onclick="guardarCompletar(\''+esc(p.numero)+'\')">Guardar</button>');
+}
+function guardarCompletar(num){
+$('pcBtn').disabled = true; $('pcBtn').textContent = 'Guardando…';
+leerArchivo($('pcArch'), function(arch){
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ $('pcBtn').disabled=false; $('pcBtn').textContent='Guardar'; alert(r.mensaje); return; }
+cerrarModal(); pantallaPagos(PFILTRO);
+}).api('ocCompletarPago', SES, num, {
+nit: $('pcNit').value, proveedor: $('pcProv').value, tipo: $('pcTipo').value,
+comprobante: $('pcCE').value, banco: $('pcBanco').value,
+orden: $('pcOrden').value, observaciones: $('pcObs').value
+}, arch);
+});
+}
+/* ---- registrar un pago que no viene de una orden ---- */
+function pantallaNuevoPago(){
+abrirModal('Registrar un pago',
+'<div class="caja cav" style="margin-bottom:12px">Para los pagos que no salen de una orden de compra: nómina, PSE, impuestos, servicios. Los de órdenes se registran en <b>Por pagar</b>.</div>'+
+'<label>Fecha del pago</label><input type="date" id="npFecha">'+
+'<label>Identificación (NIT o cédula)</label><input id="npNit" placeholder="sin puntos ni guiones">'+
+'<label>A nombre de quién</label><input id="npProv">'+
+'<label>Tipo de pago</label><select id="npTipo">'+selTipo('PROVEEDOR')+'</select>'+
+'<label>Valor pagado</label><input id="npValor" inputmode="numeric">'+
+'<label>Banco o medio</label><input id="npBanco" placeholder="Bancolombia 038-879417-76">'+
+'<label>N° del comprobante de egreso</label><input id="npCE">'+
+'<label>Observaciones</label><input id="npObs">'+
+'<label>Soporte del pago (PDF)</label><input type="file" id="npArch" accept="application/pdf,image/*">'+
+'<button class="btn" id="npBtn" style="width:100%;margin-top:14px" onclick="guardarPagoDirecto()">Registrar el pago</button>');
+}
+function guardarPagoDirecto(){
+if(!Number(limpio($('npValor').value))){ alert('Escriba el valor pagado.'); return; }
+if(!$('npProv').value.trim()){ alert('Escriba a nombre de quién va el pago.'); return; }
+$('npBtn').disabled = true; $('npBtn').textContent = 'Registrando…';
+leerArchivo($('npArch'), function(arch){
+google.script.run.withSuccessHandler(function(r){
+$('npBtn').disabled = false; $('npBtn').textContent = 'Registrar el pago';
+if(!r.ok){ alert(r.mensaje); return; }
+cerrarModal(); pantallaPagos(PFILTRO);
+}).api('ocPagoDirecto', SES, {
+fecha: $('npFecha').value, nit: $('npNit').value, proveedor: $('npProv').value,
+tipo: $('npTipo').value, valor: Number(limpio($('npValor').value)),
+banco: $('npBanco').value, comprobante: $('npCE').value,
+observaciones: $('npObs').value
+}, arch);
+});
+}
+/* ---- enviar el soporte ---- */
+function verEnviar(num){
+abrirModal('Enviar el soporte', '<div class="cargando">Buscando los contactos…</div>');
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){ abrirModal('Enviar el soporte','<div class="caja cno">'+esc(r.mensaje)+'</div>'); return; }
+PENVIO = r;
+pintarEnviar(r);
+}).api('ocDatosEnvio', SES, num);
+}
+function pintarEnviar(r){
+var p = r.pago;
+var ops = (r.contactos.correos||[]).map(function(c){
+return '<option value="'+esc(c.correo)+'">'+esc(c.correo)+' — '+esc(c.etiqueta)+'</option>';
+}).join('');
+abrirModal('Enviar el soporte del pago N° '+p.numero,
+'<div class="caja cav" style="margin-bottom:12px"><b>'+esc(p.proveedor)+'</b> · '+esc(p.fecha)+' · <b>'+pesos(p.valor)+'</b>'+(p.comprobante? ' · CE '+esc(p.comprobante):'')+'</div>'+
+(r.produccion? '' : '<div class="caja cno" style="margin-bottom:12px">El sistema está en <b>modo prueba</b>: el correo le llega solo a usted, no al proveedor.</div>')+
+'<label>¿A quién se lo mandamos?</label>'+
+'<div style="display:flex;gap:18px;margin:4px 0 10px">'+
+'<label style="font-weight:normal"><input type="radio" name="dest" id="dProv" checked onclick="cambioDestino()"> Al proveedor</label>'+
+'<label style="font-weight:normal"><input type="radio" name="dest" id="dInt" onclick="cambioDestino()"> A alguien de la empresa</label>'+
+'</div>'+
+'<div id="cajaProv">'+
+(ops? '<label>Correo del proveedor</label><select id="eSel" onchange="cambioCorreo()">'+ops+'<option value="__OTRO__">Escribir otro correo solo para este envío…</option></select>'
+    : '<div class="caja cno">El maestro no tiene correo de este proveedor. Escríbalo abajo: no se guarda en la base.</div>')+
+'</div>'+
+'<label>Correo al que se envía</label><input id="eCorreo" value="'+esc(ops? (r.contactos.correos[0].correo) : '')+'">'+
+'<label>Asunto</label><input id="eAsunto" value="'+esc(r.asunto)+'">'+
+'<label>Mensaje</label><textarea id="eTexto" style="height:190px">'+esc(r.mensaje)+'</textarea>'+
+'<div class="caja cok" style="margin-top:10px;font-size:12.5px">El PDF va <b>adjunto</b> al correo. El proveedor no necesita acceso a Drive. El maestro de proveedores <b>no se modifica</b>.</div>'+
+'<button class="btn" id="eBtn" style="width:100%;margin-top:12px" onclick="enviarSoporte(\''+esc(p.numero)+'\')">Enviar el correo con el soporte</button>'+
+'<button class="btn sec" style="width:100%;margin-top:8px" onclick="prepararWhatsapp()">Avisar por WhatsApp (solo texto, sin adjunto)</button>');
+}
+function cambioDestino(){
+var prov = $('dProv').checked;
+$('cajaProv').style.display = prov? 'block' : 'none';
+if(!prov){ $('eCorreo').value = ''; $('eCorreo').focus(); }
+else if($('eSel') && $('eSel').value !== '__OTRO__') $('eCorreo').value = $('eSel').value;
+}
+function cambioCorreo(){
+var v = $('eSel').value;
+if(v === '__OTRO__'){ $('eCorreo').value = ''; $('eCorreo').focus(); }
+else $('eCorreo').value = v;
+}
+function enviarSoporte(num){
+var c = $('eCorreo').value.trim();
+if(c.indexOf('@') < 1){ alert('Escriba un correo válido.'); return; }
+$('eBtn').disabled = true; $('eBtn').textContent = 'Enviando…';
+google.script.run.withSuccessHandler(function(r){
+$('eBtn').disabled = false; $('eBtn').textContent = 'Enviar el correo con el soporte';
+if(!r.ok){ alert(r.mensaje); return; }
+abrirModal('Soporte enviado',
+'<div class="caja cok">El correo salió para <b>'+esc(r.correo)+'</b> con el PDF adjunto.'+
+(r.produccion? '' : '<br><br>Como el sistema está en modo prueba, le llegó a usted y no al destinatario.')+'</div>'+
+'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();pantallaPagos(PFILTRO)">Cerrar</button>');
+}).api('ocEnviarSoporte', SES, num, { correo: c, asunto: $('eAsunto').value, mensaje: $('eTexto').value });
+}
+function prepararWhatsapp(){
+if(!PENVIO) return;
+var interno = $('dInt') && $('dInt').checked;
+var lista = (PENVIO.contactos.celulares)||[];
+var cel = (!interno && lista.length) ? lista[0].celular : '';
+WA_INT = interno;
+abrirModal('Avisar por WhatsApp — pago N° '+PENVIO.pago.numero,
+'<div class="caja cav" style="margin-bottom:12px">WhatsApp solo deja mandar texto: <b>el PDF no se puede adjuntar</b>. '+
+(interno? 'Como es alguien de la empresa, al mensaje se le agrega el enlace del soporte en Drive.'
+        : 'Al proveedor va solo el aviso, sin enlace: el soporte se le manda por correo.')+'</div>'+
+'<label>Celular (solo números, sin el 57)</label><input id="waCel" value="'+esc(cel)+'" inputmode="numeric" oninput="armarWa()">'+
+'<label>Mensaje</label><textarea id="waTxt" style="height:150px" oninput="armarWa()">'+esc(textoWa(interno))+'</textarea>'+
+'<a class="btn" id="waLink" target="_blank" style="width:100%;margin-top:14px;display:block;text-align:center;box-sizing:border-box" href="#" onclick="marcarWa()">💬 Abrir WhatsApp</a>');
+armarWa();
+}
+var WA_INT = false;
+function textoWa(interno){
+var t = PENVIO.whatsapp;
+if(interno && PENVIO.pago.soporte) t += '\n\nSoporte: ' + PENVIO.pago.soporte;
+return t;
+}
+function armarWa(){
+var cel = limpio($('waCel').value);
+$('waLink').href = 'https://wa.me/' + (cel? '57'+cel : '') + '?text=' + encodeURIComponent($('waTxt').value);
+}
+function marcarWa(){
+var cel = limpio($('waCel').value);
+if(!cel) return;
+google.script.run.api('ocMarcarWhatsapp', SES, PENVIO.pago.numero, cel);
 }
 /* ================= MODAL ================= */
 function abrirModal(titulo, html){

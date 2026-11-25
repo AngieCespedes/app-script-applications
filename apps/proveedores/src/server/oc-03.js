@@ -20,20 +20,27 @@ function ocRegistrarPago_(ses, numero, d, soporte) {
 
   try {
     var hp  = ocHoja_(OC_H_PAG);
+    var num = ocPagoNumero_(hp);   /* una sola serie consecutiva en la hoja 11 */
     var fp  = ocFilaNueva_(hp);
-    var num = 'PG-' + Utilities.formatDate(new Date(), 'America/Bogota', 'yyyyMMdd-HHmmss');
     var link = ocGuardarArchivo_(numero, soporte, 'SOPORTE DE PAGO');
 
     hp.getRange(fp, 1).setValue(num);
     hp.getRange(fp, 2).setValue(d.fecha ? d.fecha : new Date());
     hp.getRange(fp, 3).setValue(numero);
-    hp.getRange(fp, 6).setValue(d.tipo || 'PAGO TOTAL');
+    /* El tercero se toma de la orden, no de la pantalla: asi el pago queda
+       identificado y se puede cruzar con el extracto y mandarle el soporte. */
+    hp.getRange(fp, 4).setValue(String(ho.getRange(fila, 8).getValue()).replace(/\D/g, ''));
+    hp.getRange(fp, 5).setValue(String(ho.getRange(fila, 9).getValue()).trim());
+    hp.getRange(fp, 6).setValue('PROVEEDOR');
     hp.getRange(fp, 7).setValue(valor);
     hp.getRange(fp, 8).setValue(d.banco || '');
     hp.getRange(fp, 9).setValue(d.comprobante || '');
     hp.getRange(fp, 10).setValue(link);
     hp.getRange(fp, 11).setValue(u.nombre);
-    hp.getRange(fp, 12).setValue(d.observaciones || '');
+    /* La columna F la usa el cruce con el extracto, asi que lleva PROVEEDOR.
+       Si el pago fue un abono y no el total, queda dicho en las observaciones. */
+    var esAbono = String(d.tipo).toUpperCase() === 'ABONO';
+    hp.getRange(fp, 12).setValue(((esAbono ? 'ABONO. ' : '') + (d.observaciones || '')).trim());
 
     if (String(d.tipo).toUpperCase() !== 'ABONO') ho.getRange(fila, 21).setValue('PAGADA');
     SpreadsheetApp.flush();
