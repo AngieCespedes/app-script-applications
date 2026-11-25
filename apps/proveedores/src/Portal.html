@@ -1025,8 +1025,29 @@ abrirModal('Mandar el soporte por WhatsApp — pago N° '+PENVIO.pago.numero,
 '<label>Mensaje</label><textarea id="waTxt" style="height:130px" oninput="armarWa()">'+esc(textoWa())+'</textarea>'+
 '<a class="btn" id="waLink" target="_blank" style="width:100%;margin-top:14px;display:block;text-align:center;box-sizing:border-box" href="#" onclick="bajarYabrirWa()">⬇💬 Bajar el PDF y abrir WhatsApp</a>'+
 '<a class="btn sec" id="waPdf" target="_blank" style="width:100%;margin-top:8px;display:block;text-align:center;box-sizing:border-box" href="'+esc(descargaDrive(PENVIO.pago.soporte))+'">Solo bajar el PDF</a>'+
-'<div style="font-size:12px;color:#5A6670;margin-top:10px">Si el navegador bloquea una de las dos ventanas, use el botón de abajo para bajar el PDF y vuelva a oprimir el de arriba.</div>');
+'<div style="border-top:1px solid #EEF1F4;margin-top:14px;padding-top:12px">'+
+'<div style="font-size:12.5px;color:#5A6670;margin-bottom:8px">O en vez de adjuntarlo, mándele un enlace para que él lo descargue:</div>'+
+'<button class="btn sec" id="waEnl" style="width:100%" onclick="agregarEnlaceWa(\''+esc(PENVIO.pago.numero)+'\')">🔗 Agregar enlace de descarga al mensaje</button>'+
+'<div id="waAviso" style="font-size:12px;color:#8A6D1F;margin-top:8px">Eso abre <b>ese solo PDF</b> a cualquiera que tenga el enlace. La carpeta de soportes no se toca.</div>'+
+'</div>');
 armarWa();
+}
+/* Abre ese unico PDF por enlace y lo mete en el mensaje. */
+function agregarEnlaceWa(num){
+var b = $('waEnl');
+b.disabled = true; b.textContent = 'Abriendo el archivo…';
+google.script.run.withSuccessHandler(function(r){
+if(!r.ok){
+b.disabled = false; b.textContent = '🔗 Agregar enlace de descarga al mensaje';
+$('waAviso').innerHTML = '<span style="color:#B00020">'+esc(r.mensaje)+'</span>';
+return;
+}
+b.textContent = '✓ Enlace agregado';
+var t = $('waTxt');
+if(t.value.indexOf(r.enlace) < 0) t.value = t.value + '\n\nDescargue el soporte aquí: ' + r.enlace;
+armarWa();
+$('waAviso').innerHTML = 'Listo. Ese PDF queda abierto a quien tenga el enlace; los demás soportes siguen cerrados.';
+}).api('ocEnlaceSoporte', SES, num);
 }
 /* Un solo clic: dispara la descarga del PDF y deja que el enlace abra el chat. */
 function bajarYabrirWa(){

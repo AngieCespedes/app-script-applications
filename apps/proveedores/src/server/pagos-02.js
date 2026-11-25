@@ -162,6 +162,38 @@ function ocMarcarAviso_(hoja, fila, correo, u) {
   hoja.getRange(fila, PG_COL.aviso).setValue(marca);
 }
 
+/* ---------- enlace de descarga para un solo soporte ---------- */
+
+/* Abre SOLO ese PDF a quien tenga el enlace, nunca la carpeta. Se usa cuando
+   el soporte se manda por WhatsApp, que no deja adjuntar archivos. */
+function ocEnlaceSoporte_(ses, numero) {
+  var u = ocUsuario_(ses);
+  if (!u || !ocPuede_(u.rol, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
+
+  var hoja = ocHoja_(OC_H_PAG);
+  var fila = ocFilaPago_(hoja, numero);
+  if (!fila) return { ok: false, mensaje: 'No encontre el pago ' + numero + '.' };
+
+  var p = ocPagoFila_(hoja.getRange(fila, 1, 1, PG_ANCHO).getValues(), 0);
+  if (!p.soporte) return { ok: false, mensaje: 'Ese pago todavia no tiene soporte archivado.' };
+
+  var m = String(p.soporte).match(/[-\w]{25,}/);
+  if (!m) return { ok: false, mensaje: 'El enlace del soporte en la hoja 11 no sirve.' };
+
+  try {
+    var archivo = DriveApp.getFileById(m[0]);
+    archivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return {
+      ok: true,
+      enlace: 'https://drive.google.com/uc?export=download&id=' + m[0],
+      nombre: archivo.getName()
+    };
+  } catch (e) {
+    return { ok: false, mensaje: 'Google no dejo abrir ese archivo por enlace (' + e.message +
+      '). Mande el PDF adjunto por correo, o bajelo y adjuntelo en el chat.' };
+  }
+}
+
 /* ---------- WhatsApp: la pagina abre el chat, el servidor solo deja la marca ---------- */
 
 function ocMarcarWhatsapp_(ses, numero, celular) {
