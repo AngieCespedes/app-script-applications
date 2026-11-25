@@ -598,6 +598,25 @@ var t = $('txtp').textContent;
 if(navigator.clipboard) navigator.clipboard.writeText(t);
 alert('Copiado.');
 }
+/* Abre ese solo PDF por enlace y lo deja listo para copiar y pegar. */
+function enlaceDePago(num){
+var b = $('sEnl');
+b.disabled = true; b.textContent = 'Preparando…';
+google.script.run.withSuccessHandler(function(r){
+b.disabled = false; b.textContent = '🔗 Enlace para que lo descarguen';
+if(!r.ok){ $('sEnlCaja').innerHTML = '<div class="caja cno" style="font-size:12.5px">'+esc(r.mensaje)+'</div>'; return; }
+$('sEnlCaja').innerHTML =
+'<input id="sEnlTxt" readonly onclick="this.select()" value="'+esc(r.enlace)+'" style="font-size:12px">'+
+'<button class="btn sec" style="margin-top:8px" onclick="copiarEnlace()">Copiar el enlace</button>'+
+'<div style="font-size:12px;color:#5A6670;margin-top:8px">Quien abra ese enlace descarga el PDF. Queda como <b>solo lectura</b> y es únicamente este soporte.</div>';
+}).api('ocEnlaceSoporte', SES, num);
+}
+function copiarEnlace(){
+var i = $('sEnlTxt');
+i.select();
+if(navigator.clipboard) navigator.clipboard.writeText(i.value);
+alert('Enlace copiado. Péguelo en WhatsApp o donde lo necesite.');
+}
 /* ================= USUARIOS ================= */
 function pantallaUsuarios(){
 $('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
@@ -968,7 +987,17 @@ return '<option value="'+esc(c.correo)+'">'+esc(c.correo)+' — '+esc(c.etiqueta
 }).join('');
 abrirModal('Enviar el soporte del pago N° '+p.numero,
 '<div class="caja cav" style="margin-bottom:12px"><b>'+esc(p.proveedor)+'</b> · '+esc(p.fecha)+' · <b>'+pesos(p.valor)+'</b>'+(p.comprobante? ' · CE '+esc(p.comprobante):'')+'</div>'+
+'<div class="card" style="margin:0 0 14px;padding:14px 16px">'+
+'<div style="font-size:13px;font-weight:bold;color:#1F2933">El soporte</div>'+
+'<div style="font-size:12.5px;color:#5A6670;margin:3px 0 10px">Para mandarlo usted por donde quiera: WhatsApp, otro correo, donde sea.</div>'+
+'<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+'<button class="btn sec" id="sEnl" onclick="enlaceDePago(\''+esc(p.numero)+'\')">🔗 Enlace para que lo descarguen</button>'+
+'<a class="btn sec" target="_blank" href="'+esc(descargaDrive(p.soporte))+'">⬇ Descargar el PDF</a>'+
+'</div>'+
+'<div id="sEnlCaja" style="margin-top:10px"></div>'+
+'</div>'+
 (r.produccion? '' : '<div class="caja cno" style="margin-bottom:12px">El sistema está en <b>modo prueba</b>: el correo le llega solo a usted, no al proveedor.</div>')+
+'<div style="font-size:13px;font-weight:bold;color:#1F2933;margin-bottom:8px">O que el sistema lo mande por correo, con el PDF adjunto</div>'+
 '<label>¿A quién se lo mandamos?</label>'+
 '<div style="display:flex;gap:18px;margin:4px 0 10px">'+
 '<label style="font-weight:normal"><input type="radio" name="dest" id="dProv" checked onclick="cambioDestino()"> Al proveedor</label>'+
