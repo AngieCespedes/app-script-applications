@@ -215,10 +215,9 @@ function ocCrearOrden_(ses, d, cotizacion) {
     hoja.getRange(fila, 6).setValue(d.area || u.area);
     hoja.getRange(fila, 7).setValue(d.centro || '');
     hoja.getRange(fila, 8).setValue("'" + prov.nit);
-    if (nuevo) {
-      hoja.getRange(fila, 9).setValue(String(d.proveedor).trim());
-      hoja.getRange(fila, 10).setValue(OC_PROV_SIN_REGISTRAR);
-    }
+    /* Las columnas 9 (PROVEEDOR) y 10 (ESTADO DEL PROVEEDOR) son una
+       ARRAYFORMULA anclada en la fila 2: escribirlas rompe toda la columna.
+       El nombre que escribio quien pidio la orden queda en observaciones. */
     hoja.getRange(fila, 11).setValue(d.descripcion || '');
     hoja.getRange(fila, 12).setValue(d.concepto || '');
     hoja.getRange(fila, 13).setValue(ocNum_(d.base));
@@ -230,8 +229,8 @@ function ocCrearOrden_(ses, d, cotizacion) {
     hoja.getRange(fila, 21).setValue('SOLICITADA');
     var nota = String(d.observaciones || '');
     if (nuevo) {
-      nota = (nota ? nota + ' | ' : '') + OC_PROV_SIN_REGISTRAR +
-             '. Nombre escrito por ' + u.nombre + ' al crear la orden.';
+      nota = (nota ? nota + ' | ' : '') + 'PROVEEDOR: ' + String(d.proveedor).trim() +
+             ' — ' + OC_PROV_SIN_REGISTRAR + '. Nombre escrito por ' + u.nombre + '.';
     }
     if (nota) hoja.getRange(fila, 40).setValue(nota);
 
