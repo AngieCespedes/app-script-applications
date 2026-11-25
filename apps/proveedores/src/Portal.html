@@ -598,34 +598,16 @@ var t = $('txtp').textContent;
 if(navigator.clipboard) navigator.clipboard.writeText(t);
 alert('Copiado.');
 }
-/* Un clic: abre ese solo PDF por enlace y manda el mensaje con el enlace a
-   WhatsApp. La ventana se abre de una vez, antes de llamar al servidor, para
-   que el navegador no la bloquee por venir de una respuesta asincrona. */
-function enviarEnlaceWa(num){
-var ventana = null;
-try { ventana = window.open('', '_blank'); } catch(e) {}
-var b = $('sEnl');
-b.disabled = true; b.textContent = 'Preparando…';
-google.script.run.withSuccessHandler(function(r){
-b.disabled = false; b.textContent = '💬 Enviar el enlace por WhatsApp';
-if(!r.ok){
-if(ventana) ventana.close();
-$('sEnlCaja').innerHTML = '<div class="caja cno" style="font-size:12.5px">'+esc(r.mensaje)+'</div>';
-return;
+/* El enlace de WhatsApp se arma aqui mismo, sin llamar al servidor y sin abrir
+   ventanas por codigo: es un enlace normal, asi no hay nada que se pueda
+   bloquear ni que pueda fallar a medio camino. */
+function waDelPago(r){
+var cel = (r.contactos.celulares && r.contactos.celulares.length) ? r.contactos.celulares[0].celular : '';
+var texto = r.whatsapp + (r.pago.soporte ? '\n\nSoporte: ' + r.pago.soporte : '');
+return 'https://wa.me/' + (cel ? '57'+cel : '') + '?text=' + encodeURIComponent(texto);
 }
+function marcarEnvioWa(num){
 var cel = (PENVIO && PENVIO.contactos.celulares.length) ? PENVIO.contactos.celulares[0].celular : '';
-var texto = (PENVIO ? PENVIO.whatsapp : '') + '\n\nDescargue el soporte aquí: ' + r.enlace;
-var url = 'https://wa.me/' + (cel? '57'+cel : '') + '?text=' + encodeURIComponent(texto);
-if(ventana) ventana.location.href = url;
-marcarEnvioWa(num, cel);
-$('sEnlCaja').innerHTML =
-'<div class="caja cok" style="font-size:12.5px">WhatsApp quedó abierto con el mensaje y el enlace'+(cel? ' para el '+esc(cel):'')+'.</div>'+
-(ventana? '' : '<a class="btn sec" target="_blank" style="display:block;text-align:center;margin-top:8px;box-sizing:border-box" href="'+esc(url)+'">Abrir WhatsApp</a>')+
-'<input readonly onclick="this.select()" value="'+esc(r.enlace)+'" style="font-size:12px;margin-top:8px">'+
-'<div style="font-size:12px;color:#5A6670;margin-top:6px">Ese enlace descarga el PDF, queda como <b>solo lectura</b> y es únicamente este soporte.</div>';
-}).api('ocEnlaceSoporte', SES, num);
-}
-function marcarEnvioWa(num, cel){
 if(cel) google.script.run.api('ocMarcarWhatsapp', SES, num, cel);
 }
 /* ================= USUARIOS ================= */
@@ -1000,12 +982,11 @@ abrirModal('Enviar el soporte del pago N° '+p.numero,
 '<div class="caja cav" style="margin-bottom:12px"><b>'+esc(p.proveedor)+'</b> · '+esc(p.fecha)+' · <b>'+pesos(p.valor)+'</b>'+(p.comprobante? ' · CE '+esc(p.comprobante):'')+'</div>'+
 '<div class="card" style="margin:0 0 14px;padding:14px 16px">'+
 '<div style="font-size:13px;font-weight:bold;color:#1F2933">El soporte</div>'+
-'<div style="font-size:12.5px;color:#5A6670;margin:3px 0 10px">Para mandarlo usted por donde quiera: WhatsApp, otro correo, donde sea.</div>'+
+'<div style="font-size:12.5px;color:#5A6670;margin:3px 0 10px">Baje el PDF para adjuntarlo donde quiera, o mándelo por WhatsApp con el enlace del soporte.</div>'+
 '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
 '<a class="btn sec" target="_blank" href="'+esc(descargaDrive(p.soporte))+'">⬇ Descargar el PDF</a>'+
-'<button class="btn" id="sEnl" onclick="enviarEnlaceWa(\''+esc(p.numero)+'\')">💬 Enviar el enlace por WhatsApp</button>'+
+'<a class="btn" target="_blank" href="'+esc(waDelPago(r))+'" onclick="marcarEnvioWa(\''+esc(p.numero)+'\')">💬 Enviar por WhatsApp</a>'+
 '</div>'+
-'<div id="sEnlCaja" style="margin-top:10px"></div>'+
 '</div>'+
 (r.produccion? '' : '<div class="caja cno" style="margin-bottom:12px">El sistema está en <b>modo prueba</b>: el correo le llega solo a usted, no al proveedor.</div>')+
 '<div style="font-size:13px;font-weight:bold;color:#1F2933;margin-bottom:8px">O que el sistema lo mande por correo, con el PDF adjunto</div>'+
