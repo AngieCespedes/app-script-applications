@@ -32,9 +32,9 @@ a{color:#0F3B5C}
 label{display:block;font-size:12.5px;font-weight:600;color:#3D4A54;margin-bottom:5px}
 input,select,textarea{width:100%;padding:10px 12px;border:1px solid #d6dbe0;border-radius:7px;font-size:14px;font-family:inherit;background:#fff}
 textarea{height:70px;resize:vertical}
-.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.tbl th{background:#F4F6F8;color:#5A6670;text-align:left;font-size:10.5px;letter-spacing:.4px;padding:9px 12px;border-bottom:1px solid #E4E9ED;white-space:nowrap}
-.tbl td{padding:9px 12px;border-bottom:1px solid #EEF1F4;vertical-align:top}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.tbl th{background:#F4F6F8;color:#5A6670;text-align:left;font-size:10.5px;letter-spacing:.4px;padding:9px 10px;border-bottom:1px solid #E4E9ED;white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid #EEF1F4;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere}
 .tbl tbody tr:last-child td{border-bottom:none}
 .tbl .num{text-align:right}
 .mini{font-size:11px;color:#8A94A0;margin-top:2px}
@@ -744,15 +744,8 @@ var mes = mesesDePagos().map(function(m){ return [m, mesNombre(m)]; });
 var ter = tercerosDePagos().map(function(t){ return [t, t]; });
 var tip = PTIPOS.map(function(t){ return [t, t]; });
 var h = pintarGuia('pagos')+
-'<div class="kpis">'+
-kpi(s.total,'pagos registrados')+
-kpiTxt(pesos(s.valor),'valor total')+
-kpi(s.incompletos,'falta completar', s.incompletos? '#8A6D1F':'')+
-kpi(s.noSalieron,'no salieron del banco', s.noSalieron? '#B00020':'')+
-kpi(s.sinAviso,'sin mandarle el soporte', s.sinAviso? '#8A6D1F':'')+
-'</div>';
-if(s.noSalieron>0) h += '<div class="caja cno" style="margin-bottom:14px"><b>'+pesos(s.valorNoSalio)+'</b> está registrado aquí pero no aparece en el extracto del banco. Revise cada uno antes de darlo por pagado.</div>';
-h += '<div class="card">'+
+'<div id="panelPagos"></div>'+
+'<div class="card">'+
 '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">'+
 chipPago('todos','Todos',s.total)+
 chipPago('incompletos','Falta completar',s.incompletos)+
@@ -797,19 +790,50 @@ if(ter) { PF.q = ter; if($('fQ')) $('fQ').value = ter; }
 else if($('fQ')) PF.q = $('fQ').value;
 pintarTablaPagos();
 }
+/* El panel de arriba muestra lo que se esta viendo, no la hoja entera:
+   si filtra por mes, los numeros son los de ese mes. */
+function resumenDe(lista){
+var r = { total:lista.length, valor:0, incompletos:0, noSalieron:0, valorNoSalio:0, sinAviso:0 };
+for(var i=0;i<lista.length;i++){
+var p = lista[i];
+r.valor += p.valor;
+if(!p.completo) r.incompletos++;
+if(p.noSalio){ r.noSalieron++; r.valorNoSalio += p.valor; }
+if(p.tipo==='PROVEEDOR' && p.soporte && !p.aviso) r.sinAviso++;
+}
+return r;
+}
+function hayFiltro(){ return !!(PF.mes || PF.tipo || PF.q || PF.estado !== 'todos'); }
+function pintarPanelPagos(f){
+var s = resumenDe(f);
+var h = '<div class="kpis">'+
+kpi(s.total,'pagos'+(hayFiltro()?' en el filtro':' registrados'))+
+kpiTxt(pesos(s.valor),'valor'+(hayFiltro()?' del filtro':' total'))+
+kpi(s.incompletos,'falta completar', s.incompletos? '#8A6D1F':'')+
+kpi(s.noSalieron,'no salieron del banco', s.noSalieron? '#B00020':'')+
+kpi(s.sinAviso,'sin mandarle el soporte', s.sinAviso? '#8A6D1F':'')+
+'</div>';
+if(hayFiltro()) h += '<div style="font-size:12px;color:#5A6670;margin:-6px 0 12px 2px">Los números de arriba son de <b>'+esc(tituloFiltro())+'</b>. En toda la hoja hay '+PRES.total+' pagos por '+pesos(PRES.valor)+'.</div>';
+if(s.noSalieron>0) h += '<div class="caja cno" style="margin-bottom:14px"><b>'+pesos(s.valorNoSalio)+'</b> está registrado aquí pero no aparece en el extracto del banco. Revise cada uno antes de darlo por pagado.</div>';
+$('panelPagos').innerHTML = h;
+}
 function pintarTablaPagos(){
 var f = pagosFiltrados(), total = 0;
 for(var i=0;i<f.length;i++) total += f[i].valor;
+pintarPanelPagos(f);
 var h = '<div class="card" style="padding:0;overflow:hidden">'+
 '<div style="padding:11px 16px;border-bottom:1px solid #E4E9ED;font-size:12.5px;color:#5A6670">'+
 'Mostrando <b style="color:#1F2933">'+f.length+'</b> de '+PAGOS.length+' pagos · <b style="color:#1F2933">'+pesos(total)+'</b></div>';
 if(!f.length) h += '<div class="vacio" style="padding:26px">Ningún pago cumple con ese filtro.</div>';
 else {
-h += '<div style="overflow-x:auto"><table class="tbl"><thead><tr>'+
+h += '<table class="tbl"><colgroup>'+
+'<col style="width:5%"><col style="width:9%"><col style="width:26%"><col style="width:11%">'+
+'<col style="width:14%"><col style="width:9%"><col style="width:6%"><col style="width:20%">'+
+'</colgroup><thead><tr>'+
 '<th>N°</th><th>FECHA</th><th>TERCERO</th><th>TIPO</th><th class="num">VALOR</th>'+
-'<th>COMPROBANTE</th><th>SOPORTE</th><th>ESTADO</th><th></th></tr></thead><tbody>'+
+'<th>CE</th><th>SOP.</th><th>ESTADO</th></tr></thead><tbody>'+
 f.map(filaPago).join('')+
-'</tbody></table></div>';
+'</tbody></table>';
 }
 $('tablaPagos').innerHTML = h + '</div>';
 }
@@ -829,11 +853,11 @@ return '<tr'+(p.noSalio? ' style="background:#FFF7F7"':(p.completo?'':' style="b
 '<td class="num" style="white-space:nowrap"><b>'+pesos(p.valor)+'</b>'+(p.banco? '<div class="mini">'+esc(p.banco)+'</div>':'')+'</td>'+
 '<td>'+(p.comprobante? esc(p.comprobante) : '<span style="color:#8A6D1F">—</span>')+'</td>'+
 '<td>'+(p.soporte? '<a target="_blank" href="'+esc(p.soporte)+'">Ver</a>' : '<span style="color:#8A6D1F">—</span>')+'</td>'+
-'<td>'+est+(p.aviso? '<div class="mini" style="color:#2E6B2E">enviado</div>':'')+'</td>'+
-'<td style="white-space:nowrap">'+
-'<button class="btn sec" style="padding:5px 9px;font-size:12px" onclick="verPago(\''+esc(p.numero)+'\')">'+(p.completo?'Editar':'Completar')+'</button>'+
-(p.soporte? ' <button class="btn" style="padding:5px 9px;font-size:12px" onclick="verEnviar(\''+esc(p.numero)+'\')">Enviar</button>':'')+
-'</td></tr>';
+'<td>'+est+(p.aviso? '<div class="mini" style="color:#2E6B2E">soporte enviado</div>':'')+
+'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px">'+
+'<button class="btn sec" style="padding:4px 8px;font-size:11.5px" onclick="verPago(\''+esc(p.numero)+'\')">'+(p.completo?'Editar':'Completar')+'</button>'+
+(p.soporte? '<button class="btn" style="padding:4px 8px;font-size:11.5px" onclick="verEnviar(\''+esc(p.numero)+'\')">Enviar</button>':'')+
+'</div></td></tr>';
 }
 function tituloFiltro(){
 var t = [];
