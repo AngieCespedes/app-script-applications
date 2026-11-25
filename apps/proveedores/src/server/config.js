@@ -113,6 +113,10 @@ var OC_H_MEJ     = '16 MEJORAS Y FALLAS';
 /* Dias habiles que se esperan antes de marcar vencida una solicitud */
 var OC_DIAS_SOL  = 5;
 
+/* Lo que queda escrito en la orden cuando el proveedor todavia no esta
+   en el maestro. Se deja crear la orden, pero no se debe pagar asi. */
+var OC_PROV_SIN_REGISTRAR = 'SIN REGISTRAR - falta el RUT y la certificacion bancaria';
+
 /**
  * Videos de capacitacion (carpeta 01 APLICACION / VIDEOS DE CAPACITACION).
  * Se ven dentro del portal, sin descargar nada. A cada persona le salen los
