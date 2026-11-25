@@ -118,7 +118,7 @@ function gpFila_(fila, reg) {
 function ocProveedores_(ses, filtro) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores') && !ocPuede_(u.rol, 'verproveedor')) {
+  if (!ocPuede_(u, 'proveedores') && !ocPuede_(u, 'verproveedor')) {
     return { ok: false, mensaje: 'Su rol no tiene esta pantalla.' };
   }
 
@@ -150,7 +150,7 @@ function ocProveedores_(ses, filtro) {
   }
 
   return { ok: true, filas: filas, resumen: gpResumen_(todos),
-           puedeEditar: ocPuede_(u.rol, 'proveedores') };
+           puedeEditar: ocPuede_(u, 'proveedores') };
 }
 
 function gpResumen_(lista) {
@@ -172,7 +172,7 @@ function gpResumen_(lista) {
 function ocProveedor_(ses, nit) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores') && !ocPuede_(u.rol, 'verproveedor')) {
+  if (!ocPuede_(u, 'proveedores') && !ocPuede_(u, 'verproveedor')) {
     return { ok: false, mensaje: 'Su rol no tiene esta pantalla.' };
   }
 
@@ -187,7 +187,7 @@ function ocProveedor_(ses, nit) {
   p.seguimiento = gsSeguimiento_(sol);
 
   return { ok: true, proveedor: p, solicitudes: sol, estados: geEstadosDe_(nit),
-           puedeEditar: ocPuede_(u.rol, 'proveedores') };
+           puedeEditar: ocPuede_(u, 'proveedores') };
 }
 
 function gpBuscarFila_(hoja, nit) {
@@ -207,7 +207,7 @@ function gpBuscarFila_(hoja, nit) {
 function ocGuardarProveedor_(ses, nit, d) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores')) {
+  if (!ocPuede_(u, 'proveedores')) {
     return { ok: false, mensaje: 'Su rol puede consultar, pero no modificar el maestro de proveedores.' };
   }
 

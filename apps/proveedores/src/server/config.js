@@ -54,14 +54,43 @@ var OC_SEP       = '\u0001';
 var OC_PERMISOS = {
   'ADMINISTRADOR':     ['solicitar', 'aprobar', 'pagar', 'facturar', 'causar', 'almacen',
                         'proveedores', 'verproveedor', 'verpagos', 'vertodo', 'informes', 'usuarios'],
+  'GERENTE':           ['solicitar', 'aprobar', 'verproveedor', 'verpagos', 'vertodo', 'informes'],
   'GERENCIA':          ['solicitar', 'aprobar', 'verproveedor', 'verpagos', 'vertodo', 'informes'],
   'TESORERIA':         ['pagar', 'verproveedor', 'vertodo', 'informes'],
   'COMPRAS':           ['solicitar', 'facturar', 'almacen', 'proveedores', 'verproveedor',
                         'verpagos', 'vertodo', 'informes'],
   'CONTABILIDAD':      ['causar', 'verproveedor', 'vertodo', 'informes'],
-  'LIDER INGENIERIA':  ['solicitar', 'verarea', 'verequipo', 'verpagos', 'informes'],
-  'SOLICITANTE':       ['solicitar', 'verarea', 'informes']
+  'LIDER AREA':        ['solicitar', 'verequipo', 'verpagos', 'informes'],
+  'INGENIERIA':        ['solicitar', 'informes'],
+  'COMERCIAL':         ['solicitar', 'informes'],
+  'HSE':               ['solicitar', 'informes'],
+  'SOLICITANTE':       ['solicitar', 'informes']
 };
+
+/* Hoja 07: columnas. A..J venian de antes; de la K en adelante son nuevas.
+   OC_USU_PERM es donde empieza una columna por permiso. */
+var OC_USU_CED   = 11;   /* CEDULA */
+var OC_USU_PERM  = 12;   /* primera columna de permisos */
+
+/* Los permisos que la duena marca persona por persona.
+   [clave, nombre en pantalla, que significa] */
+var OC_PERMISOS_LISTA = [
+  ['solicitar',    'Pedir compras',        'Crear ordenes de compra y ver las suyas.'],
+  ['aprobar',      'Aprobar',              'Aprobar o rechazar las ordenes que esperan decision.'],
+  ['pagar',        'Pagar',                'Registrar pagos y subir soportes. Es de tesoreria.'],
+  ['facturar',     'Registrar factura',    'Anotar la factura del proveedor y el numero de World Office.'],
+  ['almacen',      'Confirmar llegada',    'Decir como llego la mercancia y subir la foto.'],
+  ['causar',       'Causar',               'Marcar la orden como causada en World Office.'],
+  ['proveedores',  'Gestionar proveedores','Completar datos y pedirle documentos a los proveedores.'],
+  ['verproveedor', 'Ver proveedores',      'Consultar RUT, certificacion y negociacion, sin cambiar nada.'],
+  ['verpagos',     'Ver pagos',            'Consultar pagos y descargar soportes, sin tocarlos.'],
+  ['verequipo',    'Ver toda su area',     'Ver las ordenes de su area, aunque las pidan otros.'],
+  ['vertodo',      'Ver toda la empresa',  'Ver las ordenes de todas las areas.'],
+  ['informes',     'Descargar informes',   'Bajar en Excel o PDF lo que esa persona ve.'],
+  ['usuarios',     'Administrar usuarios', 'Crear personas, cambiar claves y dar permisos.']
+];
+
+var OC_USU_ANCHO = OC_USU_PERM + OC_PERMISOS_LISTA.length - 1;   /* 24 */
 
 /* Hojas nuevas del gestor de proveedores */
 var OC_H_SOL     = '14 SOLICITUDES A PROVEEDORES';

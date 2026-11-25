@@ -2,7 +2,7 @@
 
 function ocRegistrarPago_(ses, numero, d, soporte) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) return { ok: false, mensaje: 'No tiene permiso para registrar pagos.' };
+  if (!u || !ocPuede_(u, 'pagar')) return { ok: false, mensaje: 'No tiene permiso para registrar pagos.' };
 
   var ho = ocHoja_(OC_H_ORD);
   var fila = ocFilaOrden_(ho, numero);
@@ -64,7 +64,7 @@ var OC_COMO_LLEGO = ['LLEGO BIEN', 'LLEGO AVERIADA', 'LLEGO INCOMPLETA', 'NO LLE
  */
 function ocRegistrarLlegada_(ses, numero, d, foto) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'almacen')) {
+  if (!u || !ocPuede_(u, 'almacen')) {
     return { ok: false, mensaje: 'No tiene permiso para confirmar la llegada de mercancia.' };
   }
 
@@ -115,7 +115,7 @@ function ocRegistrarLlegada_(ses, numero, d, foto) {
 
 function ocRegistrarFactura_(ses, numero, d, archivo) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'facturar')) return { ok: false, mensaje: 'No tiene permiso para registrar facturas.' };
+  if (!u || !ocPuede_(u, 'facturar')) return { ok: false, mensaje: 'No tiene permiso para registrar facturas.' };
 
   var hoja = ocHoja_(OC_H_ORD);
   var fila = ocFilaOrden_(hoja, numero);
@@ -155,7 +155,7 @@ function ocRegistrarFactura_(ses, numero, d, archivo) {
 
 function ocCausar_(ses, numero, comentario) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'causar')) return { ok: false, mensaje: 'No tiene permiso.' };
+  if (!u || !ocPuede_(u, 'causar')) return { ok: false, mensaje: 'No tiene permiso.' };
 
   var hoja = ocHoja_(OC_H_ORD);
   var fila = ocFilaOrden_(hoja, numero);
@@ -233,11 +233,11 @@ function ocOrdenes_(ses, filtro) {
 
   var hoja = ocHoja_(OC_H_ORD);
   var ult = ocUltimaFila_(hoja);
-  if (ult < 2) return { ok: true, filas: [], resumen: ocResumen_([]), rol: u.rol, vertodo: ocPuede_(u.rol, 'vertodo'), area: u.area };
+  if (ult < 2) return { ok: true, filas: [], resumen: ocResumen_([]), rol: u.rol, vertodo: ocPuede_(u, 'vertodo'), area: u.area };
 
   var d = hoja.getRange(2, 1, ult - 1, OC_ORD_ANCHO).getValues();
-  var todo = ocPuede_(u.rol, 'vertodo');
-  var equipo = ocPuede_(u.rol, 'verequipo');
+  var todo = ocPuede_(u, 'vertodo');
+  var equipo = ocPuede_(u, 'verequipo');
   var filas = [], mias = [];
 
   for (var i = 0; i < d.length; i++) {

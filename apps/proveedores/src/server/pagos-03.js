@@ -103,7 +103,7 @@ function ocPintarInforme_(hoja, filas, titulo) {
 
 function ocInformePagos_(ses, numeros, titulo) {
   var u = ocUsuario_(ses);
-  if (!u || (!ocPuede_(u.rol, 'pagar') && !ocPuede_(u.rol, 'vertodo'))) {
+  if (!u || (!ocPuede_(u, 'pagar') && !ocPuede_(u, 'vertodo'))) {
     return { ok: false, mensaje: 'No tiene permiso.' };
   }
   if (!numeros || !numeros.length) {
