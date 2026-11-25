@@ -38,6 +38,11 @@ textarea{height:70px;resize:vertical}
 .tbl tbody tr:last-child td{border-bottom:none}
 .tbl .num{text-align:right}
 .mini{font-size:11px;color:#8A94A0;margin-top:2px}
+.giro{writing-mode:vertical-rl;transform:rotate(180deg);height:120px;text-align:left;padding:7px 4px;font-size:10px;white-space:nowrap}
+.pill.bad{background:#FBE6E6;color:#8F2B2B}
+.tbl input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#0F3B5C}
+.tbl select{padding:4px 6px;border:1px solid #CFD6DC;border-radius:5px;font-family:inherit;font-size:12px}
+
 /* --- gestor de proveedores, informes y boton de mejoras --- */
 .panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-bottom:13px}
 .cajita{background:#fff;border:1px solid #E4E9ED;border-left:4px solid #0F3B5C;border-radius:8px;padding:10px 12px}
@@ -655,45 +660,107 @@ function marcarEnvioWa(num){
 var cel = (PENVIO && PENVIO.contactos.celulares.length) ? PENVIO.contactos.celulares[0].celular : '';
 if(cel) google.script.run.api('ocMarcarWhatsapp', SES, num, cel);
 }
-/* ================= USUARIOS ================= */
+/* ================= USUARIOS Y PERMISOS ================= */
+var USUPERM = null;
 function pantallaUsuarios(){
 $('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
 google.script.run.withSuccessHandler(function(r){
 if(!r.ok){ $('wrap').innerHTML = '<div class="card"><div class="caja cno">'+esc(r.mensaje)+'</div></div>'; return; }
-window.__USU = r;
-var fs = r.filas.map(function(u){
-return '<tr>'+
-'<td><b>'+esc(u.nombre)+'</b></td>'+
-'<td>'+esc(u.usuario)+'</td>'+
-'<td><code style="background:#F2F4F7;padding:2px 7px;border-radius:5px;font-size:12px">'+esc(u.contrasena)+'</code></td>'+
-'<td><span class="pill inf">'+esc(u.rol)+'</span></td>'+
-'<td>'+esc(u.area)+'</td>'+
-'<td>'+(u.estado==='ACTIVO'? '<span class="pill ok">ACTIVO</span>':'<span class="pill gris">INACTIVO</span>')+'</td>'+
-'<td style="text-align:center"><b>'+u.ordenes+'</b></td>'+
-'<td><span class="lnk" style="color:#0F3B5C" onclick="editarUsuario(\''+esc(u.usuario)+'\')">Editar</span></td>'+
-'</tr>';
-}).join('');
-$('wrap').innerHTML = pintarGuia('usuarios')+
-'<div class="card">'+
-'<div class="sec">QUIÉN ENTRA AL PORTAL</div>'+
-'<table><tr><th>PERSONA</th><th>USUARIO</th><th>CONTRASEÑA</th><th>ROL</th><th>ÁREA</th><th>ESTADO</th><th style="text-align:center">ÓRDENES</th><th></th></tr>'+fs+'</table>'+
-'<div style="margin-top:14px"><button class="btn" onclick="editarUsuario(\'\')">+ Agregar persona</button></div>'+
-'</div>'+
-'<div class="card">'+
-'<div class="sec">QUÉ VE Y QUÉ PUEDE HACER CADA ROL</div>'+
-'<table>'+
-'<tr><th>ROL</th><th>QUÉ PUEDE HACER</th><th>QUÉ VE</th></tr>'+
-'<tr><td><b>ADMINISTRADOR</b></td><td>Todo, y administra usuarios y contraseñas</td><td>Todas las órdenes</td></tr>'+
-'<tr><td><b>GERENCIA</b></td><td>Aprobar o rechazar</td><td>Todas las órdenes</td></tr>'+
-'<tr><td><b>TESORERIA</b></td><td>Registrar pagos y subir soportes</td><td>Todas las órdenes</td></tr>'+
-'<tr><td><b>COMPRAS</b></td><td>Pedir compras y registrar mercancía y facturas</td><td>Todas las órdenes</td></tr>'+
-'<tr><td><b>CONTABILIDAD</b></td><td>Marcar causadas en World Office</td><td>Todas las órdenes</td></tr>'+
-'<tr><td><b>SOLICITANTE</b></td><td>Pedir compras de su área</td><td><b>Solo las de su área</b></td></tr>'+
-'</table>'+
-'<div class="caja cav">Para un ingeniero o la persona del sistema de gestión use <b>SOLICITANTE</b> y márquele el área. Así ve todo lo de su área y nada del resto.</div>'+
-'</div>'+
-'<div style="height:24px"></div>';
+window.__USU = r; USUPERM = r.permisos || [];
+pintarUsuarios();
 }).api('ocUsuarios', SES);
+}
+function pintarUsuarios(){
+var r = window.__USU;
+var h = pintarGuia('usuarios')
+ + '<div class="caja cav">El <b>rol</b> llena las casillas de una, pero usted las puede cambiar una por una. '
+ + 'Si le quita o le pone una casilla a alguien, manda lo que usted marcó, no el rol.</div>'
+ + '<div class="card"><div class="sec">QUIÉN ENTRA Y QUÉ PUEDE HACER</div>'
+ + '<div style="overflow-x:auto"><table class="tbl"><tr>'
+ + '<th style="min-width:195px">Persona</th><th style="min-width:82px">Usuario</th>'
+ + '<th style="min-width:118px">Rol</th><th style="min-width:96px">Contraseña</th>';
+USUPERM.forEach(function(p){ h += '<th class="giro" title="'+esc(p[2])+'">'+esc(p[1])+'</th>'; });
+h += '</tr>';
+r.filas.forEach(function(u, i){
+h += '<tr'+(u.estado!=='ACTIVO'?' style="opacity:.5"':'')+'>'
+  + '<td><b>'+esc(u.nombre)+'</b><div class="mini">'+(u.cedula?'C.C. '+esc(u.cedula)+' · ':'')+esc(u.area)+'</div>'
+  + '<span class="lnk" style="color:#0F3B5C;font-size:11.5px" onclick="editarUsuario(\''+esc(u.usuario)+'\')">Editar</span></td>'
+  + '<td>'+esc(u.usuario)+'</td>'
+  + '<td><select onchange="rolDe('+i+',this.value)">'
+  + r.roles.map(function(x){ return '<option'+(x===u.rol?' selected':'')+'>'+esc(x)+'</option>'; }).join('')
+  + '</select></td>'
+  + '<td>'+chipClave(u.clave)+'<div><button class="btn2" style="margin-top:4px;padding:4px 8px;font-size:11.5px" '
+  + 'onclick="nuevaClave(\''+esc(u.usuario)+'\')">Asignar</button></div></td>';
+USUPERM.forEach(function(p){
+h += '<td style="text-align:center"><input type="checkbox"'+(u.permisos.indexOf(p[0])>=0?' checked':'')
+  + ' onchange="marcarPermiso('+i+',\''+p[0]+'\',this.checked)"></td>';
+});
+h += '</tr>';
+});
+h += '</table></div>'
+  + '<div style="margin-top:14px"><button class="btn" onclick="editarUsuario(\'\')">+ Agregar persona</button> '
+  + '<button class="btn2" onclick="guardarPermisos()">Guardar los permisos</button></div></div>'
+  + '<div class="card"><div class="sec">QUÉ SIGNIFICA CADA PERMISO</div><table class="tbl">'
+  + USUPERM.map(function(p){ return '<tr><td style="width:190px"><b>'+esc(p[1])+'</b></td><td>'+esc(p[2])+'</td></tr>'; }).join('')
+  + '</table></div><div style="height:24px"></div>';
+$('wrap').innerHTML = h;
+}
+function chipClave(e){
+if(e==='CIFRADA')    return '<span class="pill ok">Cifrada</span>';
+if(e==='SIN CIFRAR') return '<span class="pill bad">Sin cifrar</span>';
+return '<span class="pill gris">Sin asignar</span>';
+}
+function rolDe(i, rol){
+var r = window.__USU, base = (r.plantillas && r.plantillas[rol]) || [];
+r.filas[i].rol = rol;
+r.filas[i].permisos = base.slice();
+r.filas[i].cambiado = true;
+pintarUsuarios();
+}
+function marcarPermiso(i, clave, on){
+var f = window.__USU.filas[i], j = f.permisos.indexOf(clave);
+if(on && j<0) f.permisos.push(clave);
+if(!on && j>=0) f.permisos.splice(j,1);
+f.cambiado = true;
+}
+function guardarPermisos(){
+var r = window.__USU;
+var pend = r.filas.filter(function(u){ return u.cambiado; });
+if(!pend.length){ abrirModal('Nada que guardar','<p>No cambió ninguna casilla.</p>'
+  + '<div style="margin-top:12px"><button class="btn" onclick="cerrarModal()">Entendido</button></div>'); return; }
+var listos = 0, errores = [];
+abrirModal('Guardando','<div class="cargando">Guardando los permisos de '+pend.length+' personas…</div>');
+pend.forEach(function(u){
+google.script.run.withSuccessHandler(function(res){
+if(!res || !res.ok) errores.push(u.nombre+': '+((res&&res.mensaje)||'no se pudo'));
+else { u.cambiado = false; if(u.rolGuardar!==false) guardarRolDe(u); }
+listos++;
+if(listos===pend.length){
+cerrarModal();
+abrirModal(errores.length?'Con avisos':'Listo',
+ (errores.length? '<p>'+errores.map(esc).join('<br>')+'</p>' : '<p>Permisos guardados.</p>')
+ + '<div style="margin-top:12px"><button class="btn" onclick="cerrarModal();pantallaUsuarios()">Cerrar</button></div>');
+}
+}).api('ocGuardarPermisos', SES, u.usuario, u.permisos);
+});
+}
+function guardarRolDe(u){
+google.script.run.api('ocGuardarUsuario', SES, { usuario:u.usuario, usuarioOriginal:u.usuario,
+  nombre:u.nombre, rol:u.rol, area:u.area, estado:u.estado, celular:u.celular, cedula:u.cedula });
+}
+function nuevaClave(usuario){
+abrirModal('Contraseña','<div class="cargando">Generando…</div>');
+google.script.run.withSuccessHandler(function(res){
+if(!res || !res.ok){ abrirModal('Ojo','<p>'+esc((res&&res.mensaje)||'No se pudo.')+'</p>'
+  + '<div style="margin-top:12px"><button class="btn" onclick="cerrarModal()">Cerrar</button></div>'); return; }
+abrirModal('Contraseña de '+esc(usuario),
+ '<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:21px;letter-spacing:2px;'
+ + 'background:#F4F6F8;border:1px dashed #9FB3C2;padding:13px;border-radius:8px;text-align:center;margin:8px 0">'
+ + esc(res.clave)+'</div>'
+ + '<div class="caja cno"><b>Anótela ahora y mándesela a la persona.</b> Ya quedó cifrada y no se vuelve a ver, '
+ + 'ni siquiera por usted. Si se pierde, se genera una nueva.</div>'
+ + '<div style="margin-top:12px"><button class="btn" onclick="cerrarModal();pantallaUsuarios()">Ya la anoté</button></div>');
+}).api('ocNuevaClave', SES, usuario);
 }
 function editarUsuario(usuario){
 var r = window.__USU, u = null;

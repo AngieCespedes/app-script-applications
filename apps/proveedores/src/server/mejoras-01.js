@@ -127,7 +127,7 @@ function mjAvisar_(u, tipo, titulo, detalle, enlace, num) {
 function mjListar_(ses) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false };
-  var mio = !ocPuede_(u.rol, 'usuarios');
+  var mio = !ocPuede_(u, 'usuarios');
 
   var hoja = mjHoja_();
   var ult = ocUltimaFila_(hoja);

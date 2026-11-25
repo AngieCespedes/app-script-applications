@@ -170,7 +170,7 @@ function ocPlata_(n) {
 function ocArmarSolicitud_(ses, nit, tipo, medio) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede pedirle documentos a un proveedor.' };
+  if (!ocPuede_(u, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede pedirle documentos a un proveedor.' };
 
   var r = ocProveedor_(ses, nit);
   if (!r.ok) return r;
@@ -223,7 +223,7 @@ function gsEnlaceWa_(cel, texto) {
 function ocEnviarSolicitud_(ses, d) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede pedirle documentos a un proveedor.' };
+  if (!ocPuede_(u, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede pedirle documentos a un proveedor.' };
 
   var nit = String((d && d.nit) || '').replace(/\D/g, '');
   var medio = String((d && d.medio) || 'CORREO').toUpperCase();
@@ -289,7 +289,7 @@ function ocEnviarSolicitud_(ses, d) {
 function ocCerrarSolicitud_(ses, numero, resultado, nota) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede cerrar solicitudes.' };
+  if (!ocPuede_(u, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede cerrar solicitudes.' };
 
   var hoja = gsHoja_();
   var ult = ocUltimaFila_(hoja);
@@ -318,7 +318,7 @@ function ocCerrarSolicitud_(ses, numero, resultado, nota) {
 function ocGestionSolicitudes_(ses) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false };
-  if (!ocPuede_(u.rol, 'proveedores')) return { ok: false, mensaje: 'Su rol no tiene este indicador.' };
+  if (!ocPuede_(u, 'proveedores')) return { ok: false, mensaje: 'Su rol no tiene este indicador.' };
 
   var todas = gsTodas_();
   var resp = todas.filter(function (s) { return s.estado.toUpperCase() === 'CONTESTADA'; });

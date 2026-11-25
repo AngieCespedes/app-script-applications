@@ -72,7 +72,7 @@ function geCarpeta_(nit, nombre) {
 function ocSubirEstadoCuenta_(ses, d, archivo) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede cargar estados de cuenta.' };
+  if (!ocPuede_(u, 'proveedores')) return { ok: false, mensaje: 'Su rol no puede cargar estados de cuenta.' };
 
   var nit = String((d && d.nit) || '').replace(/\D/g, '');
   if (!nit) return { ok: false, mensaje: 'Falta el proveedor.' };

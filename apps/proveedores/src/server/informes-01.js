@@ -59,7 +59,7 @@ function infEnlaces_(libro, hoja) {
 function ocInforme_(ses, que, filtro) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false, mensaje: 'Vuelva a entrar.' };
-  if (!ocPuede_(u.rol, 'informes')) return { ok: false, mensaje: 'Su rol no descarga informes.' };
+  if (!ocPuede_(u, 'informes')) return { ok: false, mensaje: 'Su rol no descarga informes.' };
 
   que = String(que || 'ordenes').toLowerCase();
   if (que === 'proveedores') return infProveedores_(ses, u, filtro);
@@ -79,7 +79,7 @@ function infOrdenes_(ses, u, filtro) {
             o.traza ? o.traza.estado : '', o.falta];
   });
   var titulo = 'ORDENES DE COMPRA — ' +
-    (r.vertodo ? 'toda la empresa' : (ocPuede_(u.rol, 'verequipo') ? 'area de ' + u.area : u.nombre));
+    (r.vertodo ? 'toda la empresa' : (ocPuede_(u, 'verequipo') ? 'area de ' + u.area : u.nombre));
 
   var libro = infLibro_('INFORME DE ORDENES — ' + u.rol);
   var hoja = infEscribir_(libro, titulo,
@@ -93,7 +93,7 @@ function infOrdenes_(ses, u, filtro) {
 }
 
 function infProveedores_(ses, u, filtro) {
-  if (!ocPuede_(u.rol, 'proveedores') && !ocPuede_(u.rol, 'verproveedor')) {
+  if (!ocPuede_(u, 'proveedores') && !ocPuede_(u, 'verproveedor')) {
     return { ok: false, mensaje: 'Su rol no ve el maestro de proveedores.' };
   }
   var r = ocProveedores_(ses, filtro);
@@ -121,7 +121,7 @@ function infProveedores_(ses, u, filtro) {
 }
 
 function infPagos_(ses, u, filtro) {
-  if (!ocPuede_(u.rol, 'pagar') && !ocPuede_(u.rol, 'verpagos')) {
+  if (!ocPuede_(u, 'pagar') && !ocPuede_(u, 'verpagos')) {
     return { ok: false, mensaje: 'Su rol no ve los pagos.' };
   }
   var r = ocPagos_(ses, (filtro && filtro.filtro) || '');
@@ -131,7 +131,7 @@ function infPagos_(ses, u, filtro) {
     return [p.numero, p.fecha, p.orden, p.nit, p.proveedor, p.tipo, p.valor,
             p.banco, p.comprobante, p.registra, p.observa];
   });
-  var titulo = 'PAGOS — ' + (ocPuede_(u.rol, 'pagar') ? 'tesoreria' : 'consulta');
+  var titulo = 'PAGOS — ' + (ocPuede_(u, 'pagar') ? 'tesoreria' : 'consulta');
 
   var libro = infLibro_('INFORME DE PAGOS — ' + u.rol);
   var hoja = infEscribir_(libro, titulo,
@@ -143,7 +143,7 @@ function infPagos_(ses, u, filtro) {
 }
 
 function infSolicitudes_(ses, u) {
-  if (!ocPuede_(u.rol, 'proveedores')) return { ok: false, mensaje: 'Su rol no ve las solicitudes.' };
+  if (!ocPuede_(u, 'proveedores')) return { ok: false, mensaje: 'Su rol no ve las solicitudes.' };
   var todas = gsTodas_();
   var filas = todas.map(function (s) {
     return [s.numero, s.fecha, s.nit, s.proveedor, s.medio, s.quePidio,

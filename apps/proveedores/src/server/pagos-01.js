@@ -56,7 +56,7 @@ function ocPagoFalta_(p) {
 function ocPagos_(ses, filtro) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false };
-  if (!ocPuede_(u.rol, 'pagar') && !ocPuede_(u.rol, 'vertodo')) {
+  if (!ocPuede_(u, 'pagar') && !ocPuede_(u, 'vertodo')) {
     return { ok: false, mensaje: 'No tiene permiso para ver los pagos.' };
   }
 
@@ -66,7 +66,7 @@ function ocPagos_(ses, filtro) {
   var ult = ocUltimaFila_(hoja);
   if (ult < 2) {
     return { ok: true, filas: [], resumen: ocPagosResumen_([]),
-             puedePagar: ocPuede_(u.rol, 'pagar'), tipos: PG_TIPOS };
+             puedePagar: ocPuede_(u, 'pagar'), tipos: PG_TIPOS };
   }
 
   var d = hoja.getRange(2, 1, ult - 1, PG_ANCHO).getValues();
@@ -81,7 +81,7 @@ function ocPagos_(ses, filtro) {
 
   filas.reverse();
   return { ok: true, filas: filas, resumen: ocPagosResumen_(todos),
-           puedePagar: ocPuede_(u.rol, 'pagar'), tipos: PG_TIPOS };
+           puedePagar: ocPuede_(u, 'pagar'), tipos: PG_TIPOS };
 }
 
 function ocPagoPasa_(p, filtro) {
@@ -137,7 +137,7 @@ function ocFilaPago_(hoja, numero) {
 
 function ocPagoDirecto_(ses, d, soporte) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) {
+  if (!u || !ocPuede_(u, 'pagar')) {
     return { ok: false, mensaje: 'No tiene permiso para registrar pagos.' };
   }
 
@@ -189,7 +189,7 @@ function ocPagoRevisar_(d) {
 
 function ocCompletarPago_(ses, numero, d, soporte) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) {
+  if (!u || !ocPuede_(u, 'pagar')) {
     return { ok: false, mensaje: 'No tiene permiso para completar pagos.' };
   }
 

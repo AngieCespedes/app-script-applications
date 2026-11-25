@@ -7,6 +7,7 @@
 function gpMigrar_() {
   var hecho = [];
   hecho.push(gpMigrarColumnasOrdenes_());
+  hecho.push(gpMigrarColumnasUsuarios_());
   hecho.push(gpMigrarHoja_(OC_H_SOL, [
     'N° SOLICITUD', 'FECHA', 'NIT', 'PROVEEDOR', 'MEDIO', 'QUE SE PIDIO',
     'A QUIEN SE LE PIDIO', 'QUIEN LO PIDIO', 'FECHA DE RESPUESTA', 'DIAS',
@@ -49,6 +50,50 @@ function gpMigrarColumnasOrdenes_() {
   if (!agregadas.length) return '';
   gpProtegerEncabezado_(hoja);
   return OC_H_ORD + ': columnas nuevas — ' + agregadas.join(', ');
+}
+
+/**
+ * Hoja 07: agrega la cedula y una columna por permiso.
+ * A cada persona que ya existia se le dejan marcadas las casillas de su rol,
+ * para que nadie pierda ni gane permisos con la migracion.
+ */
+function gpMigrarColumnasUsuarios_() {
+  var hoja = ocHoja_(OC_H_USU);
+  var titulos = [{ col: OC_USU_CED, titulo: 'CEDULA' }];
+  for (var i = 0; i < OC_PERMISOS_LISTA.length; i++) {
+    titulos.push({ col: OC_USU_PERM + i, titulo: OC_PERMISOS_LISTA[i][1].toUpperCase() });
+  }
+
+  if (hoja.getMaxColumns() < OC_USU_ANCHO) {
+    hoja.insertColumnsAfter(hoja.getMaxColumns(), OC_USU_ANCHO - hoja.getMaxColumns());
+  }
+
+  var agregadas = [];
+  titulos.forEach(function (t) {
+    var actual = String(hoja.getRange(1, t.col).getValue()).trim();
+    if (actual === t.titulo) return;
+    if (actual !== '') {
+      throw new Error('La columna ' + t.col + ' de «' + OC_H_USU + '» dice «' + actual +
+        '». No la sobrescribo: revise la hoja antes de seguir.');
+    }
+    hoja.getRange(1, t.col).setValue(t.titulo);
+    agregadas.push(t.titulo);
+  });
+  if (!agregadas.length) return '';
+
+  /* A quien ya estaba, le dejamos lo de su rol */
+  var ult = ocUltimaFila_(hoja);
+  if (ult >= 2) {
+    var roles = hoja.getRange(2, 4, ult - 1, 1).getValues();
+    var filas = [];
+    for (var f = 0; f < roles.length; f++) {
+      var base = OC_PERMISOS[String(roles[f][0]).trim().toUpperCase()] || [];
+      filas.push(OC_PERMISOS_LISTA.map(function (p) { return base.indexOf(p[0]) >= 0 ? 'SI' : 'NO'; }));
+    }
+    if (filas.length) hoja.getRange(2, OC_USU_PERM, filas.length, OC_PERMISOS_LISTA.length).setValues(filas);
+  }
+  gpProtegerEncabezado_(hoja);
+  return OC_H_USU + ': cedula y ' + OC_PERMISOS_LISTA.length + ' columnas de permisos';
 }
 
 /** Crea una hoja con sus encabezados si no existe. Si existe, no la toca. */

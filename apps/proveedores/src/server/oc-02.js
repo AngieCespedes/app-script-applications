@@ -169,7 +169,7 @@ function ocFilaOrden_(hoja, numero) {
 
 function ocCrearOrden_(ses, d, cotizacion) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'solicitar')) return { ok: false, mensaje: 'No tiene permiso para crear ordenes.' };
+  if (!u || !ocPuede_(u, 'solicitar')) return { ok: false, mensaje: 'No tiene permiso para crear ordenes.' };
 
   var prov = ocBuscarProveedor_(ses, d.nit);
   if (!prov.encontrado) return { ok: false, mensaje: prov.mensaje };
@@ -222,7 +222,7 @@ function ocReemplazarCotizacion_(ses, numero, archivo) {
 
   var estado = String(hoja.getRange(fila, 21).getValue()).trim().toUpperCase();
   if (estado !== 'SOLICITADA') return { ok: false, mensaje: 'Ya no se puede cambiar: la orden esta en ' + estado + '.' };
-  if (!ocPuede_(u.rol, 'vertodo') && !ocIgual_(hoja.getRange(fila, 4).getValue(), u.usuario)) {
+  if (!ocPuede_(u, 'vertodo') && !ocIgual_(hoja.getRange(fila, 4).getValue(), u.usuario)) {
     return { ok: false, mensaje: 'Esa orden no es suya.' };
   }
 
@@ -238,7 +238,7 @@ function ocReemplazarCotizacion_(ses, numero, archivo) {
 
 function ocDecidir_(ses, numero, decision, comentario) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'aprobar')) return { ok: false, mensaje: 'No tiene permiso para aprobar.' };
+  if (!u || !ocPuede_(u, 'aprobar')) return { ok: false, mensaje: 'No tiene permiso para aprobar.' };
 
   var hoja = ocHoja_(OC_H_ORD);
   var fila = ocFilaOrden_(hoja, numero);
@@ -250,6 +250,20 @@ function ocDecidir_(ses, numero, decision, comentario) {
   var dec = String(decision).toUpperCase() === 'APROBADA' ? 'APROBADA' : 'RECHAZADA';
   if (dec === 'RECHAZADA' && !String(comentario || '').trim()) {
     return { ok: false, mensaje: 'Para rechazar hay que escribir el motivo.' };
+  }
+
+  /* Nadie aprueba una compra a si mismo: si el proveedor de la orden es la
+     misma persona que esta aprobando, la orden la tiene que aprobar otro.
+     Se compara contra su cedula y tambien contra quien pidio la orden. */
+  if (dec === 'APROBADA') {
+    var nitProv = String(hoja.getRange(fila, 8).getValue()).replace(/\D/g, '');
+    if (u.cedula && nitProv && nitProv === u.cedula) {
+      return { ok: false, mensaje: 'Esta orden es a nombre suyo como proveedor, asi que la tiene que aprobar otra persona. ' +
+                                   'No es desconfianza: es que nadie puede aprobar un pago a si mismo.' };
+    }
+    if (ocIgual_(hoja.getRange(fila, 4).getValue(), u.usuario)) {
+      return { ok: false, mensaje: 'Usted pidio esta orden, asi que la tiene que aprobar otra persona.' };
+    }
   }
 
   hoja.getRange(fila, 21).setValue(dec);

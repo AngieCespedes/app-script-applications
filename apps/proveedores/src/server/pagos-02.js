@@ -69,7 +69,7 @@ function ocCelularesDe_(lista) {
 
 function ocDatosEnvio_(ses, numero) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
+  if (!u || !ocPuede_(u, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
 
   var hoja = ocHoja_(OC_H_PAG);
   var fila = ocFilaPago_(hoja, numero);
@@ -116,7 +116,7 @@ function ocTextoSoporte_(p, corto) {
 
 function ocEnviarSoporte_(ses, numero, destino) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
+  if (!u || !ocPuede_(u, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
 
   var hoja = ocHoja_(OC_H_PAG);
   var fila = ocFilaPago_(hoja, numero);
@@ -168,7 +168,7 @@ function ocMarcarAviso_(hoja, fila, correo, u) {
    el soporte se manda por WhatsApp, que no deja adjuntar archivos. */
 function ocEnlaceSoporte_(ses, numero) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
+  if (!u || !ocPuede_(u, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
 
   var hoja = ocHoja_(OC_H_PAG);
   var fila = ocFilaPago_(hoja, numero);
@@ -198,7 +198,7 @@ function ocEnlaceSoporte_(ses, numero) {
 
 function ocMarcarWhatsapp_(ses, numero, celular) {
   var u = ocUsuario_(ses);
-  if (!u || !ocPuede_(u.rol, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
+  if (!u || !ocPuede_(u, 'pagar')) return { ok: false, mensaje: 'No tiene permiso.' };
 
   var hoja = ocHoja_(OC_H_PAG);
   var fila = ocFilaPago_(hoja, numero);
