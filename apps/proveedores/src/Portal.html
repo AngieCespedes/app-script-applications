@@ -757,8 +757,8 @@ abrirModal('Contraseña de '+esc(usuario),
  '<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:21px;letter-spacing:2px;'
  + 'background:#F4F6F8;border:1px dashed #9FB3C2;padding:13px;border-radius:8px;text-align:center;margin:8px 0">'
  + esc(res.clave)+'</div>'
- + '<div class="caja cno"><b>Anótela ahora y mándesela a la persona.</b> Ya quedó cifrada y no se vuelve a ver, '
- + 'ni siquiera por usted. Si se pierde, se genera una nueva.</div>'
+ + '<div class="caja cav"><b>Anótela y mándesela a la persona.</b> Queda escrita en la hoja 07, '
+ + 'así que usted la puede volver a consultar cuando quiera.</div>'
  + '<div style="margin-top:12px"><button class="btn" onclick="cerrarModal();pantallaUsuarios()">Ya la anoté</button></div>');
 }).api('ocNuevaClave', SES, usuario);
 }
