@@ -43,15 +43,37 @@ var OC_CARPETA   = 'ORDENES DE COMPRA';
 var OC_SEP       = '\u0001';
 
 /* Que puede hacer cada rol.
-   vertodo  = ve todas las ordenes de la empresa
-   verarea  = ve solo las ordenes de su propia area */
+   vertodo     = ve todas las ordenes de la empresa
+   verarea     = ve solo las ordenes de su propia area
+   verequipo   = ve todas las ordenes de su area aunque las pidan otros (lider)
+   proveedores = gestiona el maestro: pide documentos, negociacion, estados de cuenta
+   verproveedor= ve RUT, certificacion y negociacion, sin poder cambiarlos
+   almacen     = confirma como llego la mercancia
+   verpagos    = ve los pagos y descarga soportes, sin poder tocarlos
+   informes    = descarga en Excel o PDF lo que esa persona ve */
 var OC_PERMISOS = {
-  'ADMINISTRADOR': ['solicitar', 'aprobar', 'pagar', 'facturar', 'causar', 'vertodo', 'usuarios'],
-  'GERENCIA':      ['aprobar', 'vertodo'],
-  'TESORERIA':     ['pagar', 'vertodo'],
-  'COMPRAS':       ['solicitar', 'facturar', 'vertodo'],
-  'CONTABILIDAD':  ['causar', 'vertodo'],
-  'SOLICITANTE':   ['solicitar', 'verarea']
+  'ADMINISTRADOR':     ['solicitar', 'aprobar', 'pagar', 'facturar', 'causar', 'almacen',
+                        'proveedores', 'verproveedor', 'verpagos', 'vertodo', 'informes', 'usuarios'],
+  'GERENCIA':          ['solicitar', 'aprobar', 'verproveedor', 'verpagos', 'vertodo', 'informes'],
+  'TESORERIA':         ['pagar', 'verproveedor', 'vertodo', 'informes'],
+  'COMPRAS':           ['solicitar', 'facturar', 'almacen', 'proveedores', 'verproveedor',
+                        'verpagos', 'vertodo', 'informes'],
+  'CONTABILIDAD':      ['causar', 'verproveedor', 'vertodo', 'informes'],
+  'LIDER INGENIERIA':  ['solicitar', 'verarea', 'verequipo', 'verpagos', 'informes'],
+  'SOLICITANTE':       ['solicitar', 'verarea', 'informes']
+};
+
+/* Hojas nuevas del gestor de proveedores */
+var OC_H_SOL     = '14 SOLICITUDES A PROVEEDORES';
+var OC_H_EDO     = '15 ESTADOS DE CUENTA';
+var OC_H_MEJ     = '16 MEJORAS Y FALLAS';
+
+/* Dias habiles que se esperan antes de marcar vencida una solicitud */
+var OC_DIAS_SOL  = 5;
+
+/* Videos de capacitacion por rol (carpeta 01 APLICACION / VIDEOS DE CAPACITACION) */
+var OC_VIDEOS = {
+  'carpeta': 'https://drive.google.com/drive/folders/14DEKHe8yvU1qdwdey33-v4og802ctbQb'
 };
 
 /**

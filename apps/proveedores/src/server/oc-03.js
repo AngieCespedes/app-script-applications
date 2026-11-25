@@ -52,6 +52,65 @@ function ocRegistrarPago_(ses, numero, d, soporte) {
   }
 }
 
+/* ---------- almacen: como llego la mercancia ---------- */
+
+var OC_COMO_LLEGO = ['LLEGO BIEN', 'LLEGO AVERIADA', 'LLEGO INCOMPLETA', 'NO LLEGO'];
+
+/**
+ * Deja la constancia de almacen y se la muestra a quien pidio la orden en su
+ * linea de tiempo. La foto es obligatoria cuando algo llego mal: es el soporte
+ * para reclamarle al proveedor o a la transportadora, y la fecha demuestra que
+ * se reclamo a tiempo.
+ */
+function ocRegistrarLlegada_(ses, numero, d, foto) {
+  var u = ocUsuario_(ses);
+  if (!u || !ocPuede_(u.rol, 'almacen')) {
+    return { ok: false, mensaje: 'No tiene permiso para confirmar la llegada de mercancia.' };
+  }
+
+  var como = String((d && d.comoLlego) || '').toUpperCase();
+  if (OC_COMO_LLEGO.indexOf(como) < 0) {
+    return { ok: false, mensaje: 'Escoja como llego: bien, averiada, incompleta o no llego.' };
+  }
+  var bien = como === 'LLEGO BIEN';
+  if (!bien && !String((d && d.observaciones) || '').trim()) {
+    return { ok: false, mensaje: 'Cuente que paso con la mercancia: que falto o que llego averiado.' };
+  }
+  if (!bien && !(foto && foto.datos)) {
+    return { ok: false, mensaje: 'Suba una foto de como llego. Sin la foto no hay con que reclamarle al proveedor.' };
+  }
+
+  var hoja = ocHoja_(OC_H_ORD);
+  var fila = ocFilaOrden_(hoja, numero);
+  if (!fila) return { ok: false, mensaje: 'No encontre esa orden.' };
+
+  var enlace = '';
+  if (foto && foto.datos) {
+    try {
+      var blob = Utilities.newBlob(Utilities.base64Decode(foto.datos),
+        foto.tipo || 'image/jpeg',
+        'LLEGADA ' + numero + ' ' + Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd') +
+          (foto.nombre && foto.nombre.indexOf('.') > 0
+            ? foto.nombre.substring(foto.nombre.lastIndexOf('.')) : '.jpg'));
+      enlace = ocCarpeta_(numero).createFile(blob).getUrl();
+    } catch (e) {
+      return { ok: false, mensaje: 'No se pudo guardar la foto: ' + e.message };
+    }
+  }
+
+  hoja.getRange(fila, 29).setValue(bien ? 'SI' : 'PARCIAL');
+  hoja.getRange(fila, 30).setValue(d.fechaRecibido || new Date());
+  hoja.getRange(fila, 31).setValue(d.recibidoPor || u.nombre);
+  hoja.getRange(fila, OC_ORD_COMO).setValue(como);
+  if (enlace) hoja.getRange(fila, OC_ORD_FOTO).setValue(enlace);
+  if (d.observaciones) hoja.getRange(fila, OC_ORD_OBSA).setValue(String(d.observaciones));
+
+  return { ok: true, foto: enlace,
+           mensaje: bien
+             ? 'Listo. Quien pidio la orden ya lo ve en su linea de tiempo.'
+             : 'Registrado con la novedad y la foto. Quien pidio la orden ya lo ve, y queda el soporte para reclamar.' };
+}
+
 /* ---------- compras: mercancia y factura ---------- */
 
 function ocRegistrarFactura_(ses, numero, d, archivo) {
@@ -65,6 +124,9 @@ function ocRegistrarFactura_(ses, numero, d, archivo) {
   if (d.mercancia)      hoja.getRange(fila, 29).setValue(d.mercancia);
   if (d.fechaRecibido)  hoja.getRange(fila, 30).setValue(d.fechaRecibido);
   if (d.recibidoPor)    hoja.getRange(fila, 31).setValue(d.recibidoPor);
+  /* El numero con que quedo en World Office no es el mismo con que llego la
+     factura del proveedor: se guardan los dos para poder rastrearla. */
+  if (d.numeroWO)       hoja.getRange(fila, OC_ORD_WO).setValue(d.numeroWO);
 
   var aviso = '';
   if (d.tipoDoc && String(d.tipoDoc).toUpperCase() !== 'PENDIENTE') {
@@ -114,6 +176,57 @@ function ocCausar_(ses, numero, comentario) {
 
 /* ---------- consultas ---------- */
 
+/* Columnas nuevas de la hoja 10 (las crea migracionAlmacen_). */
+var OC_ORD_COMO  = 41;   /* COMO LLEGO LA MERCANCIA */
+var OC_ORD_FOTO  = 42;   /* FOTO DE LA LLEGADA */
+var OC_ORD_OBSA  = 43;   /* OBSERVACION DE ALMACEN */
+var OC_ORD_WO    = 44;   /* N° EN WORLD OFFICE */
+var OC_ORD_ANCHO = 44;
+
+/* Semaforo de la orden: verde solo cuando esta todo.
+   Lo ve igual compras, gerencia y quien pidio la orden. */
+function ocTraza_(o) {
+  if (String(o.estado).toUpperCase() === 'RECHAZADA') return { estado: 'RECHAZADA', color: 'gris', detalle: '' };
+  var mal = o.comoLlego && String(o.comoLlego).toUpperCase().indexOf('BIEN') < 0;
+  if (mal) return { estado: 'CON NOVEDAD', color: 'rojo', detalle: o.obsAlmacen || 'La mercancia no llego bien' };
+
+  var falta = [];
+  if (o.saldo > 0) falta.push('pagar');
+  if (!o.factura) falta.push('factura');
+  if (o.factura && !o.numeroWO) falta.push('cruce contable');
+  if (!o.comoLlego) falta.push('almacen');
+
+  if (!falta.length) return { estado: 'OK', color: 'verde', detalle: 'Factura cruzada y mercancia completa' };
+  return { estado: 'FALTA ' + falta.join(' y ').toUpperCase(), color: 'ambar', detalle: '' };
+}
+
+/* La linea de tiempo que ve cada area de SU orden. */
+function ocLineaTiempo_(o) {
+  var p = [];
+  p.push({ hito: 'La pidio ' + o.solicita + ' (' + o.area + ')', fecha: o.fecha, ok: true });
+  p.push({ hito: String(o.estado).toUpperCase() === 'RECHAZADA'
+             ? 'Gerencia la rechazo: ' + (o.comentario || 'sin comentario')
+             : 'Gerencia la aprobo',
+           fecha: o.fechaDecision || '', ok: String(o.estado).toUpperCase() !== 'SOLICITADA',
+           alerta: String(o.estado).toUpperCase() === 'RECHAZADA' });
+  p.push({ hito: o.pagado > 0 ? 'Tesoreria pago' + (o.saldo > 0 ? ' un abono, queda saldo' : '') : 'Falta el pago',
+           fecha: o.fechaPago || '', ok: o.pagado > 0 && o.saldo <= 0, alerta: o.pagado > 0 && o.saldo > 0,
+           soporte: o.soporte || '' });
+  p.push({ hito: o.factura
+             ? 'Llego la factura ' + o.factura + (o.numeroWO ? ' — en World Office como ' + o.numeroWO
+                                                             : ' — falta cruzarla con contabilidad')
+             : 'Falta la factura',
+           fecha: o.fechaFactura || '', ok: !!(o.factura && o.numeroWO), alerta: !!(o.factura && !o.numeroWO),
+           soporte: o.linkFactura || '' });
+  p.push({ hito: o.comoLlego
+             ? 'Almacen: ' + o.comoLlego + (o.obsAlmacen ? ' — ' + o.obsAlmacen : '')
+             : 'Falta confirmar la llegada a almacen',
+           fecha: o.fechaRecibido || '', ok: !!(o.comoLlego && String(o.comoLlego).toUpperCase().indexOf('BIEN') >= 0),
+           alerta: !!(o.comoLlego && String(o.comoLlego).toUpperCase().indexOf('BIEN') < 0),
+           soporte: o.fotoLlegada || '' });
+  return p;
+}
+
 function ocOrdenes_(ses, filtro) {
   var u = ocUsuario_(ses);
   if (!u) return { ok: false };
@@ -122,16 +235,20 @@ function ocOrdenes_(ses, filtro) {
   var ult = ocUltimaFila_(hoja);
   if (ult < 2) return { ok: true, filas: [], resumen: ocResumen_([]), rol: u.rol, vertodo: ocPuede_(u.rol, 'vertodo'), area: u.area };
 
-  var d = hoja.getRange(2, 1, ult - 1, 40).getValues();
+  var d = hoja.getRange(2, 1, ult - 1, OC_ORD_ANCHO).getValues();
   var todo = ocPuede_(u.rol, 'vertodo');
+  var equipo = ocPuede_(u.rol, 'verequipo');
   var filas = [], mias = [];
 
   for (var i = 0; i < d.length; i++) {
     if (String(d[i][0]).trim() === '') continue;
-    /* Quien no ve todo, ve las ordenes de SU AREA (no solo las suyas):
-       asi un ingeniero ve lo de ingenieria y la persona del sistema de
-       gestion ve lo del sistema de gestion. */
-    if (!todo && !ocIgual_(d[i][5], u.area)) continue;
+    /* Quien ve todo, ve la empresa entera.
+       El lider de un area ve todas las ordenes de su area, aunque las pidan otros.
+       Los demas ven solo las ordenes que ellos mismos pidieron. */
+    if (!todo) {
+      if (equipo) { if (!ocIgual_(d[i][5], u.area)) continue; }
+      else if (!ocIgual_(d[i][3], u.usuario)) continue;
+    }
 
     var o = {
       numero: String(d[i][0]),
@@ -155,19 +272,30 @@ function ocOrdenes_(ses, filtro) {
       cotizacion: String(d[i][19]),
       estado: String(d[i][20]),
       decidePor: String(d[i][21]),
+      fechaDecision: ocFecha_(d[i][22]),
       comentario: String(d[i][23]),
       fechaPago: ocFecha_(d[i][24]),
       pagado: ocNum_(d[i][25]),
       saldo: ocNum_(d[i][26]),
       soporte: String(d[i][27]),
       mercancia: String(d[i][28]),
+      fechaRecibido: ocFecha_(d[i][29]),
+      recibidoPor: String(d[i][30]),
       tipoDoc: String(d[i][31]),
       factura: String(d[i][32]),
+      fechaFactura: ocFecha_(d[i][33]),
+      valorFacturado: ocNum_(d[i][34]),
       linkFactura: String(d[i][35]),
+      causada: String(d[i][36]),
       dias: d[i][37] === '' ? '' : ocNum_(d[i][37]),
       falta: String(d[i][38]),
+      comoLlego: String(d[i][OC_ORD_COMO - 1] || ''),
+      fotoLlegada: String(d[i][OC_ORD_FOTO - 1] || ''),
+      obsAlmacen: String(d[i][OC_ORD_OBSA - 1] || ''),
+      numeroWO: String(d[i][OC_ORD_WO - 1] || ''),
       esMia: ocIgual_(d[i][3], u.usuario)
     };
+    o.traza = ocTraza_(o);
 
     mias.push(o);
 
