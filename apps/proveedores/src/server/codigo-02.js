@@ -14,7 +14,9 @@ function ssvGuardarComercial_(datos) {
     h.getRange(ult, 3, 1, 7).copyTo(h.getRange(fila, 3, 1, 7));
     h.getRange(ult, 14, 1, 4).copyTo(h.getRange(fila, 14, 1, 4));
     h.getRange(ult, 34, 1, 2).copyTo(h.getRange(fila, 34, 1, 2));
-    h.getRange(fila, 1).setValue(clave);
+    /* Como texto: las busquedas del libro comparan el NIT como texto
+       (VLOOKUP(""&NIT, ...)) y un numero no cruza con ellas. */
+    h.getRange(fila, 1).setValue("'" + clave);
     h.getRange(fila, 2).setValue(datos.nombre || '');
     h.getRange(fila, 10, 1, 4).clearContent();
     if (datos.telefono) h.getRange(fila, 10).setValue(String(datos.telefono).replace(/[^0-9]/g, ''));
