@@ -100,10 +100,47 @@ var OC_H_MEJ     = '16 MEJORAS Y FALLAS';
 /* Dias habiles que se esperan antes de marcar vencida una solicitud */
 var OC_DIAS_SOL  = 5;
 
-/* Videos de capacitacion por rol (carpeta 01 APLICACION / VIDEOS DE CAPACITACION) */
+/**
+ * Videos de capacitacion (carpeta 01 APLICACION / VIDEOS DE CAPACITACION).
+ * Se ven dentro del portal, sin descargar nada. A cada persona le salen los
+ * que le sirven segun lo que puede hacer, no segun el nombre de su rol: si
+ * manana le da el permiso de pagar a alguien, le aparece el video del tema.
+ */
 var OC_VIDEOS = {
-  'carpeta': 'https://drive.google.com/drive/folders/14DEKHe8yvU1qdwdey33-v4og802ctbQb'
+  carpeta: 'https://drive.google.com/drive/folders/14DEKHe8yvU1qdwdey33-v4og802ctbQb',
+  proveedor: { id: '1WfEPoKK-1sQfYBAeehLHxiGRQ6nUEWC5',
+               titulo: 'Como registrarse como proveedor',
+               dura: '5 minutos' },
+  lista: [
+    { id: '14-IKMWUTp3ecwhlSiSgeqoRCv2VtZzVx',
+      titulo: '1 — Como pedir una compra',
+      dura: '9 minutos',
+      para: 'Para quien pide compras y para gerencia.',
+      cuando: ['solicitar', 'aprobar'] },
+    { id: '1EHYa1jTXy-NTmGiJHapQs8_k7bBnZx3w',
+      titulo: '2 — Como funciona por dentro',
+      dura: '12 minutos',
+      para: 'Para tesoreria, compras y contabilidad.',
+      cuando: ['pagar', 'facturar', 'causar', 'almacen'] },
+    { id: '1i-MQIIZOVVdBDn0Qki8y9rxfSo7p4HpC',
+      titulo: '4 — El gestor de proveedores',
+      dura: '11 minutos',
+      para: 'Para compras: proveedores, facturas, almacen e informes.',
+      cuando: ['proveedores'] }
+  ]
 };
+
+/** Los videos que le sirven a una persona, por lo que puede hacer. */
+function ocVideosDe_(u) {
+  var out = [];
+  OC_VIDEOS.lista.forEach(function (v) {
+    for (var i = 0; i < v.cuando.length; i++) {
+      if (ocPuede_(u, v.cuando[i])) { out.push(v); return; }
+    }
+  });
+  /* Si por lo que sea no le toca ninguno, al menos el primero. */
+  return out.length ? out : [OC_VIDEOS.lista[0]];
+}
 
 /**
  * ============================================================

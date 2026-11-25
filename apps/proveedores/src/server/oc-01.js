@@ -158,7 +158,7 @@ function ocContextoDe_(u) {
       vertodo:      ocPuede_(u, 'vertodo'),
       usuarios:     ocPuede_(u, 'usuarios')
     },
-    videos: OC_VIDEOS.carpeta
+    videos: ocVideosDe_(u)
   };
 }
 
