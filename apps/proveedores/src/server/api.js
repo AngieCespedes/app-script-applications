@@ -27,6 +27,8 @@ var Rutas_ = {
   ocListas: { tipo: 'web', fn: function () { return ocListas_.apply(null, arguments); } },
   ocMensajeProveedor: { tipo: 'web', fn: function () { return ocMensajeProveedor_.apply(null, arguments); } },
   ocOrdenes: { tipo: 'web', fn: function () { return ocOrdenes_.apply(null, arguments); } },
+  ocDatosPago: { tipo: 'web', fn: function () { return ocDatosPago_.apply(null, arguments); } },
+  ocRevisarRetencion: { tipo: 'web', fn: function () { return ocRevisarRetencion_.apply(null, arguments); } },
   ocPagoDirecto: { tipo: 'web', fn: function () { return ocPagoDirecto_.apply(null, arguments); } },
   ocPagos: { tipo: 'web', fn: function () { return ocPagos_.apply(null, arguments); } },
   ocArmarSolicitud: { tipo: 'web', fn: function () { return ocArmarSolicitud_.apply(null, arguments); } },

@@ -33,7 +33,11 @@ function gpMigrarColumnasOrdenes_() {
     { col: OC_ORD_COMO, titulo: 'COMO LLEGO LA MERCANCIA' },
     { col: OC_ORD_FOTO, titulo: 'FOTO DE LA LLEGADA' },
     { col: OC_ORD_OBSA, titulo: 'OBSERVACION DE ALMACEN' },
-    { col: OC_ORD_WO,   titulo: 'N° EN WORLD OFFICE' }
+    { col: OC_ORD_WO,   titulo: 'N° EN WORLD OFFICE' },
+    { col: OC_ORD_DOCESP,  titulo: 'QUE DOCUMENTO VA A DAR EL PROVEEDOR' },
+    { col: OC_ORD_ASUME,   titulo: 'QUIEN ASUME LA RETENCION' },
+    { col: OC_ORD_RETPOR,  titulo: 'RETENCION REVISADA POR' },
+    { col: OC_ORD_RETNOTA, titulo: 'NOTA DE LA RETENCION' }
   ];
   var agregadas = [];
   nuevas.forEach(function (n) {
