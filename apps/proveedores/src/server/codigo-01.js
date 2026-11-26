@@ -126,7 +126,11 @@ function guardarArchivoEnDrive_(archivoObjeto, carpetaTarget, prefijoNombre) {
  * Diseña y despacha el correo formal con estilos inline compatibles con clientes de correo.
  */
 function enviarAlertaCorreo_(datos, urlCarpeta, urlRut, urlCert, urlEstado) {
-  var correoDestinatario = "asistentecontablesocialsolar@gmail.com"; 
+  /* A quien le avisa el sistema cuando se registra un proveedor. Va en las
+     propiedades del script, no escrito aqui: el dia que cambie la persona,
+     se cambia desde el menu «Instalar» y no tocando el codigo. Si no esta
+     configurado, le llega a la dueña del libro para que no se pierda. */
+  var correoDestinatario = Config_.id('CORREO_AVISOS') || Session.getEffectiveUser().getEmail();
   var urlLogo = "https://socialsolar.com.co";
 
   var htmlBody = `
@@ -156,10 +160,9 @@ function enviarAlertaCorreo_(datos, urlCarpeta, urlRut, urlCert, urlEstado) {
       </div>
       
       <div style="border-top: 2px dashed #eee; padding-top: 15px; margin-top: 20px; font-size: 13px; color: #555;">
-        <p style="margin: 2px 0; font-weight: bold; color: #1a1a1a;">Elaborado por:</p>
-        <p style="margin: 2px 0; font-size: 14px; color: #444;"><strong>Paula Catalina Martínez Villate</strong></p>
-        <p style="margin: 2px 0; color: #777; font-style: italic;">Coordinadora Contable y Administrativa</p>
-        <p style="margin: 2px 0; font-size: 11px; color: #fbb03b; font-weight: bold; text-transform: uppercase;">Social Solar – Energía Solar</p>
+        <p style="margin: 2px 0; color: #777; font-style: italic;">Aviso automático del portal de proveedores</p>
+        <p style="margin: 2px 0; font-size: 14px; color: #444;"><strong>Área Contable y Administrativa</strong></p>
+        <p style="margin: 2px 0; font-size: 11px; color: #fbb03b; font-weight: bold; text-transform: uppercase;">Social Solar S.A.S. – Energía Solar</p>
       </div>
     </div>
   </div>
