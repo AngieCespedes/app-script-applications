@@ -249,17 +249,74 @@ function ocReemplazarCotizacion_(ses, numero, archivo) {
   if (!fila) return { ok: false, mensaje: 'No encontre esa orden.' };
 
   var estado = String(hoja.getRange(fila, 21).getValue()).trim().toUpperCase();
-  if (estado !== 'SOLICITADA') return { ok: false, mensaje: 'Ya no se puede cambiar: la orden esta en ' + estado + '.' };
+  var actual = String(hoja.getRange(fila, 20).getValue()).trim();
+
+  /* Adjuntar una cotizacion que falta es un soporte: no cambia valores ni
+     obliga a volver a aprobar, asi que se permite con la orden ya aprobada.
+     Reemplazar una que ya esta solo se puede mientras nadie haya decidido. */
+  if (estado === 'RECHAZADA') return { ok: false, mensaje: 'Esa orden esta rechazada.' };
+  if (actual && estado !== 'SOLICITADA') {
+    return { ok: false, mensaje: 'Ya tiene cotizacion y la orden esta en ' + estado + ': no se puede reemplazar.' };
+  }
   if (!ocPuede_(u, 'vertodo') && !ocIgual_(hoja.getRange(fila, 4).getValue(), u.usuario)) {
     return { ok: false, mensaje: 'Esa orden no es suya.' };
   }
 
-  var link = ocGuardarArchivo_(numero, archivo, 'COTIZACION CORREGIDA');
+  var link = ocGuardarArchivo_(numero, archivo, actual ? 'COTIZACION CORREGIDA' : 'COTIZACION');
   hoja.getRange(fila, 20).setValue(link);
   var obs = String(hoja.getRange(fila, 40).getValue());
   hoja.getRange(fila, 40).setValue((obs ? obs + ' | ' : '') +
-    'Cotizacion reemplazada el ' + ocFecha_(new Date()) + ' por ' + u.nombre);
-  return { ok: true, link: link };
+    (actual ? 'Cotizacion reemplazada el ' : 'Cotizacion adjuntada el ') +
+    ocFecha_(new Date()) + ' por ' + u.nombre);
+  return { ok: true, link: link, mensaje: actual ? 'Cotizacion reemplazada.' : 'Cotizacion adjuntada.' };
+}
+
+/* Corregir la orden. Solo quien la pidio y solo mientras nadie la haya
+   decidido: cambiarle valores despues de aprobada obligaria a aprobarla
+   de nuevo, asi que ahi se bloquea y toca pedirle a gerencia que la rechace. */
+function ocEditarOrden_(ses, numero, d) {
+  var u = ocUsuario_(ses);
+  if (!u) return { ok: false, mensaje: 'Su sesion se cerro. Vuelva a entrar.' };
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) { return { ok: false, mensaje: 'El sistema esta ocupado, intente otra vez.' }; }
+
+  try {
+    var hoja = ocHoja_(OC_H_ORD);
+    var fila = ocFilaOrden_(hoja, numero);
+    if (!fila) return { ok: false, mensaje: 'No encontre esa orden.' };
+
+    var estado = String(hoja.getRange(fila, 21).getValue()).trim().toUpperCase();
+    if (estado !== 'SOLICITADA') {
+      return { ok: false, mensaje: 'Ya no se puede corregir: la orden esta en ' + estado +
+        '. Si hay que cambiarle valores, pidale a gerencia que la rechace y vuelvala a pedir.' };
+    }
+    if (!ocIgual_(hoja.getRange(fila, 4).getValue(), u.usuario)) {
+      return { ok: false, mensaje: 'Esa orden la pidio otra persona.' };
+    }
+    if (!String(d.centro || '').trim()) return { ok: false, mensaje: 'Escoja el centro de costo.' };
+
+    var r = ocRetenciones_(ses, String(hoja.getRange(fila, 12).getValue()),
+                           d.base, d.iva, d.declarante !== false, d.tarifaIca);
+
+    if (d.fechaNecesidad) hoja.getRange(fila, 3).setValue(d.fechaNecesidad);
+    hoja.getRange(fila, 7).setValue(d.centro);
+    hoja.getRange(fila, 11).setValue(d.descripcion || '');
+    hoja.getRange(fila, 13).setValue(ocNum_(d.base));
+    hoja.getRange(fila, 14).setValue(ocNum_(d.iva));
+    hoja.getRange(fila, 16).setValue(r.retefuente);
+    hoja.getRange(fila, 17).setValue(r.reteiva);
+    hoja.getRange(fila, 18).setValue(r.reteica);
+
+    var obs = String(hoja.getRange(fila, 40).getValue());
+    hoja.getRange(fila, 40).setValue((obs ? obs + ' | ' : '') +
+      'Corregida el ' + ocFecha_(new Date()) + ' por ' + u.nombre);
+
+    SpreadsheetApp.flush();
+    return { ok: true, mensaje: 'Orden corregida.', neto: r.neto };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /* ---------- gerencia ---------- */
