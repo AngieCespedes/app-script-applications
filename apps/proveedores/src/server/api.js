@@ -14,6 +14,8 @@ var Rutas_ = {
   ocCrearOrden: { tipo: 'web', fn: function () { return ocCrearOrden_.apply(null, arguments); } },
   ocDatosEnvio: { tipo: 'web', fn: function () { return ocDatosEnvio_.apply(null, arguments); } },
   ocDecidir: { tipo: 'web', fn: function () { return ocDecidir_.apply(null, arguments); } },
+  ocEditarOrden: { tipo: 'web', fn: function () { return ocEditarOrden_.apply(null, arguments); } },
+  ocReemplazarCotizacion: { tipo: 'web', fn: function () { return ocReemplazarCotizacion_.apply(null, arguments); } },
   ocEnlaceSoporte: { tipo: 'web', fn: function () { return ocEnlaceSoporte_.apply(null, arguments); } },
   ocEnviarSoporte: { tipo: 'web', fn: function () { return ocEnviarSoporte_.apply(null, arguments); } },
   ocEntrar: { tipo: 'web', fn: function () { return ocEntrar_.apply(null, arguments); } },
