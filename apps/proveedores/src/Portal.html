@@ -485,11 +485,13 @@ pagar: ['Qué hace usted aquí',
 'Suba el <b>soporte del pago</b> y guarde.'],
 'Si es un abono, la orden queda abierta con el saldo pendiente y se puede volver a pagar después.'],
 facturar: ['Qué hace usted aquí',
-['Confirme si <b>llegó la mercancía</b>, quién la recibió y en qué fecha.',
-'Diga si llegó <b>factura electrónica</b> o <b>documento soporte</b>, con número, fecha y valor.',
-'Suba el archivo de la factura.',
-'Si todavía no llega, use <b>Ver el mensaje para pedirle la factura</b> y mándelo por WhatsApp.'],
-'Si el valor facturado no cuadra con la orden, el sistema no deja cerrar. Revise antes.'],
+['Aquí le llegan <b>todas las órdenes</b>, estén pagadas o no, repartidas en montones según lo que les falte.',
+'Empiece por arriba: <b>lo que ya se pagó y no tiene factura</b> es lo que duele en una revisión.',
+'Confirme si <b>llegó la mercancía</b>, quién la recibió y en qué fecha.',
+'Diga si llegó <b>factura electrónica</b> o <b>documento soporte</b>, con número, fecha y valor, y suba el archivo.',
+'Si todavía no llega, use <b>Ver el mensaje para pedirle la factura</b> y mándelo por WhatsApp.',
+'Lo que diga <b>sin cotización</b> en rojo: pídasela a quien montó la orden.'],
+'Las que están esperando pago también salen, para que usted ya sepa de cuáles va a tener que perseguir la factura o elaborar el documento soporte. Si el valor facturado no cuadra con la orden, el sistema no deja cerrar.'],
 causar: ['Qué hace usted aquí',
 ['Abra la orden y revise la factura adjunta.',
 'Cause la compra en World Office como siempre.',
@@ -721,12 +723,36 @@ observaciones: $('obs').value
 function porQueVacio(filtro){
 if(filtro==='aprobar')   return 'No hay órdenes esperando decisión de gerencia.';
 if(filtro==='pagar')     return 'No hay órdenes aprobadas con saldo pendiente. Aquí solo entran las que gerencia ya aprobó.';
-if(filtro==='facturar')  return 'Todavía ninguna orden llegó a este paso. Aquí entran las órdenes ya pagadas, cuando falta confirmar la mercancía o la factura.';
+if(filtro==='facturar')  return 'Todavía no hay órdenes vivas. Aquí entran todas, desde que las piden, para que usted sepa de cuáles va a tener que perseguir la factura.';
 if(filtro==='causar')    return 'No hay órdenes con la factura lista para causar en World Office.';
 if(filtro==='legalizar') return 'No hay órdenes pendientes de legalizar.';
 if(filtro==='mias')      return 'Usted todavía no ha pedido ninguna orden.';
 if(filtro==='todas')     return 'Todavía no hay órdenes registradas.';
 return 'Nada pendiente por aquí. 👍';
+}
+/* «Mercancía y factura» por montones: primero lo que ya se pagó y no tiene
+   papel, que es lo que duele en una revisión, y de último lo que está al día. */
+function porMontones(filas){
+var orden = [], grupos = {};
+for(var i=0;i<filas.length;i++){
+var g = filas[i].grupo || { n:9, titulo:'OTRAS', color:'gris' };
+if(!grupos[g.n]){ grupos[g.n] = { g:g, filas:[] }; orden.push(g.n); }
+grupos[g.n].filas.push(filas[i]);
+}
+orden.sort(function(a,b){ return a-b; });
+var tinta = { rojo:['#FBE9EC','#B00020'], ambar:['#FFF4E0','#8A6D1F'],
+              azul:['#E7EDF2','#16394F'], verde:['#E8F3EC','#2E6B2E'], gris:['#F2F5F7','#5B6773'] };
+var h = '';
+for(var k=0;k<orden.length;k++){
+var gr = grupos[orden[k]];
+var c = tinta[gr.g.color] || tinta.gris;
+h += '<div style="margin:18px 0 9px;display:flex;align-items:center;gap:9px">'
+   + '<span style="background:'+c[0]+';color:'+c[1]+';font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;letter-spacing:.3px">'+esc(gr.g.titulo)+'</span>'
+   + '<span style="font-size:11.5px;color:#8A94A0">'+gr.filas.length+(gr.filas.length===1?' orden':' órdenes')+'</span>'
+   + '</div>';
+for(var j=0;j<gr.filas.length;j++) h += tarjeta(gr.filas[j]);
+}
+return h;
 }
 function cargarLista(filtro){
 $('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
@@ -756,6 +782,8 @@ h += '<div class="card" style="border-color:#F3B5B5"><b style="color:#B00020;fon
 }
 if(!r.filas.length){
 h += '<div class="card"><div class="vacio">'+esc(porQueVacio(filtro))+'</div></div>';
+} else if(filtro === 'facturar'){
+h += porMontones(r.filas);
 } else {
 for(var i=0;i<r.filas.length;i++) h += tarjeta(r.filas[i]);
 }
@@ -794,6 +822,7 @@ return '<div class="ord" onclick="verOrden(\''+o.numero+'\')">'+
 '<div class="l2"><b>'+esc(o.proveedor||o.nit)+'</b> · '+esc(o.descripcion)+'</div>'+
 '<div class="l3">'+esc(o.fecha)+' · '+esc(o.solicita)+' · '+esc(o.area)+' · '+esc(centroLargo(o.centro))+' · '+pesos(o.total)+
 (o.dias!==''&&o.dias>0 ? ' · <b style="color:#B00020">'+o.dias+' días sin legalizar</b>':'')+
+(TAB==='facturar' && !o.cotizacion ? ' · <b style="color:#B00020">sin cotización</b>':'')+
 '</div>'+
 lineaTiempo(o, true)+
 '</div>';

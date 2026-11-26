@@ -218,6 +218,29 @@ var OC_ORD_ANCHO = 53;
 /* Lee una celda de la fila aunque la hoja todavia no tenga esa columna.
    Mientras no se corra «Instalar o actualizar», la hoja va hasta la 44 y
    las nuevas simplemente salen vacias, sin romper nada. */
+/**
+ * En que monton va una orden dentro de «Mercancia y factura».
+ * El orden de los montones es el orden en que hay que atenderlos: primero lo
+ * que ya salio plata y no tiene papel, que es lo que duele en una revision.
+ */
+function ocGrupoFactura_(o) {
+  var pagado = o.pagado > 0;
+  var tieneDoc = String(o.factura).trim() !== '' || String(o.tipoDoc).trim() !== '';
+  var recibida = String(o.mercancia).trim().toUpperCase() === 'SI';
+  var causada  = String(o.causada).trim().toUpperCase() === 'SI';
+
+  if (pagado && !tieneDoc) return { n: 1, titulo: 'YA SE PAGÓ Y NO HA LLEGADO LA FACTURA', color: 'rojo' };
+  if (pagado && !recibida) return { n: 2, titulo: 'YA SE PAGÓ, FALTA CONFIRMAR LA MERCANCÍA', color: 'ambar' };
+  if (tieneDoc && recibida && !causada) return { n: 3, titulo: 'LISTAS PARA CAUSAR', color: 'azul' };
+  if (o.estado.toUpperCase() === 'APROBADA' && o.saldo > 0) {
+    return { n: 4, titulo: 'APROBADAS, ESPERANDO PAGO — ESTÉ PENDIENTE DE LA FACTURA', color: 'azul' };
+  }
+  if (o.estado.toUpperCase() === 'SOLICITADA') {
+    return { n: 5, titulo: 'TODAVÍA ESPERANDO A GERENCIA', color: 'gris' };
+  }
+  return { n: 6, titulo: 'AL DÍA', color: 'verde' };
+}
+
 function ocCol_(fila, n) {
   var v = fila[n - 1];
   return (v === undefined || v === null) ? '' : v;
@@ -360,8 +383,15 @@ function ocOrdenes_(ses, filtro) {
       continue;
     }
     if (filtro === 'pagar'     && (o.estado.toUpperCase() !== 'APROBADA' || o.saldo <= 0)) continue;
-    if (filtro === 'facturar'  && o.falta.indexOf('FALTA FACTURA') !== 0 &&
-                                  o.falta.indexOf('FALTA ELABORAR') !== 0) continue;
+    /* «Mercancia y factura» ve TODAS las ordenes vivas, no solo las pagadas.
+       Quien lleva este frente tiene que estar encima desde que nace la orden:
+       pedir la cotizacion que falta, saber que se va a pagar para quedar
+       pendiente de la factura, y elaborar el documento soporte cuando toque.
+       Si solo viera lo pagado, se entera tarde de todo. */
+    if (filtro === 'facturar') {
+      if (o.estado.toUpperCase() === 'RECHAZADA') continue;
+      o.grupo = ocGrupoFactura_(o);
+    }
     if (filtro === 'causar'    && o.falta !== 'FALTA CAUSAR EN WORLD OFFICE') continue;
     if (filtro === 'legalizar' && (o.falta === 'LISTA' || o.falta === '' ||
                                    o.falta === 'FALTA PAGAR' || o.falta === 'RECHAZADA')) continue;
