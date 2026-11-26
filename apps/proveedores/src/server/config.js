@@ -84,6 +84,8 @@ var OC_CLAVES_A_LA_VISTA = true;
    OC_USU_PERM es donde empieza una columna por permiso. */
 var OC_USU_CED   = 11;   /* CEDULA */
 var OC_USU_PERM  = 12;   /* primera columna de permisos */
+/* El correo queda despues de un hueco, para que quepan permisos nuevos sin moverlo. */
+var OC_USU_MAIL  = 30;   /* CORREO (opcional) */
 
 /* Los permisos que la duena marca persona por persona.
    [clave, nombre en pantalla, que significa] */
