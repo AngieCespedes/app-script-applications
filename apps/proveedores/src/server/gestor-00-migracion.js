@@ -39,7 +39,10 @@ function gpMigrarColumnasOrdenes_() {
     { col: OC_ORD_RETPOR,  titulo: 'RETENCION REVISADA POR' },
     { col: OC_ORD_RETNOTA, titulo: 'NOTA DE LA RETENCION' },
     { col: OC_ORD_FPROY,   titulo: 'FECHA PROYECTADA DE PAGO' },
-    { col: OC_ORD_NOTASOL, titulo: 'NOTA PARA QUIEN PIDIO LA ORDEN' }
+    { col: OC_ORD_NOTASOL, titulo: 'NOTA PARA QUIEN PIDIO LA ORDEN' },
+    { col: OC_ORD_DIASCR,  titulo: 'DIAS DE CREDITO' },
+    { col: OC_ORD_FVENCE,  titulo: 'FECHA DE VENCIMIENTO' },
+    { col: OC_ORD_REVCOM,  titulo: 'REVISADA POR COMPRAS' }
   ];
   var agregadas = [];
   nuevas.forEach(function (n) {

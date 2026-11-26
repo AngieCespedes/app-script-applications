@@ -260,6 +260,7 @@ var t = [];
 if(CTX.puede.solicitar)   t.push(['nueva','Nueva orden']);
 if(CTX.puede.aprobar)     t.push(['aprobar','Por aprobar']);
 if(CTX.puede.pagar)       t.push(['pagar','Por pagar']);
+if(CTX.puede.pagar || CTX.puede.verpagos) t.push(['proyeccion','Proyección de pagos']);
 if(CTX.puede.pagar)       t.push(['pagos','Pagos']);
 else if(CTX.puede.verpagos) t.push(['pagos','Pagos (solo ver)']);
 if(CTX.puede.facturar)    t.push(['facturar','Mercancía y factura']);
@@ -290,7 +291,171 @@ else if(id === 'usuarios') pantallaUsuarios();
 else if(id === 'pagos')    pantallaPagos();
 else if(id === 'gestor')   pantallaGestor();
 else if(id === 'gestion')  pantallaGestion();
+else if(id === 'proyeccion') pantallaProyeccion();
 else                       cargarLista(id);
+}
+
+/* ================= PROYECCIÓN DE PAGOS ================= */
+var PROYF = {};
+function pantallaProyeccion(){
+$('wrap').innerHTML = '<div class="cargando">Armando la proyección…</div>';
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ $('wrap').innerHTML = '<div class="card"><div class="caja cno">'+esc((r&&r.mensaje)||'No pude cargar la proyección.')+'</div></div>'; return; }
+$('wrap').innerHTML = pintarProyeccion(r);
+}).api('ocProyeccion', SES, PROYF);
+}
+function pintarProyeccion(r){
+var t = r.totales;
+var h = guia('proyeccion')
+  + '<div class="card" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">'
+  + campoFiltro('pAnio','Año', ['Todos'].concat(r.anios))
+  + campoFiltro('pMes','Mes', ['Todos','1','2','3','4','5','6','7','8','9','10','11','12'])
+  + '<div style="flex-grow:1"></div>'
+  + '<button class="btn2" onclick="bajarProyeccion(\'excel\')">Excel</button> '
+  + '<button class="btn2" onclick="bajarProyeccion(\'pdf\')">PDF</button>'
+  + '</div>'
+  + '<div class="row" style="margin-bottom:12px">'
+  + tarjetaProy('VENCIDO', t.vencida, t.nVencida, '#B00020')
+  + tarjetaProy('SE PAGA ESTA SEMANA', t.semana, t.nSemana, '#C9922B')
+  + tarjetaProy('PROGRAMADO MÁS ADELANTE', t.programada, t.nProgramada, '#16394F')
+  + tarjetaProy('FALTA QUE COMPRAS REVISE', t.pendiente, t.nPendiente, '#8A94A0')
+  + '</div>';
+
+if(!r.grupos.length) return h + '<div class="card"><div class="vacio">No hay órdenes aprobadas con saldo por pagar.</div></div>';
+
+for(var i=0;i<r.grupos.length;i++){
+var g = r.grupos[i];
+h += '<div class="card" style="padding:0;overflow:hidden">'
+   + '<div style="background:#16394F;color:#fff;padding:9px 16px;display:flex;justify-content:space-between">'
+   + '<b style="font-size:12.5px;letter-spacing:.4px">'+esc(String(g.area).toUpperCase())+'</b>'
+   + '<b style="font-size:12.5px">'+pesos(g.total)+'</b></div>';
+for(var j=0;j<g.centros.length;j++){
+var c = g.centros[j];
+h += '<div style="background:#EEF2F5;padding:7px 16px;display:flex;justify-content:space-between;border-bottom:1px solid #E2E8ED">'
+   + '<b style="font-size:12px;color:#16394F">'+esc(c.centro)+(c.nombre?' · '+esc(c.nombre):'')+'</b>'
+   + '<span style="font-size:11.5px;color:#5B6773">'+pesos(c.total)+'</span></div>';
+for(var k=0;k<c.filas.length;k++) h += filaProy(c.filas[k]);
+}
+h += '</div>';
+}
+return h;
+}
+function tarjetaProy(rotulo, plata, n, color){
+return '<div class="g"><div class="card" style="border-top:3px solid '+color+';margin:0">'
+  + '<div style="font-size:10.5px;color:#5B6773;font-weight:600;letter-spacing:.3px">'+esc(rotulo)+'</div>'
+  + '<div style="font-size:19px;font-weight:700;color:#16394F;margin-top:4px">'+pesos(plata)+'</div>'
+  + '<div style="font-size:11px;color:#8A94A0">'+n+(n===1?' orden':' órdenes')+'</div>'
+  + '</div></div>';
+}
+function campoFiltro(id, rotulo, opciones){
+return '<div><label style="font-size:10.5px;color:#5B6773;font-weight:600">'+esc(rotulo)+'</label>'
+  + '<select id="'+id+'" onchange="aplicarFiltroProy()" style="min-width:92px">'
+  + opciones.map(function(o){ return '<option>'+esc(o)+'</option>'; }).join('')
+  + '</select></div>';
+}
+function aplicarFiltroProy(){
+var a = $('pAnio').value, m = $('pMes').value;
+PROYF = { anio: a==='Todos'?'':a, mes: m==='Todos'?'':m };
+pantallaProyeccion();
+}
+function filaProy(f){
+var col = { VENCIDA:['#FBE9EC','#B00020'], SEMANA:['#FFF4E0','#8A6D1F'],
+            PROGRAMADA:['#EDF1F4','#5B6773'], SIN_REVISAR:['#FFF4E0','#8A6D1F'],
+            SIN_FECHA:['#F4F6F8','#8A94A0'] }[f.clave] || ['#F4F6F8','#8A94A0'];
+var rev = f.revisadaCompras
+  ? (f.diasCredito ? 'Crédito '+f.diasCredito+' días' : 'Sin negociación')
+  : 'Sin revisar';
+return '<div style="padding:11px 16px;border-bottom:1px solid #F2F5F7;display:flex;gap:14px;align-items:center;flex-wrap:wrap">'
+  + '<div style="min-width:104px"><b style="font-size:12px;color:#16394F">'+esc(f.numero)+'</b></div>'
+  + '<div style="flex:1;min-width:190px">'
+  + '<div style="font-size:12.5px;color:#1F2933;font-weight:600">'+esc(f.proveedor)+'</div>'
+  + '<div style="font-size:11px;color:#8A94A0">'+esc(f.descripcion)+'</div></div>'
+  + '<div style="min-width:104px;text-align:right"><b style="font-size:13px">'+pesos(f.saldo)+'</b></div>'
+  + '<div style="min-width:96px;text-align:center"><div style="font-size:11.5px;color:#5B6773">'+esc(f.fechaNecesidad||'—')+'</div>'
+  + '<div style="font-size:9.5px;color:#A8B2BA">la pidió '+esc(f.solicita)+'</div></div>'
+  + '<div style="min-width:140px;text-align:center"><div style="font-size:11px;font-weight:600;color:'+(f.revisadaCompras?'#2E6B2E':'#8A6D1F')+'">'+esc(rev)+'</div>'
+  + '<div style="font-size:9.5px;color:#A8B2BA">'+(f.fechaVence?'vence '+esc(f.fechaVence):'compras no la ha mirado')+'</div></div>'
+  + '<div style="min-width:86px;text-align:center"><b style="font-size:12.5px">'+esc(f.fechaPago||'—')+'</b></div>'
+  + '<div style="min-width:112px;text-align:center"><span class="pill" style="background:'+col[0]+';color:'+col[1]+'">'+esc(f.estado)+'</span></div>'
+  + '<div><button class="btn2" style="padding:4px 10px;font-size:11.5px" onclick="verOrdenSuelta(\''+esc(f.numero)+'\')">Abrir</button></div>'
+  + '</div>';
+}
+function verOrdenSuelta(num){
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok) return;
+CACHE = r.filas.concat(r.decididas||[]);
+verOrden(num);
+}).api('ocOrdenes', SES, 'todas');
+}
+function bajarProyeccion(que){
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ alert((r&&r.mensaje)||'No se pudo generar.'); return; }
+window.open(que==='pdf' ? r.pdf : r.excel, '_blank');
+}).api('ocInformeProyeccion', SES, PROYF);
+}
+
+/* ================= COMPRAS RECTIFICA LA FECHA ================= */
+function verRevisionCompras(num){
+abrirModal('Fecha de pago · '+num, '<div class="cargando">Un momento…</div>');
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ cuerpoModal('<div class="caja cno">'+esc((r&&r.mensaje)||'No pude cargarla.')+'</div>'); return; }
+cuerpoModal(pintarRevisionCompras(r));
+}).api('ocDatosCompras', SES, num);
+}
+function pintarRevisionCompras(r){
+var hayFac = !!r.fechaFactura;
+return '<div class="det">'
+  + fila('Proveedor', r.proveedor)+ fila('Neto a pagar', pesos(r.neto))
+  + fila('Centro de costo', centroLargo(r.centro))+ fila('La pidió', r.solicita)
+  + fila('La necesita el', r.fechaNecesidad || '—')
+  + '</div>'
+  + '<div class="caja cav">La fecha de arriba es la que puso quien pidió la orden: <b>cuándo la necesita</b>. '
+  + 'No es la fecha de pago. La de pago sale de lo que usted conteste aquí.</div>'
+  + (r.revisadaPor ? '<div class="caja cok">Ya la revisó <b>'+esc(r.revisadaPor)+'</b>. Vence el '+esc(r.fechaVence||'—')+' y se paga el '+esc(r.fechaProyectada||'—')+'.</div>' : '')
+  + '<div class="sec">¿YA LLEGÓ LA FACTURA O EL DOCUMENTO SOPORTE?</div>'
+  + '<div class="g"><select id="cLlego" onchange="camposCompras()">'
+  + '<option value="si"'+(hayFac?' selected':'')+'>Sí, ya llegó</option>'
+  + '<option value="no"'+(hayFac?'':' selected')+'>Todavía no</option>'
+  + '</select></div>'
+  + '<div id="cajaFactura" style="display:'+(hayFac?'block':'none')+'">'
+  + '<div class="row">'
+  + '<div class="g"><label>Qué llegó</label><select id="cTipo">'+opcSel(['FACTURA ELECTRONICA','DOCUMENTO SOPORTE'], r.tipoDoc||r.docEsperado)+'</select></div>'
+  + '<div class="g"><label>N° del documento</label><input id="cNum" value="'+esc(r.numeroFactura)+'"></div>'
+  + '</div>'
+  + '<div class="g"><label>Fecha del documento</label><input id="cFecha" type="date" value="'+esc(r.fechaFactura)+'"></div>'
+  + '</div>'
+  + '<div class="sec">¿CON ESTE PROVEEDOR HAY NEGOCIACIÓN DE CRÉDITO?</div>'
+  + '<div class="row">'
+  + '<div class="g"><select id="cCredito" onchange="camposCompras()">'
+  + '<option value="si"'+(r.diasCredito?' selected':'')+'>Sí, hay crédito</option>'
+  + '<option value="no"'+(r.diasCredito?'':' selected')+'>No, es de contado</option>'
+  + '</select></div>'
+  + '<div class="g" id="cajaDias" style="display:'+(r.diasCredito?'block':'none')+'"><label>Días de crédito</label>'
+  + '<input id="cDias" inputmode="numeric" value="'+esc(r.diasCredito||30)+'"></div>'
+  + '</div>'
+  + '<div class="g"><label>Nota para quien pidió la orden (opcional)</label>'
+  + '<input id="cNota" placeholder="Ej: con este proveedor tenemos 15 días, por eso no sale esta semana"></div>'
+  + '<div class="nota">Los pagos salen los <b>viernes</b>, con corte el jueves a las 12:00. '
+  + 'Si la obligación vence entre semana, el sistema la programa para el viernes anterior.</div>'
+  + '<button class="btn" style="width:100%" onclick="guardarRevisionCompras(\''+esc(r.numero)+'\')">Confirmar y mandar a tesorería</button>';
+}
+function camposCompras(){
+if($('cajaFactura')) $('cajaFactura').style.display = $('cLlego').value==='si' ? 'block' : 'none';
+if($('cajaDias'))    $('cajaDias').style.display    = $('cCredito').value==='si' ? 'block' : 'none';
+}
+function guardarRevisionCompras(num){
+var d = { llegoFactura: $('cLlego').value==='si',
+          hayCredito:   $('cCredito').value==='si',
+          diasCredito:  $('cDias') ? limpio($('cDias').value) : 0,
+          nota:         $('cNota').value };
+if(d.llegoFactura){
+d.tipoDoc = $('cTipo').value; d.numeroFactura = $('cNum').value; d.fechaFactura = $('cFecha').value;
+}
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ alert((r&&r.mensaje)||'No se pudo guardar.'); return; }
+alert(r.mensaje);
+cerrarModal(); irA(TAB);
+}).api('ocRevisarCompras', SES, num, d);
 }
 /* ================= GUÍAS ================= */
 var GUIAS = {
@@ -307,6 +472,12 @@ aprobar: ['Qué hace usted aquí',
 'Si está de acuerdo: <b>Aprobar y pasar a tesorería</b>.',
 'Si no: <b>Rechazar</b> y escriba el motivo. Vuelve al área para que la corrijan.'],
 'Aprobar no es pagar. Después de usted, tesorería verifica los documentos del proveedor y hace el pago.'],
+proyeccion: ['Qué hace usted aquí',
+['Mire primero <b>lo vencido</b> y <b>lo que se paga esta semana</b>: eso es lo que hay que tener disponible el viernes.',
+'Lo que diga <b>FALTA COMPRAS</b> no se puede programar. Pídale a compras que revise la negociación con ese proveedor.',
+'Abra una orden para cambiarle la fecha o dejarle una nota a quien la pidió.',
+'Descargue en <b>Excel</b> o <b>PDF</b> para llevar a la reunión.'],
+'Los pagos salen los <b>viernes</b>, con corte el <b>jueves a las 12:00</b>. Una obligación que vence entre semana se programa para el viernes anterior.'],
 pagar: ['Qué hace usted aquí',
 ['Confirme que el proveedor diga <b>VIGENTE</b>. Si no, no pague todavía.',
 'Escoja el <b>tipo de pago</b>: total, abono, anticipo o contra cotización.',
@@ -672,6 +843,8 @@ lineaTiempo(o);
 if(o.cotizacion) h += '<a class="btn2" target="_blank" href="'+esc(o.cotizacion)+'">📎 Ver cotización</a> ';
 if(o.esMia && String(o.estado).toUpperCase()!=='RECHAZADA' && !o.cotizacion)
 h += '<button class="btn2" onclick="verSubirCotizacion(\''+o.numero+'\')">📎 Subir la cotización</button> ';
+if((CTX.puede.proveedores || CTX.puede.facturar) && String(o.estado).toUpperCase()!=='RECHAZADA')
+h += '<button class="btn2" onclick="verRevisionCompras(\''+o.numero+'\')">📅 '+(o.revisadaCompras?'Cambiar la fecha de pago':'Fijar la fecha de pago')+'</button> ';
 if(o.esMia && String(o.estado).toUpperCase()==='SOLICITADA')
 h += '<button class="btn2" onclick="verEditarOrden(\''+o.numero+'\')">✏️ Corregir la orden</button> ';
 if(o.soporte)    h += '<a class="btn2" target="_blank" href="'+esc(o.soporte)+'">📄 Soporte de pago</a> ';
