@@ -296,6 +296,7 @@ function ocOrdenes_(ses, filtro) {
       esMia: ocIgual_(d[i][3], u.usuario)
     };
     o.traza = ocTraza_(o);
+    o.linea = ocLineaTiempo_(o);
 
     mias.push(o);
 
