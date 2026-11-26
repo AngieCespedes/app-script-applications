@@ -272,11 +272,20 @@ function ocEnviarSolicitud_(ses, d) {
     lock.releaseLock();
   }
 
-  /* deja la marca en el maestro, para saber cuando se le escribio por ultima vez */
+  /* Deja la marca en el maestro, para saber cuando se le escribio por ultima vez.
+     Si la ficha no tenia el dato y aqui lo escribieron a mano, se guarda, para
+     no volverlo a teclear. Nunca pisa un dato que ya estaba: solo llena el vacio.
+     Son columnas de datos (J y M), no de formula. */
   try {
     var hp = gpHoja_();
     var f = gpBuscarFila_(hp, nit);
-    if (f) hp.getRange(f, GP.fechaEnvioLink).setValue(new Date());
+    if (f) {
+      hp.getRange(f, GP.fechaEnvioLink).setValue(new Date());
+      var col = medio === 'CORREO' ? GP.correoFac : GP.celular;
+      if (!String(hp.getRange(f, col).getValue()).trim()) {
+        hp.getRange(f, col).setValue(destino);
+      }
+    }
   } catch (e) { /* no es critico */ }
 
   return { ok: true, numero: num,

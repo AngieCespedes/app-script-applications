@@ -115,6 +115,21 @@ box-shadow:0 3px 10px rgba(22,57,79,.22);display:inline-flex;align-items:center;
 .det div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #f0f2f5;padding:6px 0}
 .det b{color:#1a1a1a;text-align:right}
 .cargando{text-align:center;padding:50px 20px;color:#8A94A0;font-size:14px}
+/* Linea de tiempo horizontal: cada paso de la orden, de izquierda a derecha. */
+.lt{display:flex;gap:0;margin:4px 0 16px;overflow-x:auto;padding-bottom:4px}
+.lt .p{flex:1 0 128px;position:relative;text-align:center;padding:0 4px}
+.lt .p:before{content:'';position:absolute;top:11px;left:0;right:50%;height:2px;background:#e1e5ea}
+.lt .p:after{content:'';position:absolute;top:11px;left:50%;right:0;height:2px;background:#e1e5ea}
+.lt .p:first-child:before,.lt .p:last-child:after{background:transparent}
+.lt .b{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;
+width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid #cdd4db;
+font-size:12px;line-height:1;color:#8A94A0}
+.lt .ok   .b{border-color:#2E6B2E;background:#2E6B2E;color:#fff}
+.lt .alrt .b{border-color:#C9922B;background:#C9922B;color:#fff}
+.lt .mal  .b{border-color:#B00020;background:#B00020;color:#fff}
+.lt .t{font-size:11.5px;line-height:1.35;color:#3D4A54;margin-top:6px}
+.lt .f{font-size:10.5px;color:#8A94A0;margin-top:2px}
+.lt a{font-size:10.5px}
 .vacio{text-align:center;padding:30px 20px;color:#8A94A0;font-size:13.5px}
 /* ---- tabla usuarios ---- */
 table{width:100%;border-collapse:collapse}
@@ -470,6 +485,19 @@ observaciones: $('obs').value
 });
 }
 /* ================= LISTAS ================= */
+/* Una pestana vacia casi nunca quiere decir «no hay nada que hacer»: quiere
+   decir que todavia ninguna orden llego a ese paso. Se dice cual es el paso,
+   para que nadie crea que la pagina esta fallando. */
+function porQueVacio(filtro){
+if(filtro==='aprobar')   return 'No hay órdenes esperando decisión de gerencia.';
+if(filtro==='pagar')     return 'No hay órdenes aprobadas con saldo pendiente. Aquí solo entran las que gerencia ya aprobó.';
+if(filtro==='facturar')  return 'Todavía ninguna orden llegó a este paso. Aquí entran las órdenes ya pagadas, cuando falta confirmar la mercancía o la factura.';
+if(filtro==='causar')    return 'No hay órdenes con la factura lista para causar en World Office.';
+if(filtro==='legalizar') return 'No hay órdenes pendientes de legalizar.';
+if(filtro==='mias')      return 'Usted todavía no ha pedido ninguna orden.';
+if(filtro==='todas')     return 'Todavía no hay órdenes registradas.';
+return 'Nada pendiente por aquí. 👍';
+}
 function cargarLista(filtro){
 $('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
 google.script.run.withSuccessHandler(function(r){
@@ -497,7 +525,7 @@ if(filtro === 'legalizar' && s.platapendiente>0){
 h += '<div class="card" style="border-color:#F3B5B5"><b style="color:#B00020;font-size:18px">'+pesos(s.platapendiente)+'</b><div style="font-size:12.5px;color:#5A6670;margin-top:4px">ya salieron de la empresa y todavía no se pueden causar.</div></div>';
 }
 if(!r.filas.length){
-h += '<div class="card"><div class="vacio">Nada pendiente por aquí. 👍</div></div>';
+h += '<div class="card"><div class="vacio">'+esc(porQueVacio(filtro))+'</div></div>';
 } else {
 for(var i=0;i<r.filas.length;i++) h += tarjeta(r.filas[i]);
 }
@@ -532,6 +560,24 @@ return '<div class="ord" onclick="verOrden(\''+o.numero+'\')">'+
 '</div></div>';
 }
 /* ================= DETALLE ================= */
+/* Los pasos de la orden, de izquierda a derecha: quien la pidio, gerencia,
+   tesoreria, la factura y almacen. El servidor manda o.linea ya armada. */
+function lineaTiempo(o){
+var p = o.linea || [];
+if(!p.length) return '';
+var h = '<div class="sec">EN QUÉ VA ESTA ORDEN</div><div class="lt">';
+for(var i=0;i<p.length;i++){
+var s = p[i];
+var cls = s.ok ? 'ok' : (s.alerta ? (i===1 ? 'mal' : 'alrt') : '');
+var ico = s.ok ? '✓' : (s.alerta ? '!' : (i+1));
+h += '<div class="p '+cls+'"><span class="b">'+ico+'</span>'
+   + '<div class="t">'+esc(s.hito)+'</div>'
+   + (s.fecha ? '<div class="f">'+esc(s.fecha)+'</div>' : '')
+   + (s.soporte ? '<a target="_blank" href="'+esc(s.soporte)+'">ver soporte</a>' : '')
+   + '</div>';
+}
+return h + '</div>';
+}
 function verOrden(num){
 var o = null;
 for(var i=0;i<CACHE.length;i++) if(CACHE[i].numero===num) o = CACHE[i];
@@ -545,7 +591,8 @@ fila('Retefuente', o.retefuente?'− '+pesos(o.retefuente):'—')+
 fila('Reteica', o.reteica?'− '+pesos(o.reteica):'—')+
 fila('Valor total', pesos(o.total))+ fila('Neto a pagar', pesos(o.neto))+
 '</div>'+
-'<div style="font-size:13px;color:#3D4A54;margin-bottom:12px"><b>'+esc(o.descripcion)+'</b></div>';
+'<div style="font-size:13px;color:#3D4A54;margin-bottom:12px"><b>'+esc(o.descripcion)+'</b></div>'+
+lineaTiempo(o);
 if(o.cotizacion) h += '<a class="btn2" target="_blank" href="'+esc(o.cotizacion)+'">📎 Ver cotización</a> ';
 if(o.esMia && String(o.estado).toUpperCase()!=='RECHAZADA' && !o.cotizacion)
 h += '<button class="btn2" onclick="verSubirCotizacion(\''+o.numero+'\')">📎 Subir la cotización</button> ';
@@ -1460,22 +1507,33 @@ if(!r || !r.ok){ aviso(false, (r&&r.mensaje)||'No pude armar la solicitud.'); re
 SOL = r;
 var falta = !r.destino;
 var h = '';
-if(falta) h += '<div class="nota">No hay '+(medio==='CORREO'?'correo':'celular')
-  + ' registrado para esto. Complételo en la ficha y vuelva a intentar.</div>';
+if(falta) h += '<div class="nota">La ficha de este proveedor no tiene '
+  + (medio==='CORREO'?'correo':'celular')+'. Escríbalo aquí abajo y queda guardado en la ficha.</div>';
 h += '<div class="campo"><label>'+(medio==='CORREO'?'Para':'Celular')+'</label>'
-  + '<input id="s_destino" value="'+esc(r.destino)+'"></div>';
+  + '<input id="s_destino" oninput="solRevisar()" value="'+esc(r.destino)+'"></div>';
 if(medio === 'CORREO') h += '<div class="campo"><label>Asunto</label><input id="s_asunto" value="'+esc(r.asunto)+'"></div>';
 h += '<div class="campo"><label>¿Qué está pidiendo? — así queda en la trazabilidad</label>'
-  + '<input id="s_que" value="'+esc(r.quePidio)+'" placeholder="Ej: Referencias de la factura FE-4471"></div>'
+  + '<input id="s_que" oninput="solRevisar()" value="'+esc(r.quePidio)+'" placeholder="Ej: Referencias de la factura FE-4471"></div>'
   + '<div class="campo"><label>Mensaje — puede editarlo antes de enviar</label>'
   + '<textarea id="s_texto" rows="12">'+esc(r.texto)+'</textarea></div>'
   + '<div class="nota">Al enviar queda registrado: fecha, medio, a quién y qué se pidió. '
   + 'Si a los 5 días no contesta, el proveedor se pone en rojo para volver a pedirle.</div>'
-  + '<div class="acc"><button class="btn"'+(falta?' disabled':'')+' onclick="enviarSolicitud(\''+medio+'\')">'
+  + '<div class="acc"><button class="btn" id="s_btn" onclick="enviarSolicitud(\''+medio+'\')">'
   + (medio==='CORREO'?'Enviar el correo y registrar':'Registrar y abrir WhatsApp')+'</button>'
   + '<button class="btn claro" onclick="cerrarModal()">Cancelar</button></div>';
 abrirModal((medio==='CORREO'?'📧 Correo a ':'💬 WhatsApp a ')+r.proveedor.nombre, h);
+solRevisar();
 }).api('ocArmarSolicitud', SES, GABIERTO.proveedor.nit, tipo, medio);
+}
+/* El boton se prende solo cuando ya hay a quien escribirle y que pedirle.
+   Antes se calculaba una sola vez al abrir y se quedaba gris aunque
+   escribieran el celular a mano. */
+function solRevisar(){
+var b = $('s_btn'); if(!b) return;
+var d = $('s_destino') ? String($('s_destino').value).trim() : '';
+var q = $('s_que')     ? String($('s_que').value).trim()     : '';
+b.disabled = !d || !q;
+b.title = b.disabled ? 'Falta el destinatario o qué le está pidiendo' : '';
 }
 function enviarSolicitud(medio){
 var d = { nit: GABIERTO.proveedor.nit, medio: medio,
