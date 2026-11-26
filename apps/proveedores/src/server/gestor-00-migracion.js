@@ -8,6 +8,7 @@ function gpMigrar_() {
   var hecho = [];
   hecho.push(gpMigrarColumnasOrdenes_());
   hecho.push(gpMigrarColumnasUsuarios_());
+  hecho.push(gpMigrarCorreoUsuarios_());
   hecho.push(gpMigrarHoja_(OC_H_SOL, [
     'N° SOLICITUD', 'FECHA', 'NIT', 'PROVEEDOR', 'MEDIO', 'QUE SE PIDIO',
     'A QUIEN SE LE PIDIO', 'QUIEN LO PIDIO', 'FECHA DE RESPUESTA', 'DIAS',
@@ -42,7 +43,10 @@ function gpMigrarColumnasOrdenes_() {
     { col: OC_ORD_NOTASOL, titulo: 'NOTA PARA QUIEN PIDIO LA ORDEN' },
     { col: OC_ORD_DIASCR,  titulo: 'DIAS DE CREDITO' },
     { col: OC_ORD_FVENCE,  titulo: 'FECHA DE VENCIMIENTO' },
-    { col: OC_ORD_REVCOM,  titulo: 'REVISADA POR COMPRAS' }
+    { col: OC_ORD_REVCOM,  titulo: 'REVISADA POR COMPRAS' },
+    { col: OC_ORD_FACEST,  titulo: 'ESTADO DE LA FACTURA' },
+    { col: OC_ORD_FACPOR,  titulo: 'FACTURA REGISTRADA POR' },
+    { col: OC_ORD_FACFEC,  titulo: 'FECHA DEL REGISTRO' }
   ];
   var agregadas = [];
   nuevas.forEach(function (n) {
@@ -103,6 +107,31 @@ function gpMigrarColumnasUsuarios_() {
   }
   gpProtegerEncabezado_(hoja);
   return OC_H_USU + ': cedula y ' + OC_PERMISOS_LISTA.length + ' columnas de permisos';
+}
+
+/**
+ * Hoja 07: el correo de cada persona, opcional.
+ * Sirve para avisarle cuando una orden suya se devuelve con novedad o para
+ * corregir. Si esta vacio no pasa nada: la orden igual le queda marcada en
+ * «Mis ordenes» cuando entre al portal.
+ *
+ * Va en la columna 30 a proposito, dejando un hueco despues de los permisos:
+ * asi se pueden agregar permisos nuevos mas adelante sin mover el correo.
+ */
+function gpMigrarCorreoUsuarios_() {
+  var hoja = ocHoja_(OC_H_USU);
+  if (hoja.getMaxColumns() < OC_USU_MAIL) {
+    hoja.insertColumnsAfter(hoja.getMaxColumns(), OC_USU_MAIL - hoja.getMaxColumns());
+  }
+  var actual = String(hoja.getRange(1, OC_USU_MAIL).getValue()).trim();
+  if (actual === 'CORREO') return '';
+  if (actual !== '') {
+    throw new Error('La columna ' + OC_USU_MAIL + ' de «' + OC_H_USU + '» dice «' + actual +
+      '». No la sobrescribo: revise la hoja antes de seguir.');
+  }
+  hoja.getRange(1, OC_USU_MAIL).setValue('CORREO');
+  gpProtegerEncabezado_(hoja);
+  return OC_H_USU + ': columna CORREO (opcional, para avisarle a quien pidio la orden)';
 }
 
 /** Crea una hoja con sus encabezados si no existe. Si existe, no la toca. */
