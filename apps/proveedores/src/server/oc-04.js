@@ -162,6 +162,40 @@ function ocRevisarRetencion_(ses, numero, d) {
                     (asume === 'EMPRESA' ? ' (la retencion la asume la empresa).' : '.') };
 }
 
+/**
+ * Tesoreria programa cuando se va a pagar, y le deja la razon a quien pidio.
+ *
+ * Es la pregunta que mas hacen los que piden una orden. Unas se pagan de una,
+ * pero otras dependen de la negociacion con el proveedor, y hasta ahora eso
+ * solo lo sabia tesoreria. Ahora queda escrito y lo ve quien pidio la orden.
+ */
+function ocProgramarPago_(ses, numero, d) {
+  var u = ocUsuario_(ses);
+  if (!u || !ocPuede_(u, 'pagar')) {
+    return { ok: false, mensaje: 'Solo tesoreria programa los pagos.' };
+  }
+  var hoja = ocHoja_(OC_H_ORD);
+  var fila = ocFilaOrden_(hoja, numero);
+  if (!fila) return { ok: false, mensaje: 'No encontre esa orden.' };
+
+  var estado = String(hoja.getRange(fila, 21).getValue()).trim().toUpperCase();
+  if (estado === 'RECHAZADA') return { ok: false, mensaje: 'Esa orden esta rechazada.' };
+  if (estado === 'SOLICITADA') {
+    return { ok: false, mensaje: 'Esa orden todavia no esta aprobada: no se puede programar su pago.' };
+  }
+
+  var f = String(d.fecha || '').trim();
+  if (!f) return { ok: false, mensaje: 'Escriba la fecha en que se proyecta pagarla.' };
+  var fecha = new Date(f + 'T12:00:00');
+  if (isNaN(fecha.getTime())) return { ok: false, mensaje: 'Esa fecha no se entiende.' };
+
+  ocEscribirCol_(hoja, fila, OC_ORD_FPROY, fecha);
+  ocEscribirCol_(hoja, fila, OC_ORD_NOTASOL,
+    String(d.nota || '').trim() + (d.nota ? ' — ' : '') + u.nombre + ', ' + ocFecha_(new Date()));
+  SpreadsheetApp.flush();
+  return { ok: true, mensaje: 'Pago proyectado para el ' + ocFecha_(fecha) + '. Quien pidio la orden ya lo ve.' };
+}
+
 /** Escribe en una columna nueva; si la hoja no la tiene, avisa que falta migrar. */
 function ocEscribirCol_(hoja, fila, col, valor) {
   if (hoja.getMaxColumns() < col) {

@@ -206,7 +206,10 @@ var OC_ORD_DOCESP = 45;  /* QUE DOCUMENTO VA A DAR EL PROVEEDOR */
 var OC_ORD_ASUME  = 46;  /* QUIEN ASUME LA RETENCION */
 var OC_ORD_RETPOR = 47;  /* RETENCION REVISADA POR */
 var OC_ORD_RETNOTA= 48;  /* NOTA DE LA RETENCION */
-var OC_ORD_ANCHO = 48;
+/* Cuando tesoreria calcula pagarla, y que quiere que sepa quien la pidio. */
+var OC_ORD_FPROY  = 49;  /* FECHA PROYECTADA DE PAGO */
+var OC_ORD_NOTASOL= 50;  /* NOTA PARA QUIEN PIDIO LA ORDEN */
+var OC_ORD_ANCHO = 50;
 
 /* Lee una celda de la fila aunque la hoja todavia no tenga esa columna.
    Mientras no se corra «Instalar o actualizar», la hoja va hasta la 44 y
@@ -333,6 +336,8 @@ function ocOrdenes_(ses, filtro) {
       asumeRet: String(ocCol_(d[i], OC_ORD_ASUME)),
       retRevisadaPor: String(ocCol_(d[i], OC_ORD_RETPOR)),
       retNota: String(ocCol_(d[i], OC_ORD_RETNOTA)),
+      fechaProyectada: ocFecha_(ocCol_(d[i], OC_ORD_FPROY)),
+      notaSolicitante: String(ocCol_(d[i], OC_ORD_NOTASOL)),
       esMia: ocIgual_(d[i][3], u.usuario)
     };
     o.traza = ocTraza_(o);

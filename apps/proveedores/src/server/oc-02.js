@@ -343,9 +343,15 @@ function ocDecidir_(ses, numero, decision, comentario) {
     return { ok: false, mensaje: 'Para rechazar hay que escribir el motivo.' };
   }
 
-  /* Nadie aprueba una compra a si mismo: si el proveedor de la orden es la
-     misma persona que esta aprobando, la orden la tiene que aprobar otro.
-     Se compara contra su cedula y tambien contra quien pidio la orden. */
+  /* Dos controles distintos, y no son lo mismo.
+     1) Nadie aprueba un pago que va a su propio bolsillo. Ese no se levanta
+        para nadie: si el proveedor de la orden es quien esta aprobando, la
+        tiene que aprobar otro.
+     2) Quien pide una orden no la aprueba. Ese si se levanta para el gerente,
+        porque el tambien hace compras y no tiene por encima a quien se las
+        apruebe. Cuando lo usa, la orden queda marcada AUTOAPROBADA para que
+        se vea en los informes y en la trazabilidad. */
+  var auto = false;
   if (dec === 'APROBADA') {
     var nitProv = String(hoja.getRange(fila, 8).getValue()).replace(/\D/g, '');
     if (u.cedula && nitProv && nitProv === u.cedula) {
@@ -353,14 +359,26 @@ function ocDecidir_(ses, numero, decision, comentario) {
                                    'No es desconfianza: es que nadie puede aprobar un pago a si mismo.' };
     }
     if (ocIgual_(hoja.getRange(fila, 4).getValue(), u.usuario)) {
-      return { ok: false, mensaje: 'Usted pidio esta orden, asi que la tiene que aprobar otra persona.' };
+      if (!ocPuedeAutoaprobar_(u)) {
+        return { ok: false, mensaje: 'Usted pidio esta orden, asi que la tiene que aprobar otra persona.' };
+      }
+      auto = true;
     }
   }
 
   hoja.getRange(fila, 21).setValue(dec);
-  hoja.getRange(fila, 22).setValue(u.nombre);
+  hoja.getRange(fila, 22).setValue(u.nombre + (auto ? ' — AUTOAPROBADA' : ''));
   hoja.getRange(fila, 23).setValue(new Date());
   hoja.getRange(fila, 24).setValue(comentario || '');
-  return { ok: true, estado: dec };
+  return { ok: true, estado: dec, autoaprobada: auto };
+}
+
+/**
+ * Quien puede aprobar una orden que el mismo pidio.
+ * Solo gerencia, y solo porque no tiene a quien pedirle la segunda firma.
+ * Todos los demas necesitan que otro se la apruebe.
+ */
+function ocPuedeAutoaprobar_(u) {
+  return String(u.rol || '').toUpperCase() === 'GERENTE';
 }
 

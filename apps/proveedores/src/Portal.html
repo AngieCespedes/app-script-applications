@@ -178,6 +178,17 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){retur
 function pesos(n){ n=Math.round(Number(n)||0); return '$ '+n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
 function limpio(v){ return String(v||'').replace(/[^0-9]/g,''); }
 function fila(k,v){ return '<div><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>'; }
+/* El centro de costo con su nombre: el codigo solo no le dice a nadie
+   de que proyecto se trata. Si no esta en la lista, se deja el codigo. */
+function centroLargo(cod){
+var c = String(cod||'').trim();
+if(!c || !LISTAS || !LISTAS.centros) return c;
+for(var i=0;i<LISTAS.centros.length;i++){
+var x = LISTAS.centros[i];
+if(String(x.codigo).trim() === c) return x.nombre ? c+' · '+x.nombre : c;
+}
+return c;
+}
 /* ================= ENTRADA ================= */
 function pantallaLogin(msg){
 $('app').innerHTML =
@@ -364,7 +375,10 @@ $('wrap').innerHTML = pintarGuia('nueva')+
 '<div class="sec">2 · QUÉ SE VA A COMPRAR</div>'+
 '<div class="g"><label>Descripción</label><input id="desc" placeholder="Cable 250 MCM — 180 m — obra El Zipa"></div>'+
 '<div class="row">'+
-'<div class="g"><label>Centro de costo</label><select id="centro" onchange="cambioCentro()">'+cen+'</select></div>'+
+'<div class="g"><label>Centro de costo</label><select id="centro" onchange="cambioCentro()">'+cen+'</select>'+
+'<div style="font-size:11.5px;color:#8A6D1F;margin-top:5px">⚠️ El centro de costo es el proyecto al que se le carga esta compra. '+
+'Su código lleva el <b>número de la cotización</b> y el <b>nombre del proyecto</b> (ejemplo: <b>CSS-00126 · El Zipa</b>). '+
+'Si escoge el que no es, el costo queda en el proyecto equivocado.</div></div>'+
 '<div class="g"><label>Área que solicita</label><select id="area">'+are+'</select></div>'+
 '</div>'+
 '<div id="centroNuevo" style="display:none;background:#F7F9FB;border:1px solid #d6dbe0;border-radius:8px;padding:14px 16px;margin-bottom:12px">'+
@@ -595,7 +609,7 @@ return '<div class="ord" onclick="verOrden(\''+o.numero+'\')">'+
 '<div class="l1"><span class="num">'+esc(o.numero)+'</span>'+
 '<span class="pill '+colorFalta(o.falta)+'">'+esc(o.falta||o.estado)+'</span></div>'+
 '<div class="l2"><b>'+esc(o.proveedor||o.nit)+'</b> · '+esc(o.descripcion)+'</div>'+
-'<div class="l3">'+esc(o.fecha)+' · '+esc(o.solicita)+' · '+esc(o.area)+' · '+esc(o.centro)+' · '+pesos(o.total)+
+'<div class="l3">'+esc(o.fecha)+' · '+esc(o.solicita)+' · '+esc(o.area)+' · '+esc(centroLargo(o.centro))+' · '+pesos(o.total)+
 (o.dias!==''&&o.dias>0 ? ' · <b style="color:#B00020">'+o.dias+' días sin legalizar</b>':'')+
 '</div>'+
 lineaTiempo(o, true)+
@@ -629,7 +643,7 @@ for(var i=0;i<CACHE.length;i++) if(CACHE[i].numero===num) o = CACHE[i];
 if(!o) return;
 var h = '<div class="det">'+
 fila('Solicita', o.solicita+' · '+o.area)+ fila('Fecha', o.fecha)+
-fila('Centro de costo', o.centro)+ fila('Proveedor', o.proveedor)+
+fila('Centro de costo', centroLargo(o.centro))+ fila('Proveedor', o.proveedor)+
 fila('Concepto', o.concepto)+ fila('Estado del proveedor', o.estadoProv)+
 fila('Base', pesos(o.base))+ fila('IVA', pesos(o.iva))+
 fila('Retefuente', o.retefuente?'− '+pesos(o.retefuente):'—')+
@@ -637,6 +651,11 @@ fila('Reteica', o.reteica?'− '+pesos(o.reteica):'—')+
 fila('Valor total', pesos(o.total))+ fila('Neto a pagar', pesos(o.neto))+
 '</div>'+
 '<div style="font-size:13px;color:#3D4A54;margin-bottom:12px"><b>'+esc(o.descripcion)+'</b></div>'+
+(o.fechaProyectada
+  ? '<div class="caja cok"><b>Pago proyectado para el '+esc(o.fechaProyectada)+'.</b>'
+    + (o.notaSolicitante? '<br>'+esc(o.notaSolicitante) : '')+'</div>'
+  : (String(o.estado).toUpperCase()==='APROBADA' && !o.pagado
+     ? '<div class="caja cav">Tesorería todavía no ha programado la fecha de pago.</div>' : ''))+
 lineaTiempo(o);
 if(o.cotizacion) h += '<a class="btn2" target="_blank" href="'+esc(o.cotizacion)+'">📎 Ver cotización</a> ';
 if(o.esMia && String(o.estado).toUpperCase()!=='RECHAZADA' && !o.cotizacion)
@@ -844,8 +863,23 @@ h += '<div class="det">'
   + '</div>'
   + '<div class="g"><label>¿Por qué a mano? — queda en la trazabilidad</label><input id="rMotivo" placeholder="Ej: autorretenedor, contrato con tarifa pactada…"></div>'
   + '</div>'
-  + '<button class="btn" style="width:100%" onclick="guardarRetencion(\''+esc(r.numero)+'\')">Guardar la retención</button>';
+  + '<button class="btn" style="width:100%" onclick="guardarRetencion(\''+esc(r.numero)+'\')">Guardar la retención</button>'
+  + '<div class="sec" style="margin-top:18px">CUÁNDO SE VA A PAGAR</div>'
+  + '<div style="font-size:11.5px;color:#5A6670;margin-bottom:8px">Quien pidió la orden ve esta fecha y esta nota. '
+  + 'Es la pregunta que más hacen, y así no les toca perseguir a nadie.</div>'
+  + '<div class="row">'
+  + '<div class="g"><label>Fecha proyectada de pago</label><input id="pFecha" type="date"></div>'
+  + '<div class="g"><label>Nota (opcional)</label><input id="pNota" placeholder="Ej: se negoció a 30 días, el corte es el jueves"></div>'
+  + '</div>'
+  + '<button class="btn2" style="width:100%" onclick="programarPago(\''+esc(r.numero)+'\')">Guardar la fecha</button>';
 return h;
+}
+function programarPago(num){
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ alert((r&&r.mensaje)||'No se pudo guardar.'); return; }
+alert(r.mensaje);
+cerrarModal(); irA(TAB);
+}).api('ocProgramarPago', SES, num, { fecha: $('pFecha').value, nota: $('pNota').value });
 }
 function modoManual(){
 var on = $('rManual') && $('rManual').checked;
