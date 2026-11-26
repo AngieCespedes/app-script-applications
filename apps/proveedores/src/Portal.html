@@ -130,6 +130,16 @@ font-size:12px;line-height:1;color:#8A94A0}
 .lt .t{font-size:11.5px;line-height:1.35;color:#3D4A54;margin-top:6px}
 .lt .f{font-size:10.5px;color:#8A94A0;margin-top:2px}
 .lt a{font-size:10.5px}
+/* La campanita de novedades, con el contador de lo que no ha mirado. */
+.campana{position:relative;cursor:pointer;font-size:15px;line-height:1;padding:7px 9px;
+border-radius:8px;background:rgba(255,255,255,.1);user-select:none}
+.campana:hover{background:rgba(255,255,255,.18)}
+.campana .punto{position:absolute;top:-5px;right:-5px;background:#E0A44A;color:#16394F;
+font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:999px;
+display:flex;align-items:center;justify-content:center;padding:0 4px}
+.nov{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid #f0f2f5}
+.nov .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;
+justify-content:center;flex-shrink:0;font-size:15px}
 /* La misma linea, mas pequena, dentro de la tarjeta de la lista. */
 .lt.chica{margin:10px 0 0;border-top:1px solid #f0f2f5;padding-top:10px}
 .lt.chica .p{flex:1 0 104px}
@@ -228,6 +238,7 @@ $('app').innerHTML =
 '<div><h1>SOCIAL SOLAR S.A.S. — ÓRDENES DE COMPRA</h1>'+
 '<div class="yo">'+esc(CTX.nombre)+' · '+esc(CTX.area)+'</div></div>'+
 '<div class="der">'+
+'<span class="campana" id="campana" onclick="verNovedades()" title="Proveedores que se inscribieron">🔔<span class="punto" id="campanaN" style="display:none">0</span></span>'+
 '<span class="pill inf">'+esc(CTX.rol)+'</span>'+
 '<span class="lnk" onclick="verVideos()">Cómo se usa (video)</span>'+
 '<span class="lnk" onclick="verCambiarClave()">Cambiar mi contraseña</span>'+
@@ -242,6 +253,7 @@ $('app').innerHTML =
 '<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5Z"></path>'+
 '</svg>¿Dudas o una idea?</button>';
 pintarTabs();
+contarNovedades();
 }
 function listaTabs(){
 var t = [];
@@ -795,6 +807,76 @@ numeroFactura: $('cnf') ? $('cnf').value : '',
 fechaFactura:  $('cff') ? $('cff').value : '',
 numeroWO:      $('cwo') ? $('cwo').value : ''
 });
+}
+
+/* ---- novedades de proveedores ---- */
+var NOVTODAS = false;
+function contarNovedades(){
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok || !$('campanaN')) return;
+if(r.nuevas > 0){ $('campanaN').textContent = r.nuevas > 9 ? '9+' : r.nuevas; $('campanaN').style.display='flex'; }
+else $('campanaN').style.display='none';
+}).api('ocNovedades', SES, false);
+}
+function verNovedades(todas){
+NOVTODAS = !!todas;
+abrirModal('Proveedores que se inscribieron', '<div class="cargando">Un momento…</div>');
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ cuerpoModal('<div class="caja cno">'+esc((r&&r.mensaje)||'No pude cargar las novedades.')+'</div>'); return; }
+cuerpoModal(pintarNovedades(r));
+srv().withSuccessHandler(function(){ if($('campanaN')) $('campanaN').style.display='none'; })
+     .api('novMarcarVisto', SES);
+}).api('ocNovedades', SES, NOVTODAS);
+}
+function pintarNovedades(r){
+var h = '';
+if(r.manda || NOVTODAS){
+h += '<div style="display:flex;gap:6px;margin-bottom:10px">'
+   + '<span class="btn2" style="padding:4px 11px;font-size:11.5px;'+(NOVTODAS?'':'background:#16394F;color:#fff;border-color:#16394F')+'" onclick="verNovedades(false)">Lo mío</span>'
+   + '<span class="btn2" style="padding:4px 11px;font-size:11.5px;'+(NOVTODAS?'background:#16394F;color:#fff;border-color:#16394F':'')+'" onclick="verNovedades(true)">Todo</span>'
+   + '</div>';
+}
+if(!r.filas.length){
+return h + '<div class="vacio">Nadie se ha inscrito en los últimos días.</div>';
+}
+for(var i=0;i<r.filas.length;i++){
+var n = r.filas[i];
+var ic = n.completo ? ['✅','#E8F3EC'] : ['⚠️','#FFF4E0'];
+h += '<div class="nov">'
+   + '<div class="ic" style="background:'+ic[1]+'">'+ic[0]+'</div>'
+   + '<div style="flex-grow:1">'
+   + '<div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">'
+   + '<b style="font-size:13px;color:#1F2933">'+esc(n.nombre)+(n.nueva?' <span style="background:#E0A44A;color:#16394F;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:999px;vertical-align:middle">NUEVO</span>':'')+'</b>'
+   + '<span style="font-size:11px;color:#A8B2BA;flex-shrink:0">'+esc(n.cuando)+'</span>'
+   + '</div>'
+   + '<div style="font-size:12px;color:#5B6773;margin-top:3px">NIT '+esc(n.nit)
+   + (n.completo ? ' · subió el RUT y la certificación bancaria' : ' · <b style="color:#7A5212">le falta '+esc(n.falta)+'</b>')
+   + '</div>';
+if(n.ordenes.length){
+var lista = n.ordenes.map(function(o){ return o.numero+' ('+pesos(o.total)+')'; }).join(', ');
+h += '<div style="margin-top:7px;background:'+(n.completo?'#E8F3EC':'#FFF4E0')+';border-left:3px solid '+(n.completo?'#1B5E34':'#E0A44A')
+   + ';border-radius:0 6px 6px 0;padding:7px 11px;font-size:11.5px;color:'+(n.completo?'#1B5E34':'#7A5212')+';line-height:1.5">'
+   + (n.completo ? 'Con esto se destraba ' : 'Hay esperándolo ')
+   + '<b>'+esc(lista)+'</b>'
+   + (n.mia ? ', que usted pidió.' : '.')
+   + (n.completo ? '' : ' Todavía no se le puede pagar.')
+   + '</div>';
+}
+h += '<div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap">'
+   + '<button class="btn2" style="padding:4px 11px;font-size:11.5px" onclick="irAFicha(\''+esc(n.nit)+'\')">Ver la ficha</button>';
+if(n.ordenes.length) h += '<button class="btn2" style="padding:4px 11px;font-size:11.5px" onclick="cerrarModal();verOrden(\''+esc(n.ordenes[0].numero)+'\')">Ir a la orden</button>';
+h += '</div></div></div>';
+}
+return h;
+}
+function irAFicha(nit){
+cerrarModal();
+if(CTX.puede.proveedores || CTX.puede.verproveedor){
+irA('gestor');
+setTimeout(function(){ if(typeof verProveedor === 'function') verProveedor(nit); }, 700);
+} else {
+alert('Su rol no ve el maestro de proveedores. Pregúntele a compras.');
+}
 }
 
 /* ---- lo que tesorería revisa antes de pagar ---- */
@@ -1988,6 +2070,11 @@ $('modal').innerHTML =
 '<div class="mb">'+html+'</div></div></div>';
 }
 function cerrarModal(){ $('modal').innerHTML = ''; }
+/* Cambia solo el contenido del modal, sin volver a abrirlo. */
+function cuerpoModal(html){
+var c = document.querySelector('#modal .mb');
+if(c) c.innerHTML = html;
+}
 /* ================= ARRANQUE ================= */
 pantallaLogin('');
 </script>
