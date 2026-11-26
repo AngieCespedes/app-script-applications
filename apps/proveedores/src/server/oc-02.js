@@ -227,6 +227,12 @@ function ocCrearOrden_(ses, d, cotizacion) {
     hoja.getRange(fila, 18).setValue(r.reteica);
     hoja.getRange(fila, 20).setValue(link);
     hoja.getRange(fila, 21).setValue('SOLICITADA');
+    /* Que documento dijo el proveedor que va a dar. Quien pide la orden es
+       quien habla con el, asi que es quien lo sabe. Si la hoja todavia no
+       tiene la columna, no se cae la creacion de la orden. */
+    if (d.docEsperado && hoja.getMaxColumns() >= OC_ORD_DOCESP) {
+      hoja.getRange(fila, OC_ORD_DOCESP).setValue(d.docEsperado);
+    }
     var nota = String(d.observaciones || '');
     if (nuevo) {
       nota = (nota ? nota + ' | ' : '') + 'PROVEEDOR: ' + String(d.proveedor).trim() +

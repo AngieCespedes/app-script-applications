@@ -153,23 +153,43 @@ function ocRegistrarFactura_(ses, numero, d, archivo) {
   return { ok: true, aviso: aviso };
 }
 
-function ocCausar_(ses, numero, comentario) {
+/**
+ * Contabilidad cierra la orden en World Office.
+ * Acepta un comentario suelto (como antes) o un objeto con los datos del
+ * documento: cuando la factura o el documento soporte le llegan directo a
+ * contabilidad, aqui mismo pone el tipo, el numero y la fecha, sin tener que
+ * devolverle la orden a compras.
+ */
+function ocCausar_(ses, numero, d) {
   var u = ocUsuario_(ses);
   if (!u || !ocPuede_(u, 'causar')) return { ok: false, mensaje: 'No tiene permiso.' };
+  if (typeof d === 'string' || d === null || d === undefined) d = { comentario: d || '' };
 
   var hoja = ocHoja_(OC_H_ORD);
   var fila = ocFilaOrden_(hoja, numero);
   if (!fila) return { ok: false, mensaje: 'No encontre esa orden.' };
+
+  if (d.tipoDoc && String(d.tipoDoc).toUpperCase() !== 'PENDIENTE') {
+    hoja.getRange(fila, 32).setValue(d.tipoDoc);
+    if (d.numeroFactura) hoja.getRange(fila, 33).setValue(d.numeroFactura);
+    if (d.fechaFactura)  hoja.getRange(fila, 34).setValue(d.fechaFactura);
+  }
+
   if (String(hoja.getRange(fila, 33).getValue()).trim() === '' &&
       String(hoja.getRange(fila, 32).getValue()).trim() === '') {
-    return { ok: false, mensaje: 'Todavia no hay factura ni documento soporte.' };
+    return { ok: false, mensaje: 'Todavia no hay factura ni documento soporte. ' +
+                                 'Escriba el tipo, el numero y la fecha antes de causar.' };
+  }
+  if (String(hoja.getRange(fila, 34).getValue()).trim() === '') {
+    return { ok: false, mensaje: 'Falta la fecha del documento. Sin ella no se puede causar.' };
   }
 
   hoja.getRange(fila, 37).setValue('SI');
   hoja.getRange(fila, 21).setValue('CAUSADA');
-  if (comentario) {
+  if (d.numeroWO) hoja.getRange(fila, OC_ORD_WO).setValue(d.numeroWO);
+  if (d.comentario) {
     var obs = String(hoja.getRange(fila, 40).getValue());
-    hoja.getRange(fila, 40).setValue((obs ? obs + ' | ' : '') + comentario);
+    hoja.getRange(fila, 40).setValue((obs ? obs + ' | ' : '') + d.comentario);
   }
   return { ok: true };
 }
@@ -181,7 +201,20 @@ var OC_ORD_COMO  = 41;   /* COMO LLEGO LA MERCANCIA */
 var OC_ORD_FOTO  = 42;   /* FOTO DE LA LLEGADA */
 var OC_ORD_OBSA  = 43;   /* OBSERVACION DE ALMACEN */
 var OC_ORD_WO    = 44;   /* N° EN WORLD OFFICE */
-var OC_ORD_ANCHO = 44;
+/* Las de la revision de retencion, que hace tesoreria contra el RUT. */
+var OC_ORD_DOCESP = 45;  /* QUE DOCUMENTO VA A DAR EL PROVEEDOR */
+var OC_ORD_ASUME  = 46;  /* QUIEN ASUME LA RETENCION */
+var OC_ORD_RETPOR = 47;  /* RETENCION REVISADA POR */
+var OC_ORD_RETNOTA= 48;  /* NOTA DE LA RETENCION */
+var OC_ORD_ANCHO = 48;
+
+/* Lee una celda de la fila aunque la hoja todavia no tenga esa columna.
+   Mientras no se corra «Instalar o actualizar», la hoja va hasta la 44 y
+   las nuevas simplemente salen vacias, sin romper nada. */
+function ocCol_(fila, n) {
+  var v = fila[n - 1];
+  return (v === undefined || v === null) ? '' : v;
+}
 
 /* Semaforo de la orden: verde solo cuando esta todo.
    Lo ve igual compras, gerencia y quien pidio la orden. */
@@ -235,7 +268,10 @@ function ocOrdenes_(ses, filtro) {
   var ult = ocUltimaFila_(hoja);
   if (ult < 2) return { ok: true, filas: [], resumen: ocResumen_([]), rol: u.rol, vertodo: ocPuede_(u, 'vertodo'), area: u.area };
 
-  var d = hoja.getRange(2, 1, ult - 1, OC_ORD_ANCHO).getValues();
+  /* Se lee hasta donde llegue la hoja: si todavia no se han creado las
+     columnas nuevas, ocCol_ devuelve vacio en vez de reventar. */
+  var ancho = Math.min(OC_ORD_ANCHO, hoja.getMaxColumns());
+  var d = hoja.getRange(2, 1, ult - 1, ancho).getValues();
   var todo = ocPuede_(u, 'vertodo');
   var equipo = ocPuede_(u, 'verequipo');
   var filas = [], mias = [], decididas = [];
@@ -289,10 +325,14 @@ function ocOrdenes_(ses, filtro) {
       causada: String(d[i][36]),
       dias: d[i][37] === '' ? '' : ocNum_(d[i][37]),
       falta: String(d[i][38]),
-      comoLlego: String(d[i][OC_ORD_COMO - 1] || ''),
-      fotoLlegada: String(d[i][OC_ORD_FOTO - 1] || ''),
-      obsAlmacen: String(d[i][OC_ORD_OBSA - 1] || ''),
-      numeroWO: String(d[i][OC_ORD_WO - 1] || ''),
+      comoLlego: String(ocCol_(d[i], OC_ORD_COMO)),
+      fotoLlegada: String(ocCol_(d[i], OC_ORD_FOTO)),
+      obsAlmacen: String(ocCol_(d[i], OC_ORD_OBSA)),
+      numeroWO: String(ocCol_(d[i], OC_ORD_WO)),
+      docEsperado: String(ocCol_(d[i], OC_ORD_DOCESP)),
+      asumeRet: String(ocCol_(d[i], OC_ORD_ASUME)),
+      retRevisadaPor: String(ocCol_(d[i], OC_ORD_RETPOR)),
+      retNota: String(ocCol_(d[i], OC_ORD_RETNOTA)),
       esMia: ocIgual_(d[i][3], u.usuario)
     };
     o.traza = ocTraza_(o);

@@ -157,6 +157,23 @@ td{font-size:12.5px;color:#3D4A54;padding:9px 8px;border-bottom:1px solid #f0f2f
 <script>
 var SES = '', CTX = null, LISTAS = null, TAB = '', CACHE = [], PROV = null, RES = null;
 function $(id){ return document.getElementById(id); }
+/* Toda llamada al servidor pasa por aqui.
+   Antes, si el servidor fallaba (una hoja que falta, un permiso), la pantalla
+   se quedaba cargando para siempre y parecia que los botones no servian.
+   Ahora siempre se ve que paso. Una llamada puede poner su propio
+   withFailureHandler despues y ese manda. */
+function srv(){
+return google.script.run.withFailureHandler(function(err){
+var m = (err && err.message) ? err.message : 'No se pudo completar la operación.';
+var w = $('wrap');
+if (w && w.querySelector('.cargando')) {
+w.innerHTML = '<div class="card"><div class="caja cno"><b>No se pudo cargar esta pantalla.</b><br>'
+  + esc(m) + '</div></div>';
+} else {
+alert(m);
+}
+});
+}
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function pesos(n){ n=Math.round(Number(n)||0); return '$ '+n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
 function limpio(v){ return String(v||'').replace(/[^0-9]/g,''); }
@@ -184,10 +201,10 @@ function entrar(){
 var u = $('lu').value.trim(), p = $('lp').value;
 if(!u || !p){ pantallaLogin('Escriba su usuario y su contraseña.'); return; }
 $('lb').disabled = true; $('lb').textContent = 'Entrando…';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ pantallaLogin(r? r.mensaje : 'No pude conectarme. Intente otra vez.'); return; }
 SES = r.ses; CTX = r;
-google.script.run.withSuccessHandler(function(l){ LISTAS = l; marco(); }).api('ocListas', SES);
+srv().withSuccessHandler(function(l){ LISTAS = l; marco(); }).api('ocListas', SES);
 }).withFailureHandler(function(err){
 pantallaLogin('No pude conectarme: ' + String(err));
 }).api('ocEntrar', u, p);
@@ -360,16 +377,22 @@ $('wrap').innerHTML = pintarGuia('nueva')+
 '<div style="font-size:11.5px;color:#8A94A0;margin-top:9px">Queda marcado como POR VALIDAR en la hoja de centros de costo, para que contabilidad lo confirme.</div>'+
 '</div>'+
 '<div class="row">'+
-'<div class="g"><label>Concepto</label><select id="concepto" onchange="recalcular()">'+con+'</select></div>'+
+'<div class="g"><label>¿Qué está comprando?</label><select id="concepto" onchange="recalcular()">'+con+'</select></div>'+
 '<div class="g"><label>Fecha en que se necesita</label><input id="fnec" type="date"></div>'+
 '</div>'+
+'<div class="g"><label>¿Qué documento le va a dar el proveedor?</label>'+
+'<select id="docesp">'+
+'<option value="">No sé todavía</option>'+
+'<option>FACTURA ELECTRONICA</option>'+
+'<option>DOCUMENTO SOPORTE</option>'+
+'</select>'+
+'<div style="font-size:11.5px;color:#8A94A0;margin-top:5px">Si el proveedor no factura (persona natural no obligada), escoja documento soporte: a nosotros nos toca elaborarlo.</div></div>'+
 '<div class="g"><label>Cotización del proveedor</label><input id="cot" type="file"></div>'+
 '<div class="row">'+
 '<div class="g"><label>Base</label><input id="base" inputmode="numeric" placeholder="28400000" oninput="recalcular()"></div>'+
 '<div class="g"><label>IVA</label><input id="iva" inputmode="numeric" placeholder="5396000" oninput="recalcular()"></div>'+
 '<div class="g"><label>Valor total</label><input id="total" readonly style="background:#F7F9FB;font-weight:700;color:#0F3B5C"></div>'+
 '</div>'+
-'<div class="g"><label><input type="checkbox" id="decl" checked onchange="recalcular()" style="width:auto;margin-right:7px">El proveedor es declarante de renta</label></div>'+
 '<div class="g"><label>Observaciones (opcional)</label><textarea id="obs"></textarea></div>'+
 '</div>'+
 '<div class="card">'+
@@ -386,7 +409,7 @@ function guardarCentro(){
 var cod = $('ccCod').value, nom = $('ccNom').value;
 if(!cod.trim() || !nom.trim()){ alert('Escriba el código de cotización y el nombre del proyecto.'); return; }
 $('ccBtn').disabled = true;
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 $('ccBtn').disabled = false;
 if(!r.ok){ alert(r.mensaje); return; }
 var s = $('centro');
@@ -403,7 +426,7 @@ function buscarProv(){
 var n = limpio($('nit').value);
 if(!n){ $('prov').innerHTML=''; PROV=null; return; }
 $('prov').innerHTML = '<div class="caja cav">Buscando…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 PROV = r;
 if(!r.encontrado){
 $('prov').innerHTML = '<div class="caja cav"><span class="pill bad">PROVEEDOR NUEVO</span> '+
@@ -434,7 +457,7 @@ if(!b){ $('calc').innerHTML = '<div class="vacio">Escriba la base y escoja el co
 if(CALCT) clearTimeout(CALCT);
 var seq = ++CALCSEQ;
 CALCT = setTimeout(function(){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(seq !== CALCSEQ) return;
 if(!r || !r.ok) return;
 $('calc').innerHTML =
@@ -450,8 +473,10 @@ fila('Valor total', pesos(r.total))+
 '<b style="color:#0F3B5C;font-size:20px">'+pesos(r.neto)+'</b>'+
 '</div>'+
 (r.nota? '<div class="caja cav">'+esc(r.nota)+'</div>' : '')+
-'<div class="caja cav">El cálculo es una <b>propuesta</b>. Tesorería y contabilidad lo pueden cambiar antes de pagar.</div>';
-}).api('ocRetenciones', SES, $('concepto').value, b, v, $('decl').checked, '');
+'<div class="caja cav">Esto es un <b>estimado</b>, calculado como si el proveedor fuera declarante de renta. '+
+'<b>Tesorería revisa el RUT y define la retención definitiva antes de pagar</b>, así que el valor puede cambiar. '+
+'Usted no tiene que saberlo.</div>';
+}).api('ocRetenciones', SES, $('concepto').value, b, v, true, '');
 }, 400);
 }
 function leerArchivo(input, cb){
@@ -473,7 +498,7 @@ return;
 if(!Number(limpio($('base').value))){ alert('Escriba la base.'); return; }
 $('enviar').disabled = true; $('enviar').textContent = 'Enviando…';
 leerArchivo($('cot'), function(arch){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 $('enviar').disabled = false; $('enviar').textContent = 'Enviar a aprobación de gerencia';
 if(!r.ok){ alert(r.mensaje); return; }
 abrirModal('Orden creada',
@@ -486,7 +511,8 @@ proveedor: (!PROV.encontrado && $('provNuevo')) ? $('provNuevo').value.trim() : 
 descripcion: $('desc').value, centro: $('centro').value,
 area: $('area').value, concepto: $('concepto').value,
 base: Number(limpio($('base').value)), iva: Number(limpio($('iva').value)),
-declarante: $('decl').checked, fechaNecesidad: $('fnec').value,
+fechaNecesidad: $('fnec').value,
+docEsperado: $('docesp') ? $('docesp').value : '',
 observaciones: $('obs').value
 }, arch);
 });
@@ -507,7 +533,7 @@ return 'Nada pendiente por aquí. 👍';
 }
 function cargarLista(filtro){
 $('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">No pude cargar. Vuelva a entrar.</div>'; return; }
 CACHE = r.filas; RES = r.resumen;
 var s = r.resumen, h = pintarGuia(filtro);
@@ -632,6 +658,10 @@ h += '<div class="sec" style="margin-top:16px">SU DECISIÓN</div>'+
 '<button class="btn btnno" style="width:100%;margin-top:8px" onclick="decidir(\''+o.numero+'\',\'RECHAZADA\')">Rechazar y devolver al área</button>';
 }
 if(CTX.puede.pagar && e!=='RECHAZADA' && e!=='SOLICITADA' && (o.saldo>0 || o.pagado===0)){
+h += '<div class="sec" style="margin-top:16px">ANTES DE PAGAR — DOCUMENTOS Y RETENCIÓN</div>'+
+'<div id="revret"><div class="cargando">Buscando el RUT y la certificación…</div></div>';
+}
+if(CTX.puede.pagar && e!=='RECHAZADA' && e!=='SOLICITADA' && (o.saldo>0 || o.pagado===0)){
 h += '<div class="sec" style="margin-top:16px">REGISTRAR PAGO</div>'+
 (o.estadoProv!=='VIGENTE' ? '<div class="caja cno">Este proveedor tiene <b>'+esc(o.estadoProv)+'</b>. Revise antes de pagar.</div>' : '')+
 '<div class="row">'+
@@ -669,16 +699,41 @@ h += '<button class="btn2" style="width:100%;margin-top:14px" onclick="mensajePr
 }
 if(CTX.puede.causar && o.falta==='FALTA CAUSAR EN WORLD OFFICE'){
 h += '<div class="sec" style="margin-top:16px">CONTABILIDAD</div>'+
+(o.docEsperado? '<div class="caja cav">Quien pidió la orden anotó que el proveedor da <b>'+esc(o.docEsperado)+'</b>.</div>':'')+
+'<div class="row">'+
+'<div class="g"><label>Qué llegó</label><select id="ctd">'+
+opcSel(['PENDIENTE','FACTURA ELECTRONICA','DOCUMENTO SOPORTE'], o.tipoDoc||o.docEsperado)+
+'</select></div>'+
+'<div class="g"><label>N° del documento</label><input id="cnf" value="'+esc(o.factura)+'"></div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Fecha del documento</label><input id="cff" type="date" value="'+esc(aISO(o.fechaFactura))+'"></div>'+
+'<div class="g"><label>N° en World Office</label><input id="cwo" value="'+esc(o.numeroWO)+'"></div>'+
+'</div>'+
 '<div class="g"><label>Observación</label><textarea id="cc"></textarea></div>'+
 '<button class="btn btnok" style="width:100%" onclick="causar(\''+o.numero+'\')">Marcar como causada en World Office</button>';
 }
 abrirModal(o.numero, h);
+if($('revret')) cargarRevision(o.numero);
+}
+/* Opciones de un select, con una ya escogida. */
+function opcSel(lista, actual){
+var a = String(actual||'').toUpperCase();
+return lista.map(function(x){
+return '<option'+(String(x).toUpperCase()===a?' selected':'')+'>'+esc(x)+'</option>';
+}).join('');
+}
+/* Una fecha dd/mm/aaaa pasada a aaaa-mm-dd, que es lo que pide un input date. */
+function aISO(f){
+var m = String(f||'').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+if(!m) return '';
+return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
 }
 /* ================= ACCIONES ================= */
 function decidir(num, dec){
 var c = $('com') ? $('com').value : '';
 if(dec==='RECHAZADA' && !c.trim()){ alert('Para rechazar hay que escribir el motivo.'); return; }
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ alert(r.mensaje); return; }
 cerrarModal(); irA(TAB);
 }).api('ocDecidir', SES, num, dec, c);
@@ -687,7 +742,7 @@ function pagar(num){
 var v = Number(limpio($('vp').value));
 if(!v){ alert('Escriba el valor pagado.'); return; }
 leerArchivo($('sp'), function(arch){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ alert(r.mensaje); return; }
 var m = '<div class="caja cok">Pago registrado.</div>';
 if(r.saldo>0) m += '<div class="caja cav">Queda un saldo pendiente de <b>'+pesos(r.saldo)+'</b> en esta orden.</div>';
@@ -700,7 +755,7 @@ comprobante:$('ce').value, observaciones:$('op').value
 }
 function facturar(num){
 leerArchivo($('af'), function(arch){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ alert(r.mensaje); return; }
 cerrarModal(); irA(TAB);
 }).api('ocRegistrarFactura', SES, num, {
@@ -711,13 +766,117 @@ valorFacturado:Number(limpio($('vf').value))
 });
 }
 function causar(num){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ alert(r.mensaje); return; }
 cerrarModal(); irA(TAB);
-}).api('ocCausar', SES, num, $('cc')?$('cc').value:'');
+}).api('ocCausar', SES, num, {
+comentario: $('cc') ? $('cc').value : '',
+tipoDoc:    $('ctd') ? $('ctd').value : '',
+numeroFactura: $('cnf') ? $('cnf').value : '',
+fechaFactura:  $('cff') ? $('cff').value : '',
+numeroWO:      $('cwo') ? $('cwo').value : ''
+});
+}
+
+/* ---- lo que tesorería revisa antes de pagar ---- */
+var REV = null;
+function cargarRevision(num){
+srv().withSuccessHandler(function(r){
+if(!$('revret')) return;
+if(!r || !r.ok){ $('revret').innerHTML = '<div class="caja cno">'+esc((r&&r.mensaje)||'No pude cargar los documentos.')+'</div>'; return; }
+REV = r;
+$('revret').innerHTML = pintarRevision(r);
+}).api('ocDatosPago', SES, num);
+}
+function docLinea(etiqueta, link, nit){
+if(link) return '<div style="padding:7px 0;border-bottom:1px solid #f0f2f5">✅ <b>'+esc(etiqueta)+'</b> · '
+  + '<a target="_blank" href="'+esc(link)+'">verlo</a></div>';
+/* Quien no gestiona proveedores no puede pedirle documentos: se le lleva a la
+   ficha para que lo verifique, y el que pide es compras. */
+var btn = CTX.puede.proveedores
+  ? '<button class="btn2" style="padding:3px 10px;font-size:11.5px" onclick="pedirDoc(\''+esc(nit)+'\')">Solicitarlo</button>'
+  : '<button class="btn2" style="padding:3px 10px;font-size:11.5px" onclick="pedirDoc(\''+esc(nit)+'\')">Ver la ficha</button>'
+    + ' <span style="font-size:11.5px;color:#8A6D1F">lo pide compras</span>';
+return '<div style="padding:7px 0;border-bottom:1px solid #f0f2f5">⚠️ <b>'+esc(etiqueta)+'</b> — no está en la base · '
+  + btn + '</div>';
+}
+function pedirDoc(nit){
+cerrarModal();
+irA('gestor');
+setTimeout(function(){ if(typeof verProveedor === 'function') verProveedor(nit); }, 700);
+}
+function pintarRevision(r){
+var h = '<div class="card" style="margin-bottom:12px">'
+  + docLinea('RUT', r.rut, r.nit)
+  + docLinea('Certificación bancaria', r.certificacion, r.nit)
+  + '<div style="font-size:12px;color:#5A6670;margin-top:9px">'+esc(r.pistaDeclarante.texto)+'</div>'
+  + (r.regimen? '<div style="font-size:12px;color:#5A6670">Régimen: '+esc(r.regimen)+'</div>':'')
+  + '</div>';
+if(r.faltaDocs.length){
+h += '<div class="caja cno">Falta '+esc(r.faltaDocs.join(' y '))+'. <b>No se le debe pagar</b> hasta que llegue.</div>';
+}
+h += '<div class="det">'
+  + fila('Retefuente', r.retefuente? '− '+pesos(r.retefuente) : '—')
+  + fila('Reteiva',    r.reteiva?    '− '+pesos(r.reteiva)    : '—')
+  + fila('Reteica',    r.reteica?    '− '+pesos(r.reteica)    : '—')
+  + fila('Neto a pagar', pesos(r.neto))
+  + '</div>'
+  + (r.revisadaPor? '<div class="caja cok">Retención revisada por <b>'+esc(r.revisadaPor)+'</b>'
+       + (r.nota? '<br>'+esc(r.nota) : '')+'</div>'
+     : '<div class="caja cav">Esta retención todavía la calculó el sistema con lo que escribió quien pidió la orden. <b>Revísela contra el RUT.</b></div>')
+  + '<div class="row" style="margin-top:10px">'
+  + '<div class="g"><label>Concepto</label><select id="rConcepto">'+opcSel(r.conceptos, r.concepto)+'</select></div>'
+  + '<div class="g"><label>¿Es declarante de renta?</label><select id="rDecl">'
+  + '<option value="si"'+(r.pistaDeclarante.declarante?' selected':'')+'>Sí — declarante</option>'
+  + '<option value="no"'+(r.pistaDeclarante.declarante?'':' selected')+'>No declarante</option>'
+  + '</select></div>'
+  + '</div>'
+  + '<div class="g"><label>¿Quién asume la retención?</label><select id="rAsume" onchange="avisoAsume()">'
+  + '<option value="PROVEEDOR"'+(r.asume==='EMPRESA'?'':' selected')+'>Se le descuenta al proveedor</option>'
+  + '<option value="EMPRESA"'+(r.asume==='EMPRESA'?' selected':'')+'>La asume la empresa</option>'
+  + '</select><div id="avAsume" style="font-size:11.5px;color:#8A6D1F;margin-top:5px"></div></div>'
+  + '<div class="g"><label><input type="checkbox" id="rManual" onchange="modoManual()" style="width:auto;margin-right:7px">Escribir los valores a mano</label></div>'
+  + '<div id="cajaManual" style="display:none">'
+  + '<div class="row">'
+  + '<div class="g"><label>Retefuente</label><input id="rRf" inputmode="numeric" value="'+Math.round(r.retefuente)+'"></div>'
+  + '<div class="g"><label>Reteiva</label><input id="rRi" inputmode="numeric" value="'+Math.round(r.reteiva)+'"></div>'
+  + '<div class="g"><label>Reteica</label><input id="rRc" inputmode="numeric" value="'+Math.round(r.reteica)+'"></div>'
+  + '</div>'
+  + '<div class="g"><label>¿Por qué a mano? — queda en la trazabilidad</label><input id="rMotivo" placeholder="Ej: autorretenedor, contrato con tarifa pactada…"></div>'
+  + '</div>'
+  + '<button class="btn" style="width:100%" onclick="guardarRetencion(\''+esc(r.numero)+'\')">Guardar la retención</button>';
+return h;
+}
+function modoManual(){
+var on = $('rManual') && $('rManual').checked;
+if($('cajaManual')) $('cajaManual').style.display = on ? 'block' : 'none';
+}
+function avisoAsume(){
+if(!$('avAsume')) return;
+$('avAsume').textContent = ($('rAsume').value === 'EMPRESA')
+  ? 'Al proveedor se le paga el valor completo. La retención se declara igual y la paga la empresa.'
+  : '';
+}
+function guardarRetencion(num){
+var manual = $('rManual') && $('rManual').checked;
+var d = { modo: manual ? 'MANUAL' : 'CALCULAR',
+          concepto: $('rConcepto').value,
+          declarante: $('rDecl').value === 'si',
+          asume: $('rAsume').value };
+if(manual){
+d.retefuente = Number(limpio($('rRf').value));
+d.reteiva    = Number(limpio($('rRi').value));
+d.reteica    = Number(limpio($('rRc').value));
+d.motivo     = $('rMotivo').value;
+}
+srv().withSuccessHandler(function(r){
+if(!r || !r.ok){ alert((r&&r.mensaje)||'No se pudo guardar.'); return; }
+alert(r.mensaje);
+cerrarModal(); irA(TAB);
+}).api('ocRevisarRetencion', SES, num, d);
 }
 function mensajeProv(num){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ alert(r.mensaje); return; }
 var wa = 'https://wa.me/?text=' + encodeURIComponent(r.texto);
 abrirModal('Mensaje para '+r.proveedor,
@@ -751,7 +910,7 @@ if(cel) google.script.run.api('ocMarcarWhatsapp', SES, num, cel);
 var USUPERM = null;
 function pantallaUsuarios(){
 $('wrap').innerHTML = '<div class="cargando">Cargando…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ $('wrap').innerHTML = '<div class="card"><div class="caja cno">'+esc(r.mensaje)+'</div></div>'; return; }
 window.__USU = r; USUPERM = r.permisos || [];
 pintarUsuarios();
@@ -818,7 +977,7 @@ if(!pend.length){ abrirModal('Nada que guardar','<p>No cambió ninguna casilla.<
 var listos = 0, errores = [];
 abrirModal('Guardando','<div class="cargando">Guardando los permisos de '+pend.length+' personas…</div>');
 pend.forEach(function(u){
-google.script.run.withSuccessHandler(function(res){
+srv().withSuccessHandler(function(res){
 if(!res || !res.ok) errores.push(u.nombre+': '+((res&&res.mensaje)||'no se pudo'));
 else { u.cambiado = false; if(u.rolGuardar!==false) guardarRolDe(u); }
 listos++;
@@ -837,7 +996,7 @@ google.script.run.api('ocGuardarUsuario', SES, { usuario:u.usuario, usuarioOrigi
 }
 function nuevaClave(usuario){
 abrirModal('Contraseña','<div class="cargando">Generando…</div>');
-google.script.run.withSuccessHandler(function(res){
+srv().withSuccessHandler(function(res){
 if(!res || !res.ok){ abrirModal('Ojo','<p>'+esc((res&&res.mensaje)||'No se pudo.')+'</p>'
   + '<div style="margin-top:12px"><button class="btn" onclick="cerrarModal()">Cerrar</button></div>'); return; }
 abrirModal('Contraseña de '+esc(usuario),
@@ -875,7 +1034,7 @@ abrirModal(nuevo? 'Agregar persona' : 'Editar a '+u.nombre,
 var USU_ORIG = '';
 function guardarUsuario(){
 $('uB').disabled = true;
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 $('uB').disabled = false;
 if(!r.ok){ alert(r.mensaje); return; }
 if(USU_ORIG && CTX && USU_ORIG.toLowerCase() === String(CTX.usuario||'').toLowerCase()){
@@ -899,7 +1058,7 @@ abrirModal('Cambiar mi contraseña',
 }
 function cambiarClave(){
 $('pB').disabled = true;
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 $('pB').disabled = false;
 if(!r.ok){ alert(r.mensaje); return; }
 SES = r.ses;
@@ -913,7 +1072,7 @@ var PF = { estado:'todos', mes:'', tipo:'', q:'' };
 var MESES = ['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 function pantallaPagos(){
 $('wrap').innerHTML = '<div class="cargando">Cargando los pagos…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude cargar los pagos.')+'</div>'; return; }
 PAGOS = r.filas; PRES = r.resumen; PTIPOS = r.tipos || PTIPOS; PPUEDE = !!r.puedePagar;
 pintarPagos();
@@ -1085,7 +1244,7 @@ var f = pagosFiltrados();
 if(!f.length){ alert('No hay pagos en pantalla para descargar.'); return; }
 var b = $(formato==='pdf'?'btnPdf':'btnXls'), txt = b.textContent;
 b.disabled = true; b.textContent = 'Armando…';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 b.disabled = false; b.textContent = txt;
 if(!r.ok){ alert(r.mensaje); return; }
 var url = formato==='pdf' ? r.pdf : r.excel;
@@ -1121,7 +1280,7 @@ abrirModal('Pago N° '+p.numero,
 function guardarCompletar(num){
 $('pcBtn').disabled = true; $('pcBtn').textContent = 'Guardando…';
 leerArchivo($('pcArch'), function(arch){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ $('pcBtn').disabled=false; $('pcBtn').textContent='Guardar'; alert(r.mensaje); return; }
 cerrarModal(); pantallaPagos();
 }).api('ocCompletarPago', SES, num, {
@@ -1151,7 +1310,7 @@ if(!Number(limpio($('npValor').value))){ alert('Escriba el valor pagado.'); retu
 if(!$('npProv').value.trim()){ alert('Escriba a nombre de quién va el pago.'); return; }
 $('npBtn').disabled = true; $('npBtn').textContent = 'Registrando…';
 leerArchivo($('npArch'), function(arch){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 $('npBtn').disabled = false; $('npBtn').textContent = 'Registrar el pago';
 if(!r.ok){ alert(r.mensaje); return; }
 cerrarModal(); pantallaPagos();
@@ -1166,7 +1325,7 @@ observaciones: $('npObs').value
 /* ---- enviar el soporte ---- */
 function verEnviar(num){
 abrirModal('Enviar el soporte', '<div class="cargando">Buscando los contactos…</div>');
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){ abrirModal('Enviar el soporte','<div class="caja cno">'+esc(r.mensaje)+'</div>'); return; }
 PENVIO = r;
 pintarEnviar(r);
@@ -1220,7 +1379,7 @@ function enviarSoporte(num){
 var c = $('eCorreo').value.trim();
 if(c.indexOf('@') < 1){ alert('Escriba un correo válido.'); return; }
 $('eBtn').disabled = true; $('eBtn').textContent = 'Enviando…';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 $('eBtn').disabled = false; $('eBtn').textContent = 'Enviar el correo con el soporte';
 if(!r.ok){ alert(r.mensaje); return; }
 abrirModal('Soporte enviado',
@@ -1256,7 +1415,7 @@ armarWa();
 function agregarEnlaceWa(num){
 var b = $('waEnl');
 b.disabled = true; b.textContent = 'Abriendo el archivo…';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r.ok){
 b.disabled = false; b.textContent = '🔗 Agregar enlace de descarga al mensaje';
 $('waAviso').innerHTML = '<span style="color:#B00020">'+esc(r.mensaje)+'</span>';
@@ -1301,7 +1460,7 @@ var GREQ = ['RUT','Cert. bancaria','Asesor comercial','Negociacion','Correo esta
 
 function pantallaGestor(){
 $('wrap').innerHTML = '<div class="cargando">Cargando los proveedores…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude cargar los proveedores.')+'</div>'; return; }
 PROV = r.filas; PRESU = r.resumen; GPUEDE = !!r.puedeEditar; GABIERTO = null;
 pintarGestor();
@@ -1372,7 +1531,7 @@ return '<span class="chip '+c+'">'+esc(s.estado)
 
 function verProveedor(nit){
 $('wrap').innerHTML = '<div class="cargando">Abriendo…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude abrir el proveedor.')+'</div>'; return; }
 GABIERTO = r; pintarProveedor();
 }).api('ocProveedor', SES, nit);
@@ -1512,7 +1671,7 @@ var d = {};
 ['celular','fijo','correoFac','correoEdoCta','correoSoportes','asesor','celAsesor','correoAsesor',
  'creditoHoy','tenemosCupo','cupo','plazo','dcto','pctDcto','diasDcto','correoCredito',
  'docsCredito','observaciones'].forEach(function(k){ if($('g_'+k)) d[k] = $('g_'+k).value; });
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 aviso(r && r.ok, (r&&r.mensaje)||'No se pudo guardar.');
 if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
 }).api('ocGuardarProveedor', SES, GABIERTO.proveedor.nit, d);
@@ -1521,7 +1680,7 @@ if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
 /* ---- armar y enviar una solicitud ---- */
 var SOL = null;
 function verSolicitud(tipo, medio){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ aviso(false, (r&&r.mensaje)||'No pude armar la solicitud.'); return; }
 SOL = r;
 var falta = !r.destino;
@@ -1559,7 +1718,7 @@ var d = { nit: GABIERTO.proveedor.nit, medio: medio,
           destino: $('s_destino').value, quePidio: $('s_que').value,
           texto: $('s_texto').value, asunto: $('s_asunto') ? $('s_asunto').value : '' };
 if(!d.quePidio.trim()){ aviso(false,'Escriba qué está pidiendo.'); return; }
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 cerrarModal();
 aviso(r && r.ok, (r&&r.mensaje)||'No se pudo registrar.');
 if(r && r.ok){
@@ -1573,7 +1732,7 @@ verProveedor(GABIERTO.proveedor.nit);
 }
 function cerrarSol(numero, resultado){
 var nota = resultado === 'MALO' ? 'El archivo no se pudo abrir' : '';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 aviso(r && r.ok, (r&&r.mensaje)||'No se pudo cerrar.');
 if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
 }).api('ocCerrarSolicitud', SES, numero, resultado, nota);
@@ -1593,7 +1752,7 @@ function subirEstado(){
 var d = { nit: GABIERTO.proveedor.nit, corte: $('e_corte').value,
           saldoProveedor: $('e_saldo').value, observaciones: $('e_obs').value };
 conArchivo($('e_arch'), function(archivo){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 cerrarModal();
 aviso(r && r.ok, (r&&r.mensaje)||'No se pudo guardar.');
 if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
@@ -1601,7 +1760,7 @@ if(r && r.ok) verProveedor(GABIERTO.proveedor.nit);
 });
 }
 function abrirArchivo(enlace){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ aviso(false,(r&&r.mensaje)||'No se pudo abrir.'); return; }
 abrirModal(r.nombre,
 '<div class="acc"><a class="btn" href="'+r.ver+'" target="_blank">Ver</a>'
@@ -1613,7 +1772,7 @@ abrirModal(r.nombre,
 /* ================= MI GESTIÓN ================= */
 function pantallaGestion(){
 $('wrap').innerHTML = '<div class="cargando">Calculando…</div>';
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ $('wrap').innerHTML = '<div class="vacio">'+esc((r&&r.mensaje)||'No pude calcular.')+'</div>'; return; }
 var h = '<div class="panel">'
   + cajita(r.enviadas, 'Solicitudes enviadas', '')
@@ -1646,7 +1805,7 @@ return '<button class="btn claro chico" onclick="bajarInformeRol(\''+que+'\')">D
 }
 function bajarInformeRol(que){
 abrirModal('Preparando el informe', '<div class="cargando">Un momento…</div>');
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 if(!r || !r.ok){ cerrarModal(); aviso(false,(r&&r.mensaje)||'No se pudo armar el informe.'); return; }
 abrirModal(r.titulo,
 '<div class="pista">'+r.n+' registros. Es lo mismo que usted ve en pantalla, nada más.</div>'
@@ -1678,7 +1837,7 @@ function enviarMejora(){
 var d = { tipo: $('m_tipo').value, titulo: $('m_titulo').value,
           detalle: $('m_detalle').value, pantalla: TAB };
 conArchivo($('m_img'), function(img){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 cerrarModal();
 aviso(r && r.ok, (r&&r.mensaje)||'No se pudo enviar.');
 }).api('mjReportar', SES, d, img);
@@ -1703,7 +1862,7 @@ function subirCotizacion(num){
 var inp = $('cot_arch');
 if(!inp || !inp.files || !inp.files.length){ aviso(false,'Escoja el archivo.'); return; }
 conArchivo(inp, function(archivo){
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 cerrarModal(); aviso(r && r.ok, (r&&r.mensaje)||'No se pudo subir.');
 if(r && r.ok) cargarLista('mias');
 }).api('ocReemplazarCotizacion', SES, num, archivo);
@@ -1730,7 +1889,7 @@ function guardarOrden(num){
 var d = { descripcion: $('ed_desc').value, centro: $('ed_centro').value,
           fechaNecesidad: $('ed_fecha').value, base: $('ed_base').value, iva: $('ed_iva').value };
 if(!d.descripcion.trim()){ aviso(false,'Escriba qué necesita.'); return; }
-google.script.run.withSuccessHandler(function(r){
+srv().withSuccessHandler(function(r){
 cerrarModal(); aviso(r && r.ok, (r&&r.mensaje)||'No se pudo guardar.');
 if(r && r.ok) cargarLista('mias');
 }).api('ocEditarOrden', SES, num, d);
