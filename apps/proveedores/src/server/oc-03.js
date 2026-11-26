@@ -209,7 +209,11 @@ var OC_ORD_RETNOTA= 48;  /* NOTA DE LA RETENCION */
 /* Cuando tesoreria calcula pagarla, y que quiere que sepa quien la pidio. */
 var OC_ORD_FPROY  = 49;  /* FECHA PROYECTADA DE PAGO */
 var OC_ORD_NOTASOL= 50;  /* NOTA PARA QUIEN PIDIO LA ORDEN */
-var OC_ORD_ANCHO = 50;
+/* El primer chequeo: compras mira la negociacion con el proveedor. */
+var OC_ORD_DIASCR = 51;  /* DIAS DE CREDITO */
+var OC_ORD_FVENCE = 52;  /* FECHA DE VENCIMIENTO */
+var OC_ORD_REVCOM = 53;  /* REVISADA POR COMPRAS */
+var OC_ORD_ANCHO = 53;
 
 /* Lee una celda de la fila aunque la hoja todavia no tenga esa columna.
    Mientras no se corra «Instalar o actualizar», la hoja va hasta la 44 y
@@ -338,6 +342,9 @@ function ocOrdenes_(ses, filtro) {
       retNota: String(ocCol_(d[i], OC_ORD_RETNOTA)),
       fechaProyectada: ocFecha_(ocCol_(d[i], OC_ORD_FPROY)),
       notaSolicitante: String(ocCol_(d[i], OC_ORD_NOTASOL)),
+      diasCredito: ocCol_(d[i], OC_ORD_DIASCR),
+      fechaVence: ocFecha_(ocCol_(d[i], OC_ORD_FVENCE)),
+      revisadaCompras: String(ocCol_(d[i], OC_ORD_REVCOM)),
       esMia: ocIgual_(d[i][3], u.usuario)
     };
     o.traza = ocTraza_(o);
