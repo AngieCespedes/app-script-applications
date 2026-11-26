@@ -130,6 +130,13 @@ font-size:12px;line-height:1;color:#8A94A0}
 .lt .t{font-size:11.5px;line-height:1.35;color:#3D4A54;margin-top:6px}
 .lt .f{font-size:10.5px;color:#8A94A0;margin-top:2px}
 .lt a{font-size:10.5px}
+/* La misma linea, mas pequena, dentro de la tarjeta de la lista. */
+.lt.chica{margin:10px 0 0;border-top:1px solid #f0f2f5;padding-top:10px}
+.lt.chica .p{flex:1 0 104px}
+.lt.chica .b{width:19px;height:19px;font-size:10.5px}
+.lt.chica .p:before,.lt.chica .p:after{top:8.5px}
+.lt.chica .t{font-size:10.5px;margin-top:5px}
+.lt.chica .f{font-size:10px}
 .vacio{text-align:center;padding:30px 20px;color:#8A94A0;font-size:13.5px}
 /* ---- tabla usuarios ---- */
 table{width:100%;border-collapse:collapse}
@@ -529,6 +536,13 @@ h += '<div class="card"><div class="vacio">'+esc(porQueVacio(filtro))+'</div></d
 } else {
 for(var i=0;i<r.filas.length;i++) h += tarjeta(r.filas[i]);
 }
+/* Debajo de lo que falta decidir, lo que ya se decidio: quien aprueba
+   necesita ver en que van las que ya dejo pasar, no solo su bandeja. */
+if(filtro === 'aprobar' && r.decididas && r.decididas.length){
+CACHE = CACHE.concat(r.decididas);
+h += '<div class="sec" style="margin-top:22px">YA DECIDIDAS — EN QUÉ VAN</div>';
+for(var j=0;j<r.decididas.length;j++) h += tarjeta(r.decididas[j]);
+}
 $('wrap').innerHTML = h + '<div style="height:24px"></div>';
 marcarPendientes(s);
 }).api('ocOrdenes', SES, filtro);
@@ -557,15 +571,20 @@ return '<div class="ord" onclick="verOrden(\''+o.numero+'\')">'+
 '<div class="l2"><b>'+esc(o.proveedor||o.nit)+'</b> · '+esc(o.descripcion)+'</div>'+
 '<div class="l3">'+esc(o.fecha)+' · '+esc(o.solicita)+' · '+esc(o.area)+' · '+esc(o.centro)+' · '+pesos(o.total)+
 (o.dias!==''&&o.dias>0 ? ' · <b style="color:#B00020">'+o.dias+' días sin legalizar</b>':'')+
-'</div></div>';
+'</div>'+
+lineaTiempo(o, true)+
+'</div>';
 }
 /* ================= DETALLE ================= */
 /* Los pasos de la orden, de izquierda a derecha: quien la pidio, gerencia,
    tesoreria, la factura y almacen. El servidor manda o.linea ya armada. */
-function lineaTiempo(o){
+function lineaTiempo(o, compacta){
 var p = o.linea || [];
 if(!p.length) return '';
-var h = '<div class="sec">EN QUÉ VA ESTA ORDEN</div><div class="lt">';
+/* En la tarjeta de la lista va sin titulo y sin enlaces: la tarjeta entera
+   ya es un boton que abre la orden, y un enlace adentro se pelearia con el. */
+var h = (compacta ? '' : '<div class="sec">EN QUÉ VA ESTA ORDEN</div>')
+      + '<div class="lt'+(compacta?' chica':'')+'">';
 for(var i=0;i<p.length;i++){
 var s = p[i];
 var cls = s.ok ? 'ok' : (s.alerta ? (i===1 ? 'mal' : 'alrt') : '');
@@ -573,7 +592,7 @@ var ico = s.ok ? '✓' : (s.alerta ? '!' : (i+1));
 h += '<div class="p '+cls+'"><span class="b">'+ico+'</span>'
    + '<div class="t">'+esc(s.hito)+'</div>'
    + (s.fecha ? '<div class="f">'+esc(s.fecha)+'</div>' : '')
-   + (s.soporte ? '<a target="_blank" href="'+esc(s.soporte)+'">ver soporte</a>' : '')
+   + (!compacta && s.soporte ? '<a target="_blank" href="'+esc(s.soporte)+'">ver soporte</a>' : '')
    + '</div>';
 }
 return h + '</div>';

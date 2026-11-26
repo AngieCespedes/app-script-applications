@@ -238,7 +238,7 @@ function ocOrdenes_(ses, filtro) {
   var d = hoja.getRange(2, 1, ult - 1, OC_ORD_ANCHO).getValues();
   var todo = ocPuede_(u, 'vertodo');
   var equipo = ocPuede_(u, 'verequipo');
-  var filas = [], mias = [];
+  var filas = [], mias = [], decididas = [];
 
   for (var i = 0; i < d.length; i++) {
     if (String(d[i][0]).trim() === '') continue;
@@ -300,7 +300,13 @@ function ocOrdenes_(ses, filtro) {
 
     mias.push(o);
 
-    if (filtro === 'aprobar'   && o.estado.toUpperCase() !== 'SOLICITADA') continue;
+    /* En «Por aprobar» lo que hay que decidir va arriba, pero las que ya se
+       decidieron se mandan aparte: quien aprueba quiere ver el ciclo completo,
+       no solo su bandeja de pendientes. */
+    if (filtro === 'aprobar' && o.estado.toUpperCase() !== 'SOLICITADA') {
+      if (o.estado.toUpperCase() !== '') decididas.push(o);
+      continue;
+    }
     if (filtro === 'pagar'     && (o.estado.toUpperCase() !== 'APROBADA' || o.saldo <= 0)) continue;
     if (filtro === 'facturar'  && o.falta.indexOf('FALTA FACTURA') !== 0 &&
                                   o.falta.indexOf('FALTA ELABORAR') !== 0) continue;
@@ -313,7 +319,8 @@ function ocOrdenes_(ses, filtro) {
   }
 
   filas.reverse();
-  return { ok: true, filas: filas, resumen: ocResumen_(mias),
+  decididas.reverse();
+  return { ok: true, filas: filas, decididas: decididas, resumen: ocResumen_(mias),
            rol: u.rol, vertodo: todo, area: u.area };
 }
 
