@@ -488,10 +488,11 @@ facturar: ['Qué hace usted aquí',
 ['Aquí le llegan <b>todas las órdenes</b>, estén pagadas o no, repartidas en montones según lo que les falte.',
 'Empiece por arriba: <b>lo que ya se pagó y no tiene factura</b> es lo que duele en una revisión.',
 'Confirme si <b>llegó la mercancía</b>, quién la recibió y en qué fecha.',
-'Diga si llegó <b>factura electrónica</b> o <b>documento soporte</b>, con número, fecha y valor, y suba el archivo.',
+'Diga si llegó <b>factura electrónica</b> o <b>documento soporte</b>, con el <b>número del proveedor</b> y el <b>número de World Office</b>: no son el mismo, y con los dos se rastrea.',
+'Cierre siempre diciendo cómo queda: <b>rectificado</b>, <b>con novedad</b> o <b>debe corregirse</b>.',
 'Si todavía no llega, use <b>Ver el mensaje para pedirle la factura</b> y mándelo por WhatsApp.',
 'Lo que diga <b>sin cotización</b> en rojo: pídasela a quien montó la orden.'],
-'Las que están esperando pago también salen, para que usted ya sepa de cuáles va a tener que perseguir la factura o elaborar el documento soporte. Si el valor facturado no cuadra con la orden, el sistema no deja cerrar.'],
+'Las que están esperando pago también salen, para que usted ya sepa de cuáles va a tener que perseguir la factura o elaborar el documento soporte. Con novedad o para corregir, la orden se le devuelve sola a quien la pidió, con lo que usted escriba.'],
 causar: ['Qué hace usted aquí',
 ['Abra la orden y revise la factura adjunta.',
 'Cause la compra en World Office como siempre.',
@@ -909,22 +910,45 @@ h += '<div class="sec" style="margin-top:16px">REGISTRAR PAGO</div>'+
 '<div class="g"><label>Observaciones</label><textarea id="op" placeholder="Ej: abono parcial, queda saldo…"></textarea></div>'+
 '<button class="btn" style="width:100%" onclick="pagar(\''+o.numero+'\')">Guardar el pago</button>';
 }
-if(CTX.puede.facturar && o.pagado>0 && o.falta && o.falta.indexOf('FALTA')===0 && o.falta!=='FALTA PAGAR'){
-h += '<div class="sec" style="margin-top:16px">MERCANCÍA Y FACTURA</div>'+
+/* Quien causa ve este bloque en TODA orden viva, no solo en las pagadas: lo
+   suyo es estar encima del papel desde que la orden nace. */
+if(CTX.puede.facturar && e!=='RECHAZADA'){
+h += '<div class="sec" style="margin-top:16px">LA FACTURA O EL DOCUMENTO SOPORTE</div>'+
+(o.veredicto? '<div class="caja '+(o.veredicto==='RECTIFICADO'?'cok':'cav')+'"><b>'+esc(o.veredicto)+'</b>'+
+  (o.registradaPor? ' — '+esc(o.registradaPor):'')+(o.fechaRevision? ', '+esc(o.fechaRevision):'')+
+  (o.notaSolicitante? '<br>'+esc(o.notaSolicitante):'')+'</div>' : '')+
+(o.docEsperado? '<div class="caja cav">Quien pidió la orden anotó que el proveedor da <b>'+esc(o.docEsperado)+'</b>.</div>':'')+
 '<div class="row">'+
-'<div class="g"><label>¿Llegó la mercancía?</label><select id="mc"><option>SI - COMPLETA</option><option>INCOMPLETA</option><option>NO HA LLEGADO</option><option>NO APLICA - SERVICIO</option></select></div>'+
-'<div class="g"><label>Quién recibió</label><input id="rp"></div>'+
+'<div class="g"><label>Qué documento llegó</label><select id="td">'+
+opcSel(['PENDIENTE','FACTURA ELECTRONICA','DOCUMENTO SOPORTE','NOTA CREDITO'], o.tipoDoc||o.docEsperado)+
+'</select></div>'+
+'<div class="g"><label>N° del proveedor (externo)</label><input id="nf" value="'+esc(o.factura)+'"></div>'+
 '</div>'+
 '<div class="row">'+
-'<div class="g"><label>Qué llegó</label><select id="td"><option>PENDIENTE</option><option>FACTURA ELECTRONICA</option><option>DOCUMENTO SOPORTE</option></select></div>'+
-'<div class="g"><label>N° de la factura</label><input id="nf"></div>'+
+'<div class="g"><label>Fecha del documento</label><input id="ff" type="date" value="'+esc(aISO(o.fechaFactura))+'"></div>'+
+'<div class="g"><label>N° en World Office (interno)</label><input id="wo" value="'+esc(o.numeroWO)+'"></div>'+
 '</div>'+
 '<div class="row">'+
-'<div class="g"><label>Fecha de la factura</label><input id="ff" type="date"></div>'+
-'<div class="g"><label>Valor facturado</label><input id="vf" inputmode="numeric" value="'+Math.round(o.total)+'"></div>'+
+'<div class="g"><label>Valor facturado</label><input id="vf" inputmode="numeric" oninput="avisoDif('+Math.round(o.total)+')" value="'+Math.round(o.valorFacturado>0?o.valorFacturado:o.total)+'"></div>'+
+'<div class="g"><label>Días de crédito</label><input id="dc" inputmode="numeric" value="'+esc(o.diasCredito)+'" placeholder="En blanco, no se toca"></div>'+
 '</div>'+
-'<div class="g"><label>Adjuntar la factura</label><input id="af" type="file"></div>'+
-'<button class="btn" style="width:100%" onclick="facturar(\''+o.numero+'\')">Guardar</button>'+
+'<div id="difv"></div>'+
+(o.fechaVence? '<div class="caja">Hoy vence el <b>'+esc(o.fechaVence)+'</b>. Si escribe otros días de crédito, se recalcula desde la fecha del documento.</div>':'')+
+'<div class="row">'+
+'<div class="g"><label>¿Llegó la mercancía o el servicio?</label><select id="mc">'+
+opcSel(['','SI','PARCIAL','NO','NO APLICA - SERVICIO'], o.mercancia)+'</select></div>'+
+'<div class="g"><label>Cuándo llegó</label><input id="mf" type="date" value="'+esc(aISO(o.fechaRecibido))+'"></div>'+
+'</div>'+
+'<div class="row">'+
+'<div class="g"><label>Quién la recibió</label><input id="rp" value="'+esc(o.recibidoPor)+'"></div>'+
+'<div class="g"><label>Adjuntar el documento (opcional)</label><input id="af" type="file"></div>'+
+'</div>'+
+'<div class="sec" style="margin-top:14px">CÓMO QUEDA ESTA ORDEN</div>'+
+veredictos()+
+'<div class="g"><label>Qué pasó o qué hay que corregir</label>'+
+'<textarea id="nt" placeholder="Obligatorio si la marca con novedad o para corregir">'+esc(o.notaSolicitante)+'</textarea></div>'+
+'<div class="caja">Con novedad o para corregir, la orden se le devuelve a <b>'+esc(o.solicita)+'</b>: le queda marcada en «Mis órdenes» y se le avisa por correo si lo tiene registrado.</div>'+
+'<button class="btn" style="width:100%" onclick="facturar(\''+o.numero+'\')">Guardar el registro</button>'+
 '<button class="btn2" style="width:100%;margin-top:8px" onclick="mensajeProv(\''+o.numero+'\')">Ver el mensaje para pedirle la factura</button>';
 }
 if(!CTX.puede.facturar && o.falta && o.falta.indexOf('FALTA')===0 && o.falta!=='FALTA PAGAR'){
@@ -986,15 +1010,49 @@ comprobante:$('ce').value, observaciones:$('op').value
 }, arch);
 });
 }
+/* Los tres veredictos de quien causa. El orden importa: el primero es el
+   normal, y los otros dos son los que devuelven la orden. */
+function veredictos(){
+return [
+['RECTIFICADO','Rectificado — quedó bien','Llegó el documento, cuadra con la orden y ya se puede causar.'],
+['CON NOVEDAD','Con novedad — falta algo','No ha llegado, no se encuentra, llegó incompleta o falta el soporte.'],
+['DEBE CORREGIRSE','Debe corregirse — la orden tiene un error','El valor, el centro de costo, el proveedor o el concepto están mal.']
+].map(function(v){
+return '<label style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;margin-bottom:7px;'+
+'border:1.5px solid #DCE3E8;border-radius:8px;cursor:pointer">'+
+'<input type="radio" name="ver" value="'+esc(v[0])+'" style="margin-top:3px;flex-shrink:0">'+
+'<span><b style="font-size:13.5px">'+esc(v[1])+'</b><br>'+
+'<span style="font-size:12.5px;color:#5B6773">'+esc(v[2])+'</span></span></label>';
+}).join('');
+}
+/* La diferencia entre lo que dice el documento y lo que dice la orden.
+   Casi siempre es obra adicional que nadie registró: por eso se avisa
+   mientras escriben, y no después de guardar. */
+function avisoDif(total){
+var d = $('difv'); if(!d || !$('vf')) return;
+var v = Number(limpio($('vf').value))||0;
+var dif = Math.abs(v-total);
+if(!v || dif<=1){ d.innerHTML=''; return; }
+d.innerHTML = '<div class="caja cno">El documento dice <b>'+pesos(v)+'</b> y la orden <b>'+pesos(total)+
+'</b> — diferencia de <b>'+pesos(dif)+'</b>. Así no la puede dejar rectificada: márquela con novedad '+
+'o para corregir, y escriba qué pasó.</div>';
+}
 function facturar(num){
+var r = document.querySelector('input[name=ver]:checked');
+if(!r){ alert('Diga cómo queda la orden: rectificada, con novedad o para corregir.'); return; }
 leerArchivo($('af'), function(arch){
-srv().withSuccessHandler(function(r){
-if(!r.ok){ alert(r.mensaje); return; }
-cerrarModal(); irA(TAB);
+srv().withSuccessHandler(function(x){
+if(!x.ok){ alert(x.mensaje); return; }
+abrirModal('Listo',
+'<div class="caja '+(x.veredicto==='RECTIFICADO'?'cok':'cav')+'"><b>'+esc(x.veredicto)+'.</b> '+esc(x.aviso||'')+'</div>'+
+(x.vence? '<div class="caja">Vence el <b>'+esc(x.vence)+'</b>.</div>':'')+
+'<button class="btn" style="width:100%;margin-top:12px" onclick="cerrarModal();irA(TAB)">Cerrar</button>');
 }).api('ocRegistrarFactura', SES, num, {
-mercancia:$('mc').value, recibidoPor:$('rp').value, tipoDoc:$('td').value,
-numeroFactura:$('nf').value, fechaFactura:$('ff').value,
-valorFacturado:Number(limpio($('vf').value))
+veredicto:r.value, nota:$('nt').value,
+mercancia:$('mc').value, fechaRecibido:$('mf').value, recibidoPor:$('rp').value,
+tipoDoc:$('td').value, numeroFactura:$('nf').value, fechaFactura:$('ff').value,
+valorFacturado:Number(limpio($('vf').value)), numeroWO:$('wo').value,
+diasCredito:$('dc').value
 }, arch);
 });
 }
