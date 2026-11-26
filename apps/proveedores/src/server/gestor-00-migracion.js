@@ -37,7 +37,9 @@ function gpMigrarColumnasOrdenes_() {
     { col: OC_ORD_DOCESP,  titulo: 'QUE DOCUMENTO VA A DAR EL PROVEEDOR' },
     { col: OC_ORD_ASUME,   titulo: 'QUIEN ASUME LA RETENCION' },
     { col: OC_ORD_RETPOR,  titulo: 'RETENCION REVISADA POR' },
-    { col: OC_ORD_RETNOTA, titulo: 'NOTA DE LA RETENCION' }
+    { col: OC_ORD_RETNOTA, titulo: 'NOTA DE LA RETENCION' },
+    { col: OC_ORD_FPROY,   titulo: 'FECHA PROYECTADA DE PAGO' },
+    { col: OC_ORD_NOTASOL, titulo: 'NOTA PARA QUIEN PIDIO LA ORDEN' }
   ];
   var agregadas = [];
   nuevas.forEach(function (n) {
